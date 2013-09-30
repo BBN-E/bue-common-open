@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.bbn.bue.common.CollectionUtilities;
 import com.bbn.bue.common.EquivalenceUtils;
+import com.bbn.bue.common.collections.CollectionUtils;
 import com.bbn.bue.common.evaluation.FMeasureCounts;
 import com.bbn.bue.common.evaluation.FMeasureInfo;
 import com.bbn.bue.common.evaluation.PrecisionRecallPair;
@@ -55,9 +55,9 @@ public final class B3Scorer<T> {
 			Iterable<? extends Set<Q>> gold) 
 	{
 		final Map<Q, ? extends Set<Q>> predictedItemToGroup =
-			CollectionUtilities.makeElementsToContainersMap(predicted);
+			CollectionUtils.makeElementsToContainersMap(predicted);
 		final Map<Q, ? extends Set<Q>> goldItemToGroup =
-			CollectionUtilities.makeElementsToContainersMap(gold);
+			CollectionUtils.makeElementsToContainersMap(gold);
 				
 		checkPartitionsOverSameElements(predictedItemToGroup.keySet(), 
 				goldItemToGroup.keySet());
