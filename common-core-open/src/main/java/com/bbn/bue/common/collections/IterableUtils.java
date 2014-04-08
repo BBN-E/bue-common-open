@@ -16,7 +16,6 @@ import com.google.common.collect.UnmodifiableIterator;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Beta
 public final class IterableUtils {
 	private IterableUtils() {};
 
@@ -285,7 +284,7 @@ public final class IterableUtils {
 	 * position in the Iterable's sequence.  If an item occurs twice, an IllegalArgumentException
 	 * will be thrown.
 	 *
-	 * @param triggers
+	 * @param sequence
 	 * @return
 	 */
 	public static <T> ImmutableMap<T, Integer> itemToIndexMap(final Iterable<T> sequence)
@@ -302,7 +301,7 @@ public final class IterableUtils {
 	}
 
 	/**
-	 * Given a paired sequence of Iteraables, produce a map with keys from
+	 * Given a paired sequence of Iterables, produce a map with keys from
 	 * the first and values from the second. An exception will be raised if
 	 * the Iterables have different numbers of elements, or if there are multiple
 	 * mappings for the same key.

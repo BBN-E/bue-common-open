@@ -20,7 +20,7 @@ public final class CollectionUtils {
 	/**
 	 * Takes some collections and creates a map from their elements to which
 	 * collections contain them.  The Collections must be disjoint or an
-	 * error will be thrown.
+	 * {@link java.lang.IllegalArgumentException} will be thrown.
 	 * @return
 	 */
 	public static <T,C extends Collection<T>> Map<T, C> makeElementsToContainersMap(
