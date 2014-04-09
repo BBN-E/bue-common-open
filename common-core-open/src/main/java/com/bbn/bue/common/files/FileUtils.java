@@ -28,10 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Closeables;
@@ -42,6 +39,8 @@ import static com.bbn.bue.common.collections.MapUtils.copyWithKeysTransformedByI
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Iterables.skip;
+import static com.google.common.collect.Iterables.transform;
 
 public final class FileUtils {
 	private FileUtils() { throw new UnsupportedOperationException(); }
@@ -310,4 +309,34 @@ public final class FileUtils {
 			}
 		};
 	}
+
+    /**
+     * Loads a file in the format {@code key value1 value2 value3} (tab-separated)
+     * into a {@link com.google.common.collect.Multimap} of {@link com.bbn.bue.common.symbols.Symbol} to Symbol.
+     * Each key should only appear on one line, and there should be no duplicate values. Each key and value has whitespace
+     * trimmed off.
+     * Skips empty lines and allows comment-lines with {@code #} in the first position.
+     * If a key has no values, it will not show up in the keySet of the returned multimap.
+     * @param multimapFile
+     * @return
+     */
+    public static ImmutableMultimap<Symbol,Symbol> loadSymbolMultimap(File multimapFile) throws IOException {
+        final ImmutableMultimap.Builder<Symbol, Symbol> ret = ImmutableMultimap.builder();
+
+        int count = 0;
+        for (final String line : Files.asCharSource(multimapFile, Charsets.UTF_8).readLines()) {
+            ++count;
+            if (line.startsWith("#")) {
+                continue;
+            }
+            final List<String> parts = multimapSplitter.splitToList(line);
+            if (parts.isEmpty()) {
+                continue;
+            }
+            ret.putAll(Symbol.from(parts.get(0)), transform(skip(parts, 1), Symbol.FromString));
+        }
+
+        return ret.build();
+    }
+    private  static final Splitter multimapSplitter = Splitter.on("\t").trimResults();
 }
