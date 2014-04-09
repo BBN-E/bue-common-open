@@ -10,3 +10,9 @@ portion of this library.
 While anyone is welcome to use this code, in general no support is provided.
 
 Contact: rgabbard@bbn.com
+
+## Requirements
+* Maven
+
+## Building
+* from the root of this repository, `mvn install`
