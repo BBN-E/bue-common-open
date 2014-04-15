@@ -29,10 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.*;
-import com.google.common.io.ByteSink;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Closeables;
-import com.google.common.io.Files;
+import com.google.common.io.*;
 import com.google.common.primitives.Ints;
 
 import static com.bbn.bue.common.collections.MapUtils.copyWithKeysTransformedByInjection;
@@ -43,7 +40,8 @@ import static com.google.common.collect.Iterables.skip;
 import static com.google.common.collect.Iterables.transform;
 
 public final class FileUtils {
-	private FileUtils() { throw new UnsupportedOperationException(); }
+
+    private FileUtils() { throw new UnsupportedOperationException(); }
 
 	/**
 	 * Takes a file with filenames listed one per line and returns a list of
@@ -117,20 +115,37 @@ public final class FileUtils {
 		}
 	}
 
+    public static ImmutableMap<Symbol, File> loadSymbolToFileMap(
+            final File f) throws IOException
+    {
+        return loadSymbolToFileMap(Files.asCharSource(f, Charsets.UTF_8));
+    }
+
 	public static ImmutableMap<Symbol, File> loadSymbolToFileMap(
-		final File f) throws IOException
+		final CharSource source) throws IOException
 	{
 		return MapUtils.copyWithKeysTransformedByInjection(
-                loadStringToFileMap(f), Symbol.FromString);
+                loadStringToFileMap(source), Symbol.FromString);
 	}
 
-	public static Map<String, File> loadStringToFileMap(
-			final File f) throws IOException
+    public static Map<Symbol,CharSource> loadSymbolToFileCharSourceMap(CharSource source) throws IOException {
+
+        return Maps.transformValues(loadSymbolToFileMap(source),
+                FileUtils.AsCharSource);
+    }
+
+    public static Map<String, File> loadStringToFileMap(final File f) throws IOException {
+        return loadStringToFileMap(Files.asCharSource(f, Charsets.UTF_8));
+    }
+
+
+    public static Map<String, File> loadStringToFileMap(
+			final CharSource source) throws IOException
 	{
 		final Splitter onTab = Splitter.on("\t").trimResults();
 		final ImmutableMap.Builder<String,File> ret = ImmutableMap.builder();
         int lineNo = 0;
-		for (final String line : Files.readLines(f, Charsets.UTF_8)) {
+		for (final String line : source.readLines()) {
 			final Iterator<String> parts = onTab.split(line).iterator();
 
 			final String key;
@@ -339,4 +354,15 @@ public final class FileUtils {
         return ret.build();
     }
     private  static final Splitter multimapSplitter = Splitter.on("\t").trimResults();
+
+    /**
+     * Transforms a file to a {@link com.google.common.io.CharSource} with UTF-8 encoding.
+     */
+    private static final Function<File,CharSource> AsCharSource = new Function<File, CharSource>() {
+        @Override
+        public CharSource apply(File f) {
+            return Files.asCharSource(f, Charsets.UTF_8);
+        }
+    };
+
 }
