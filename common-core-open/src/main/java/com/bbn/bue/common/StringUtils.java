@@ -259,4 +259,14 @@ public final class StringUtils {
 			return name;
 		}
 	}
+
+    public static Predicate<String> Contains(final String probe) {
+        checkNotNull(probe);
+        return new Predicate<String>() {
+            @Override
+            public boolean apply(String input) {
+                return input.contains(probe);
+            }
+        };
+    }
 }
