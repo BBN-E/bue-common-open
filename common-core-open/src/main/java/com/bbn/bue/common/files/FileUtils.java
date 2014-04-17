@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -327,7 +328,7 @@ public final class FileUtils {
 
     /**
      * Loads a file in the format {@code key value1 value2 value3} (tab-separated)
-     * into a {@link com.google.common.collect.Multimap} of {@link com.bbn.bue.common.symbols.Symbol} to Symbol.
+     * into a {@link com.google.common.collect.Multimap} of {@code String} to {@code String}.
      * Each key should only appear on one line, and there should be no duplicate values. Each key and value has whitespace
      * trimmed off.
      * Skips empty lines and allows comment-lines with {@code #} in the first position.
@@ -335,8 +336,8 @@ public final class FileUtils {
      * @param multimapFile
      * @return
      */
-    public static ImmutableMultimap<Symbol,Symbol> loadSymbolMultimap(File multimapFile) throws IOException {
-        final ImmutableMultimap.Builder<Symbol, Symbol> ret = ImmutableMultimap.builder();
+    public static ImmutableMultimap<String,String> loadStringMultimap(File multimapFile) throws IOException {
+        final ImmutableMultimap.Builder<String, String> ret = ImmutableMultimap.builder();
 
         int count = 0;
         for (final String line : Files.asCharSource(multimapFile, Charsets.UTF_8).readLines()) {
@@ -348,11 +349,34 @@ public final class FileUtils {
             if (parts.isEmpty()) {
                 continue;
             }
-            ret.putAll(Symbol.from(parts.get(0)), transform(skip(parts, 1), Symbol.FromString));
+            ret.putAll(parts.get(0), skip(parts, 1));
         }
 
         return ret.build();
     }
+
+    /**
+     * Loads a file in the format {@code key value1 value2 value3} (tab-separated)
+     * into a {@link com.google.common.collect.Multimap} of {@link com.bbn.bue.common.symbols.Symbol} to Symbol.
+     * Each key should only appear on one line, and there should be no duplicate values. Each key and value has whitespace
+     * trimmed off.
+     * Skips empty lines and allows comment-lines with {@code #} in the first position.
+     * If a key has no values, it will not show up in the keySet of the returned multimap.
+     * @param multimapFile
+     * @return
+     */
+    public static ImmutableMultimap<Symbol,Symbol> loadSymbolMultimap(File multimapFile) throws IOException {
+        final ImmutableMultimap<String, String> stringMM = loadStringMultimap(multimapFile);
+        final ImmutableMultimap.Builder<Symbol, Symbol> ret = ImmutableMultimap.builder();
+
+        for (final Map.Entry<String, Collection<String>> entry : stringMM.asMap().entrySet()) {
+            ret.putAll(Symbol.from(entry.getKey()), Collections2.transform(entry.getValue(), Symbol.FromString));
+        }
+
+        return ret.build();
+    }
+
+
     private  static final Splitter multimapSplitter = Splitter.on("\t").trimResults();
 
     /**
