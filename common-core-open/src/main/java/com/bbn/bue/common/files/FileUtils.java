@@ -302,6 +302,12 @@ public final class FileUtils {
 		public String apply(final File f) { return f.getName(); }
 	};
 
+    public static final Function<File, String> ToAbsolutePath = new Function<File, String> () {
+        @Override
+        public String apply(final File f) {
+            return f.getAbsolutePath();
+        }
+    };
 
 	public static boolean isEmptyDirectory(final File directory) {
 		if (directory.exists() && directory.isDirectory()) {
