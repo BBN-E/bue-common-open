@@ -6,9 +6,7 @@ import java.util.Map;
 import com.bbn.bue.common.primitives.DoubleUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import com.google.common.primitives.Doubles;
 
 public final class Scoreds {
@@ -99,21 +97,49 @@ public final class Scoreds {
 		}
 	}
 
+    /**
+     * Comparator which compares Scoreds first by score, then by item, where the item
+     * ordering to use is explicitly specified.
+     * @return
+     */
+    public static final <T extends Comparable<T>> Ordering<Scored<T>> ByScoreThenByItem(
+            Ordering<T> itemOrdering)
+    {
+        final Ordering<Scored<T>> byItem = itemOrdering.onResultOf(Scoreds.<T>itemsOnly());
+        final Ordering<Scored<T>> byScore = Scoreds.<T>ByScoreOnly();
+
+        return Ordering.compound(ImmutableList.of(byScore, byItem));
+    }
+
 	/**
 	 * Comparator which compares Scoreds first by score, then by item.
 	 * @return
 	 */
-	public static final <T extends Comparable<T>> Comparator<Scored<T>> ByScoreThenByItem() {
-		return new Comparator<Scored<T>> () {
-			@Override
-			public int compare(final Scored<T> left, final Scored<T> right) {
-				return ComparisonChain.start()
-					.compare(left.score(), right.score())
-					.compare(left.item(), right.item())
-					.result();
-			}
-		};
+	public static final <T extends Comparable<T>> Ordering<Scored<T>> ByScoreThenByItem() {
+        final Ordering<Scored<T>> byItem = Scoreds.<T>ByItemOnly();
+        final Ordering<Scored<T>> byScore = Scoreds.<T>ByScoreOnly();
+
+        return Ordering.compound(ImmutableList.of(byScore, byItem));
 	}
+
+    /**
+     * Ordering of {@code Scored}s by the natural ordering on items.
+     */
+    public static final <T extends Comparable<T>> Ordering<Scored<T>> ByItemOnly() {
+        return Ordering.natural().onResultOf(Scoreds.<T>itemsOnly());
+    }
+
+    /**
+     * Ordering of {@code Scored}s using the supplied ordering on items.
+     * @param itemOrdering
+     * @param <T>
+     * @return
+     */
+    public static final <T extends Comparable<T>> Ordering<Scored<T>>
+        ByItemOnly(Ordering<T> itemOrdering)
+    {
+        return itemOrdering.onResultOf(Scoreds.<T>itemsOnly());
+    }
 
 	/**
 	 * Comparator which compares by scores only. Beware: using this comparator in things
@@ -121,13 +147,8 @@ public final class Scoreds {
 	 * in things with the same score being considered equal.
 	 * @return
 	 */
-	public static final <T> Comparator<Scored<T>> ByScoreOnly() {
-		return new Comparator<Scored<T>> () {
-			@Override
-			public int compare(final Scored<T> left, final Scored<T> right) {
-				return Doubles.compare(left.score(), right.score());
-			}
-		};
+	public static final <T> Ordering<Scored<T>> ByScoreOnly() {
+        return Ordering.natural().onResultOf(Scoreds.<T>scoresOnly());
 	}
 
 
