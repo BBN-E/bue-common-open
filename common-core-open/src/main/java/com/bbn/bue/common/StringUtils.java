@@ -269,4 +269,33 @@ public final class StringUtils {
             }
         };
     }
+
+    /**
+     * Just like {@link java.lang.String#indexOf(String, int)}, except it searches for all
+     * strings in {@code probes}.  If none are found, returns -1. If any are found, returns
+     * the earliest index of a match. The current implementation naively searches for each string
+     * separately. If speed is important, consider an alternative approach.
+     *
+     * @param probes
+     * @param from
+     * @return
+     */
+    public static int earliestIndexOfAny(String s, Iterable<String> probes, int from) {
+        int earliestIdx = -1;
+
+        for (final String probe  : probes) {
+            final int probeIdx = s.indexOf(probe, from);
+            // if we found something for this probe
+            if (probeIdx >= 0
+               // and either we haven't found anything else yet or
+               // this is earlier than anything we've found yet
+               && (earliestIdx == -1 || probeIdx < earliestIdx))
+            {
+                // then this is our new earliest match
+                earliestIdx = probeIdx;
+            }
+        }
+
+        return earliestIdx;
+    }
 }
