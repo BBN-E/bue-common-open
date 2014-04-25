@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.bbn.bue.common.collections.IterableUtils.ZipPair;
+import com.bbn.bue.common.evaluation.FMeasureCounts;
+import com.bbn.bue.common.symbols.Symbol;
 import com.google.common.base.Function;
 import com.google.common.collect.*;
 
@@ -47,7 +49,27 @@ public final class MapUtils {
 			rightOnly.build());
 	}
 
-	public static class PairedMapValues<V> {
+    /**
+     * Return a copy of the input map with keys transformed by {@code keyInjection} and
+     * values transformed by {@code valueFunction}. Beware: {@code keyInjection} must
+     * be an injection over all the keys of the input map. If two original keys are mapped
+     * to the same value, an {@link java.lang.IllegalArgumentException} will be returned.
+     *
+     * Neither {@code keyInjection} nor {@code valueFunction} may return null. If one does,
+     * an exception will be thrown.
+     */
+    public static <K1,V1,K2,V2> ImmutableMap<K2,V2> copyWithTransformedEntries(Map<K1, V1> input,
+        Function<? super K1, K2> keyInjection, Function<? super V1, V2> valueFunction)
+    {
+        final ImmutableMap.Builder<K2,V2> ret = ImmutableMap.builder();
+
+        for (final Map.Entry<K1,V1> entry : input.entrySet()) {
+            ret.put(keyInjection.apply(entry.getKey()), valueFunction.apply(entry.getValue()));
+        }
+        return ret.build();
+    }
+
+    public static class PairedMapValues<V> {
 		public PairedMapValues(final List<ZipPair<V,V>> pairedValues, final List<V> leftOnly,
 			final List<V> rightOnly)
 		{
