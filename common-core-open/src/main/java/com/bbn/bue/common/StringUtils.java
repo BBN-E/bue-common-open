@@ -23,7 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 @Beta
 public final class StringUtils {
-	private StringUtils() { throw new UnsupportedOperationException() ;}
+    private StringUtils() { throw new UnsupportedOperationException() ;}
 	/**
 	 * Returns a string which is the result of replacing every match of regex in the input string with the results of applying replacementFunction
 	 * to the matched string. This is a candidate to be moved to a more general utility package.
@@ -298,4 +298,12 @@ public final class StringUtils {
 
         return earliestIdx;
     }
+
+    public static Function<String,Integer> ToLength = new Function<String, Integer> () {
+        @Override
+        public Integer apply(String input) {
+            checkNotNull(input);
+            return input.length();
+        }
+    };
 }
