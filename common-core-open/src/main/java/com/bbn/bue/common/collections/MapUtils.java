@@ -3,11 +3,9 @@ package com.bbn.bue.common.collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.IterableUtils.ZipPair;
-import com.bbn.bue.common.evaluation.FMeasureCounts;
-import com.bbn.bue.common.symbols.Symbol;
 import com.google.common.base.Function;
 import com.google.common.collect.*;
 
@@ -197,4 +195,14 @@ public final class MapUtils {
 		}
 		return ret.build();
 	}
+
+    /**
+     * Returns the length of the longest key in a map, or 0 if the map is empty. Useful
+     * for printing tables, etc. The map may not have any null keys.
+     */
+    public static <V> int longestKeyLength(Map<String, V> map) {
+        return Ordering.natural().max(
+                FluentIterable.from(map.keySet())
+                        .transform(StringUtils.ToLength));
+    }
 }
