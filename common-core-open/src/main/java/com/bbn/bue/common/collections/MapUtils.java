@@ -201,6 +201,10 @@ public final class MapUtils {
      * for printing tables, etc. The map may not have any null keys.
      */
     public static <V> int longestKeyLength(Map<String, V> map) {
+        if (map.isEmpty()) {
+            return 0;
+        }
+        
         return Ordering.natural().max(
                 FluentIterable.from(map.keySet())
                         .transform(StringUtils.ToLength));
