@@ -1,6 +1,8 @@
 package com.bbn.bue.common.serialization.jackson;
 
 
+import com.bbn.bue.common.evaluation.FMeasureCounts;
+import com.bbn.bue.common.serialization.jackson.mixins.FMeasureCountsMixin;
 import com.bbn.bue.common.serialization.jackson.mixins.SymbolMixin;
 import com.bbn.bue.common.symbols.Symbol;
 import com.fasterxml.jackson.core.Version;
@@ -16,5 +18,6 @@ public final class BUECommonOpenModule extends SimpleModule {
     @Override
     public void setupModule(final SetupContext context) {
         context.setMixInAnnotations(Symbol.class, SymbolMixin.class);
+        context.setMixInAnnotations(FMeasureCounts.class, FMeasureCountsMixin.class);
     }
 }
