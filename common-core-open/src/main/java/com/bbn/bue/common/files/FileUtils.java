@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.symbols.Symbol;
 import com.google.common.base.Charsets;
@@ -382,6 +383,22 @@ public final class FileUtils {
         return ret.build();
     }
 
+    public static ImmutableTable<Symbol, Symbol, Symbol> loadSymbolTable(CharSource input) throws IOException {
+        final ImmutableTable.Builder<Symbol, Symbol, Symbol> ret = ImmutableTable.builder();
+
+        int lineNo = 0;
+        for (final String line : input.readLines()) {
+            final List<String> parts = StringUtils.OnTabs.splitToList(line);
+            if (parts.size() != 3) {
+                throw new IOException(String.format("Invalid line %d when reading symbol table: %s",
+                        lineNo, line));
+            }
+            ret.put(Symbol.from(parts.get(0)), Symbol.from(parts.get(1)), Symbol.from(parts.get(2)));
+            ++lineNo;
+        }
+
+        return ret.build();
+    }
 
     private  static final Splitter multimapSplitter = Splitter.on("\t").trimResults();
 
