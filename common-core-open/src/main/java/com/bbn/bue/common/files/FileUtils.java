@@ -407,7 +407,7 @@ public final class FileUtils {
         return ret.build();
     }
 
-    private  static final Splitter multimapSplitter = Splitter.on("\t").trimResults();
+    private  static final Splitter multimapSplitter = Splitter.on("\t").trimResults().omitEmptyStrings();
 
     /**
      * Transforms a file to a {@link com.google.common.io.CharSource} with UTF-8 encoding.
