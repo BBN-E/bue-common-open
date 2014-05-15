@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multiset;
@@ -170,4 +171,22 @@ public final class FMeasureCounts extends FMeasureInfo {
 
 		};
 	}
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(truePositives, falsePositives, falseNegatives);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        final FMeasureCounts other = (FMeasureCounts) obj;
+        return Objects.equal(this.truePositives, other.truePositives) && Objects.equal(this.falsePositives, other.falsePositives) && Objects.equal(this.falseNegatives, other.falseNegatives);
+    }
 }
