@@ -25,11 +25,7 @@ import java.util.zip.GZIPInputStream;
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.symbols.Symbol;
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
+import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.google.common.io.*;
 import com.google.common.primitives.Ints;
@@ -382,6 +378,17 @@ public final class FileUtils {
 
         return ret.build();
     }
+
+    public static void writeSymbolMultimap(Multimap<Symbol,Symbol> mm, CharSink charSink) throws IOException {
+        final Joiner tabJoiner = Joiner.on('\t');
+        charSink.writeLines(Iterables.transform(mm.asMap().entrySet(), new Function<Map.Entry<Symbol, Collection<Symbol>>,String>() {
+            @Override
+            public String apply(Map.Entry<Symbol, Collection<Symbol>> input) {
+                return input.getKey() + "\t" + tabJoiner.join(input.getValue());
+            }
+        }));
+    }
+
 
     public static ImmutableTable<Symbol, Symbol, Symbol> loadSymbolTable(CharSource input) throws IOException {
         final ImmutableTable.Builder<Symbol, Symbol, Symbol> ret = ImmutableTable.builder();
