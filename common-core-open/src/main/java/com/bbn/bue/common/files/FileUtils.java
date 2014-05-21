@@ -62,6 +62,29 @@ public final class FileUtils {
 		return ret;
 	}
 
+    /**
+     * Takes a file with relative pathnames listed one per line and returns a list of
+     * the corresponding {@link java.io.File} objects, resolved against the provided
+     * base path using the {@link java.io.File#File(java.io.File, String)} constructor.
+     * Ignores blank lines and lines with a "#" in the first column position.
+     *
+     * @param fileList
+     * @return
+     * @throws IOException
+     */
+    public static ImmutableList<File> loadFileListRelativeTo(File fileList, File basePath) throws IOException {
+        checkNotNull(basePath);
+        final ImmutableList.Builder<File> ret = ImmutableList.builder();
+
+        for (final String filename : Files.readLines(fileList, Charsets.UTF_8)) {
+            if (!filename.isEmpty() && !filename.startsWith("#")) {
+                ret.add(new File(basePath, filename.trim()));
+            }
+        }
+
+        return ret.build();
+    }
+
 	/**
 	 * Returns another file just like the input but with a different extension.
 	 * If the input file has an extension (a suffix beginning with "."),
@@ -381,7 +404,7 @@ public final class FileUtils {
 
     public static void writeSymbolMultimap(Multimap<Symbol,Symbol> mm, CharSink charSink) throws IOException {
         final Joiner tabJoiner = Joiner.on('\t');
-        charSink.writeLines(Iterables.transform(mm.asMap().entrySet(), new Function<Map.Entry<Symbol, Collection<Symbol>>,String>() {
+        charSink.writeLines(Iterables.transform(mm.asMap().entrySet(), new Function<Map.Entry<Symbol, Collection<Symbol>>, String>() {
             @Override
             public String apply(Map.Entry<Symbol, Collection<Symbol>> input) {
                 return input.getKey() + "\t" + tabJoiner.join(input.getValue());
@@ -418,5 +441,4 @@ public final class FileUtils {
             return Files.asCharSource(f, Charsets.UTF_8);
         }
     };
-
 }
