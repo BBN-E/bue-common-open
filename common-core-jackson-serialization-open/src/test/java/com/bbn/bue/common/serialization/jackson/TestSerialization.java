@@ -17,44 +17,16 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class TestSerialization extends TestCase {
-    private ObjectMapper mapper;
-
-    @Override
-    protected void setUp() {
-        mapper = new ObjectMapper();
-        mapper.findAndRegisterModules();
-        mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-    }
+    private final JacksonSerializer serializer = JacksonSerializer.forNormalJSON();
 
     @Test
     public void testFMeasureCounts() throws IOException {
-        final RootObject foo = new RootObject();
-        foo.o = ImmutableMap.of("Hello",
+        final Map<String, FMeasureCounts> foo = ImmutableMap.of("Hello",
                 FMeasureCounts.from(1, 2, 3));
         final File tmp = File.createTempFile("foo", "bar");
         tmp.deleteOnExit();
-        mapper.writeValue(tmp, foo);
-        final Map<String, FMeasureCounts> bar = (Map<String,FMeasureCounts>)mapper.readValue(tmp,
-                RootObject.class).o;
-        assertEquals(foo.o, bar);
+
+        assertEquals(foo, JacksonTestUtils.roundTripThroughSerializer(foo, serializer));
     }
 
-    public static class RootObject {
-
-        public RootObject() {
-            o = null;
-        }
-
-        @JsonCreator
-        public RootObject(@JsonProperty("obj") Object o) {
-            this.o = o;
-        }
-
-        @JsonProperty("obj")
-        public Object obj() {
-            return o;
-        }
-
-        public Object o;
-    }
 }
