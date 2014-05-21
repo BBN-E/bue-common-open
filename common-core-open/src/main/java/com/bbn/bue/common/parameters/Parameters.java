@@ -637,6 +637,13 @@ public class Parameters {
 			"existing directory");
 	}
 
+    public Optional<File> getOptionalExistingDirectory(final String param) {
+        if (isPresent(param)) {
+            return Optional.of(getExistingDirectory(param));
+        }
+        return Optional.absent();
+    }
+
 	/**
 	 * Gets a ,-separated set of Strings.
 	 */
