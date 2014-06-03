@@ -399,25 +399,20 @@ public class Parameters {
 
 	private <T> T parameterInitializedObjectForClass(final Class<?> clazz,
 			final String param, final Class<T> superClass) {
-		Constructor<?> constructor = null;
-		try {
-			constructor = clazz.getConstructor(Parameters.class);
-		} catch (final NoSuchMethodException e) {
-			throw new ParameterValidationException(fullString(param), getString(param), e);
-		}
+        Object ret;
 
-		Object ret;
-		try {
-			ret = constructor.newInstance(this);
-		} catch (final IllegalArgumentException e) {
-			throw new ParameterValidationException(fullString(param), getString(param), e);
-		} catch (final InstantiationException e) {
-			throw new ParameterValidationException(fullString(param), getString(param), e);
-		} catch (final IllegalAccessException e) {
-			throw new ParameterValidationException(fullString(param), getString(param), e);
-		} catch (final InvocationTargetException e) {
-			throw new ParameterValidationException(fullString(param), getString(param), e);
-		}
+        try {
+            ret = createViaConstructor(clazz, param);
+        } catch (NoSuchMethodException nsme) {
+            try {
+                ret = createViaStaticFactoryMethod(clazz, param);
+            } catch (NoSuchMethodException nsme2) {
+                throw new ParameterValidationException(fullString(param), getString(param),
+                        new RuntimeException(String.format("Class %s has neither fromParameters(params) "
+                            +"static factory method or constructor which takes params",
+                                clazz.getName())));
+            }
+        }
 
 		if (superClass.isInstance(ret)) {
 			return (T)ret;
@@ -427,7 +422,31 @@ public class Parameters {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+    private Object createViaConstructor(Class<?> clazz, String param) throws NoSuchMethodException {
+        try {
+            return clazz.getConstructor(Parameters.class).newInstance(this);
+        } catch (final IllegalArgumentException e) {
+            throw new ParameterValidationException(fullString(param), getString(param), e);
+        } catch (final InstantiationException e) {
+            throw new ParameterValidationException(fullString(param), getString(param), e);
+        } catch (final IllegalAccessException e) {
+            throw new ParameterValidationException(fullString(param), getString(param), e);
+        } catch (final InvocationTargetException e) {
+            throw new ParameterValidationException(fullString(param), getString(param), e);
+        }
+    }
+
+    private Object createViaStaticFactoryMethod(Class<?> clazz, String param) throws NoSuchMethodException {
+        try {
+            return clazz.getMethod("fromParameters", Parameters.class).invoke(null, this);
+        } catch (IllegalAccessException e) {
+            throw new ParameterValidationException(fullString(param), getString(param), e);
+        } catch (InvocationTargetException e) {
+            throw new ParameterValidationException(fullString(param), getString(param), e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
 	public <T,S> ImmutableList<T> getParameterInitializedObjects(
 			final String param, final Class<S> superClass)
 	{
