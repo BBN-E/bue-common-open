@@ -136,6 +136,10 @@ public final class MapUtils {
 		return Ordering.<K>natural().onResultOf(MapUtils.<K,V>getEntryKey());
 	}
 
+    public static <K,V> Ordering<Entry<K,V>> byKeyOrdering(Ordering<K> keyOrdering) {
+        return keyOrdering.onResultOf(MapUtils.<K,V>getEntryKey());
+    }
+
     /**
      * Returns a new map which is contains all the mappings in both provided maps. This
      * method will throw an exception if there is any key {@code K} such that {@code K} is a key in both
