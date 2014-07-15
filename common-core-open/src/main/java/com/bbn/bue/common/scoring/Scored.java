@@ -2,6 +2,8 @@ package com.bbn.bue.common.scoring;
 
 import com.google.common.base.Objects;
 
+import java.util.Map;
+
 
 /**
  * Represents any item with an associated score. Note that this class intentionally
@@ -14,6 +16,13 @@ import com.google.common.base.Objects;
  * @param <T>
  */
 public final class Scored<T> {
+    /**
+     * Deprecated only as public constructor. Use {@link #from(Object, double)}.
+     * @deprecated
+     * @param item
+     * @param score
+     */
+    @Deprecated
 	public Scored(final T item, final double score) {
         this.item = item;
         this.score = score;
@@ -21,6 +30,9 @@ public final class Scored<T> {
 
     public static <T> Scored<T> from(final T item, final double score) {
     	return new Scored<T>(item, score);
+    }
+    public static <T> Scored<T> fromMapEntry(Map.Entry<T, Double> entry) {
+        return new Scored<T>(entry.getKey(), entry.getValue());
     }
 
     public double score() {return score;};
