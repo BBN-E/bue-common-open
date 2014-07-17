@@ -127,7 +127,6 @@ public final class StringUtils {
 
 	/**
 	 * Returns a Function which will join the string with the specified separator
-	 * @param separator
 	 * @return
 	 */
 	public static Function<Iterable<?>,String> JoinFunction(final Joiner joiner) {
@@ -139,26 +138,26 @@ public final class StringUtils {
 		};
 	}
 
-	public static Joiner SpaceJoiner = Joiner.on(" ");
-	public static Function<Iterable<?>,String> SpaceJoin =
+	public static final Joiner SpaceJoiner = Joiner.on(" ");
+	public static final Function<Iterable<?>,String> SpaceJoin =
 			JoinFunction(SpaceJoiner);
-	public static Joiner NewlineJoiner = Joiner.on("\n");
-	public static Function<Iterable<?>,String> NewlineJoin =
+	public static final Joiner NewlineJoiner = Joiner.on("\n");
+	public static final Function<Iterable<?>,String> NewlineJoin =
 			JoinFunction(NewlineJoiner);
-	public static Joiner CommaJoiner = Joiner.on(",");
-	public static Function<Iterable<?>,String> CommaJoin =
+	public static final Joiner CommaJoiner = Joiner.on(",");
+	public static final Function<Iterable<?>,String> CommaJoin =
 			JoinFunction(CommaJoiner);
-	public static Joiner CommaSpaceJoiner = Joiner.on(", ");
-	public static Function<Iterable<?>,String> CommaSpaceJoin =
+	public static final Joiner CommaSpaceJoiner = Joiner.on(", ");
+	public static final Function<Iterable<?>,String> CommaSpaceJoin =
 			JoinFunction(CommaSpaceJoiner);
-	public static Joiner SemicolonJoiner = Joiner.on(";");
-	public static Function<Iterable<?>,String> SemicolonJoin =
+	public static final Joiner SemicolonJoiner = Joiner.on(";");
+	public static final Function<Iterable<?>,String> SemicolonJoin =
 			JoinFunction(SemicolonJoiner);
-	public static Joiner SemicolonSpaceJoiner = Joiner.on("; ");
-	public static Function<Iterable<?>,String> SemicolonSpaceJoin =
+	public static final Joiner SemicolonSpaceJoiner = Joiner.on("; ");
+	public static final Function<Iterable<?>,String> SemicolonSpaceJoin =
 			JoinFunction(SemicolonSpaceJoiner);
-	public static Joiner DotJoiner = Joiner.on(".");
-	public static Function<Iterable<?>, String> DotJoin =
+	public static final Joiner DotJoiner = Joiner.on(".");
+	public static final Function<Iterable<?>, String> DotJoin =
 			JoinFunction(DotJoiner);
 
 	/************* Splitters ********************/
@@ -185,7 +184,6 @@ public final class StringUtils {
 	/**
 	 * Returns a Function which will wrap a string in the specified wrappers
 	 * string (e.g. if the wrappers are "[", "]", it will transform "foo" to "[foo]"
-	 * @param wrapString
 	 * @return
 	 */
 	public static Function<String,String> WrapFunction(final String leftWrapper,
@@ -202,20 +200,20 @@ public final class StringUtils {
 		};
 	}
 
-	public static Function<String,String> WrapInDoubleQuotes = WrapFunction("\"","\"");
-	public static Function<String,String> WrapInSingleQuotes = WrapFunction("'","'");
-	public static Function<String,String> WrapInSquareBrackets = WrapFunction("[","]");
-	public static Function<String,String> WrapInAngleBrackets = WrapFunction("<",">");
-	public static Function<String,String> WrapInParens = WrapFunction("(",")");
+	public static final Function<String,String> WrapInDoubleQuotes = WrapFunction("\"","\"");
+	public static final Function<String,String> WrapInSingleQuotes = WrapFunction("'","'");
+	public static final Function<String,String> WrapInSquareBrackets = WrapFunction("[","]");
+	public static final Function<String,String> WrapInAngleBrackets = WrapFunction("<",">");
+	public static final Function<String,String> WrapInParens = WrapFunction("(",")");
 
-	public static Function<String, String> ToLowerCase = new Function<String, String>() {
+	public static final Function<String, String> ToLowerCase = new Function<String, String>() {
 		@Override
 		public String apply(final String s) {
 			return s.toLowerCase();
 		}
 	};
 
-	public static Predicate<String> ContainsLetterOrDigit = new Predicate<String>() {
+	public static final Predicate<String> ContainsLetterOrDigit = new Predicate<String>() {
 		@Override
 		public boolean apply(final String s) {
 			for (int i=0; i<s.length(); ++i) {
@@ -299,7 +297,7 @@ public final class StringUtils {
         return earliestIdx;
     }
 
-    public static Function<String,Integer> ToLength = new Function<String, Integer> () {
+    public static final Function<String,Integer> ToLength = new Function<String, Integer> () {
         @Override
         public Integer apply(String input) {
             checkNotNull(input);
