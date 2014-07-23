@@ -66,8 +66,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  */
 @Beta
-public class Parameters {
-	public static String DO_OS_CONVERSION_PARAM = "os_filepath_conversion";
+public final class Parameters {
+	public static final String DO_OS_CONVERSION_PARAM = "os_filepath_conversion";
 
 	/**
 	 * Constructs a Parameters object from a <code>Map</code>.  The Map may contain neither

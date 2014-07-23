@@ -177,8 +177,6 @@ public final class IterableUtils {
 	 * An iterable for iteration of many Iterables paired up with zip.
 	 * @author rgabbard
 	 *
-	 * @param <X>
-	 * @param <Y>
 	 */
 	public static final class MultiZipIterable<T> implements Iterable<List<T>> {
 		private MultiZipIterable(final Iterable<? extends Iterable<? extends T>> iterables) {
@@ -251,28 +249,28 @@ public final class IterableUtils {
 		return b;
     }
 
-	public static Function2<Number,Number> SumReducer = new Function2<Number, Number> () {
+	public static final Function2<Number,Number> SumReducer = new Function2<Number, Number> () {
 		@Override
 		public Number apply(final Number a, final Number b) {
 			return a.doubleValue() + b.doubleValue();
 		}
 	};
 
-	public static Function2<Integer,Integer> SumReducerInt = new Function2<Integer, Integer> () {
+	public static final Function2<Integer,Integer> SumReducerInt = new Function2<Integer, Integer> () {
 		@Override
 		public Integer apply(final Integer a, final Integer b) {
 			return a + b;
 		}
 	};
 
-	public static Function<Iterable<Number>,Number> Sum = new Function<Iterable<Number>,Number>() {
+	public static final Function<Iterable<Number>,Number> Sum = new Function<Iterable<Number>,Number>() {
 		@Override
 		public Number apply(final Iterable<Number> it) {
 			return reduce(it,0,SumReducer);
 		}
 	};
 
-	public static Function<Iterable<Integer>,Integer> IntSum = new Function<Iterable<Integer>,Integer>() {
+	public static final Function<Iterable<Integer>,Integer> IntSum = new Function<Iterable<Integer>,Integer>() {
 		@Override
 		public Integer apply(final Iterable<Integer> it) {
 			return reduce(it,0,SumReducerInt);
