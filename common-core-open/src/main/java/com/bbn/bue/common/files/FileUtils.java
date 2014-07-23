@@ -1,27 +1,5 @@
 package com.bbn.bue.common.files;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.RandomAccessFile;
-import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
-
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.symbols.Symbol;
@@ -30,12 +8,17 @@ import com.google.common.collect.*;
 import com.google.common.io.*;
 import com.google.common.primitives.Ints;
 
-import static com.bbn.bue.common.collections.MapUtils.copyWithKeysTransformedByInjection;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.skip;
-import static com.google.common.collect.Iterables.transform;
 
 public final class FileUtils {
 
@@ -359,14 +342,13 @@ public final class FileUtils {
      * trimmed off.
      * Skips empty lines and allows comment-lines with {@code #} in the first position.
      * If a key has no values, it will not show up in the keySet of the returned multimap.
-     * @param multimapFile
      * @return
      */
-    public static ImmutableMultimap<String,String> loadStringMultimap(File multimapFile) throws IOException {
+    public static ImmutableMultimap<String,String> loadStringMultimap(CharSource multimapSource) throws IOException {
         final ImmutableMultimap.Builder<String, String> ret = ImmutableMultimap.builder();
 
         int count = 0;
-        for (final String line : Files.asCharSource(multimapFile, Charsets.UTF_8).readLines()) {
+        for (final String line : multimapSource.readLines()) {
             ++count;
             if (line.startsWith("#")) {
                 continue;
@@ -382,17 +364,39 @@ public final class FileUtils {
     }
 
     /**
+     * Deprecated in favor of version with {@link com.google.common.io.CharSource} argument.
+     * @param multimapFile
+     * @return
+     * @throws IOException
+     * @deprecated
+     */
+    @Deprecated
+    public static ImmutableMultimap<String,String> loadStringMultimap(File multimapFile) throws IOException {
+        return loadStringMultimap(Files.asCharSource(multimapFile, Charsets.UTF_8));
+    }
+
+    /**
+     * Deprecated in favor of the CharSource version to force the user to define their encoding.
+     * If you call this, it will use UTF_8 encoding.
+     * @return
+     * @deprecated
+     */
+    @Deprecated
+    public static ImmutableMultimap<Symbol,Symbol> loadSymbolMultimap(File multimapFile) throws IOException {
+        return loadSymbolMultimap(Files.asCharSource(multimapFile, Charsets.UTF_8));
+    }
+
+    /**
      * Loads a file in the format {@code key value1 value2 value3} (tab-separated)
      * into a {@link com.google.common.collect.Multimap} of {@link com.bbn.bue.common.symbols.Symbol} to Symbol.
      * Each key should only appear on one line, and there should be no duplicate values. Each key and value has whitespace
      * trimmed off.
      * Skips empty lines and allows comment-lines with {@code #} in the first position.
      * If a key has no values, it will not show up in the keySet of the returned multimap.
-     * @param multimapFile
      * @return
      */
-    public static ImmutableMultimap<Symbol,Symbol> loadSymbolMultimap(File multimapFile) throws IOException {
-        final ImmutableMultimap<String, String> stringMM = loadStringMultimap(multimapFile);
+    public static ImmutableMultimap<Symbol, Symbol> loadSymbolMultimap(CharSource multimapSource) throws IOException {
+        final ImmutableMultimap<String, String> stringMM = loadStringMultimap(multimapSource);
         final ImmutableMultimap.Builder<Symbol, Symbol> ret = ImmutableMultimap.builder();
 
         for (final Map.Entry<String, Collection<String>> entry : stringMM.asMap().entrySet()) {
