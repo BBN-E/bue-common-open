@@ -18,7 +18,7 @@ public final class DoubleUtils {
 		return ret;
 	}
 
-	public static Predicate<Double> IsFinite = new Predicate<Double>() {
+	public static final Predicate<Double> IsFinite = new Predicate<Double>() {
 		@Override
 		public boolean apply(final Double x) {
 			return Doubles.isFinite(x);
@@ -194,6 +194,12 @@ public final class DoubleUtils {
 		return Math.abs(value - Math.round(value)) <= tolerance;
 	}
 
+    /**
+     * Returns true if the two provided values are within {@code tolerance} of one another.
+     */
+    public static boolean withinEpsilonOf(final double value1, final double value2, final double tolerance) {
+        return Math.abs(value1-value2) < tolerance;
+    }
 
 	/**
 	 * Sums an iterable of non-null {@code Doubles}.
