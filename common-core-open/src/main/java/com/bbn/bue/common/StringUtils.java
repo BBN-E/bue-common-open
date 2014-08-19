@@ -1,22 +1,19 @@
 package com.bbn.bue.common;
+import com.bbn.bue.common.strings.offsets.CharOffset;
+import com.bbn.bue.common.strings.offsets.OffsetRange;
+import com.google.common.annotations.Beta;
+import com.google.common.base.*;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.io.CharSource;
+import com.google.common.io.Files;
+import com.google.common.io.LineProcessor;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.annotations.Beta;
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.CharSource;
-import com.google.common.io.Files;
-import com.google.common.io.LineProcessor;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -304,4 +301,8 @@ public final class StringUtils {
             return input.length();
         }
     };
+
+    public static String substring(String s, OffsetRange<CharOffset> substringBounds) {
+        return s.substring(substringBounds.startInclusive().value(), substringBounds.endInclusive().value()+1);
+    }
 }
