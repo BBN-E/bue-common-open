@@ -135,4 +135,30 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
             }
         };
     }
+
+    /**
+     * Returns this range with its start and end positions clipped to fit within {@code bounds}.
+     * If this does not intersect {@code bounds}, returns {@link com.google.common.base.Optional#absent()} .
+     */
+    public Optional<OffsetRange<OffsetType>> clipToBounds(OffsetRange<OffsetType> bounds) {
+        if (bounds.contains(this)) {
+            return Optional.of(this);
+        }
+        if (!bounds.overlaps(this)) {
+            return Optional.absent();
+        }
+        final OffsetType newLowerBound;
+        final OffsetType newUpperBound;
+        if (bounds.startInclusive().asInt()>startInclusive().asInt()) {
+            newLowerBound = bounds.startInclusive();
+        } else {
+            newLowerBound = startInclusive();
+        }
+        if (bounds.endInclusive().asInt() < endInclusive().asInt()) {
+            newUpperBound = bounds.endInclusive();
+        } else {
+            newUpperBound = endInclusive();
+        }
+        return Optional.of(OffsetRange.fromInclusiveEndpoints(newLowerBound, newUpperBound));
+    }
 }

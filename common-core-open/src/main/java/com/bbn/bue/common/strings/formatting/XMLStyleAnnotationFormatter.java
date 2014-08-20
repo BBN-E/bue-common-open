@@ -5,6 +5,7 @@ import com.bbn.bue.common.strings.offsets.AnnotatedOffsetRange;
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
 import java.util.Iterator;
@@ -31,13 +32,15 @@ public final class XMLStyleAnnotationFormatter {
 	public String format(String s, final OffsetRange<CharOffset> snippetBounds,
                          final Iterable<AnnotatedOffsetRange<CharOffset>> annotations)
     {
+        final ImmutableList<AnnotatedOffsetRange<CharOffset>> clippedToSnippet =
+                clipToSnippet(snippetBounds, annotations);
         final String snippet = StringUtils.substring(s, snippetBounds);
         final int snippetStartChar = snippetBounds.startInclusive().asInt();
 
         final StringBuilder result = new StringBuilder();
         int lastUncopiedIdx = 0;
 
-        for (TagCursor tagCursor : new TagCursor(annotations)) {
+        for (TagCursor tagCursor : new TagCursor(clippedToSnippet)) {
             final int tagOffset = tagCursor.offset()-snippetStartChar;
 
             if (tagCursor.tagType == TagCursor.Type.Start && lastUncopiedIdx < tagOffset) {
@@ -57,6 +60,30 @@ public final class XMLStyleAnnotationFormatter {
         }
 
         return result.toString();
+    }
+
+    private ImmutableList<AnnotatedOffsetRange<CharOffset>> clipToSnippet(
+            OffsetRange<CharOffset> snippet,
+            Iterable<AnnotatedOffsetRange<CharOffset>> annotations)
+    {
+        final ImmutableList.Builder<AnnotatedOffsetRange<CharOffset>> ret = ImmutableList.builder();
+
+        for (final AnnotatedOffsetRange<CharOffset> annotation : annotations) {
+            final Optional<OffsetRange<CharOffset>> clippedBounds = annotation.range().clipToBounds(snippet);
+            if (clippedBounds.isPresent()) {
+                if (clippedBounds.get().equals(annotation.range())) {
+                    ret.add(annotation);
+                } else {
+                    ret.add(AnnotatedOffsetRange.create(annotation.type(),
+                            clippedBounds.get(), annotation.attributes()));
+                }
+            } else {
+                // if an annotation doesn't intersect the snippet, we don't care about it
+                // because it won't be visible
+            }
+        }
+
+        return ret.build();
     }
 
     private static class TagCursor implements Iterable<TagCursor> {
