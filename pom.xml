@@ -43,7 +43,7 @@
           <version>${maven.javadoc.plugin.version}</version>
           <configuration>
             <show>package</show>
-            <quite>true</quite>
+            <quiet>true</quiet>
             <linksource>true</linksource>
             <links>
               <link>http://docs.guava-libraries.googlecode.com/git-history/v${guava.version}/javadoc/</link>
@@ -163,7 +163,7 @@
         <version>${maven.javadoc.plugin.version}</version>
         <configuration>
           <show>package</show>
-          <quite>true</quite>
+          <quiet>true</quiet>
           <linksource>true</linksource>
           <links>
             <link>http://docs.guava-libraries.googlecode.com/git-history/v${guava.version}/javadoc/</link>
