@@ -161,4 +161,8 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
         }
         return Optional.of(OffsetRange.fromInclusiveEndpoints(newLowerBound, newUpperBound));
     }
+
+    public String toString() {
+        return "[" + startInclusive().toString() + "-" + endInclusive().toString() + "]";
+    }
 }

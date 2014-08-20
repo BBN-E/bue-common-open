@@ -53,4 +53,9 @@ public final class AnnotatedOffsetRange<OffsetType extends Offset & Comparable<O
             }
         };
     }
+
+    public String toString() {
+        final String attributesString = attributes().isEmpty()?"":(" " + attributes().toString());
+        return "[" + type.toString() + ": " + range().toString() + attributesString +"]";
+    }
 }
