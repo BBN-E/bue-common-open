@@ -126,7 +126,7 @@ public final class StringUtils {
 	 * Returns a Function which will join the string with the specified separator
 	 * @return
 	 */
-	public static Function<Iterable<?>,String> JoinFunction(final Joiner joiner) {
+	public static final Function<Iterable<?>,String> JoinFunction(final Joiner joiner) {
 		return new Function<Iterable<?>,String> () {
 			@Override
 			public String apply(final Iterable<?> list) {
@@ -229,7 +229,7 @@ public final class StringUtils {
 		}
 	};
 
-	public static Function<String, String> PrefixWith(final String prefix) {
+	public static final Function<String, String> PrefixWith(final String prefix) {
 		return new Function<String, String> () {
 			@Override
 			public String apply(final String s) {
@@ -238,7 +238,7 @@ public final class StringUtils {
 		};
 	}
 
-	public static Predicate<String> startsWith(final String prefix) {
+	public static final Predicate<String> startsWith(final String prefix) {
 		return new Predicate<String>() {
 			@Override
 			public boolean apply(final String x) {
@@ -247,7 +247,7 @@ public final class StringUtils {
 		};
 	}
 
-	public static String removeSuffixIfPresent(final String name, final String badSuffix) {
+	public static final String removeSuffixIfPresent(final String name, final String badSuffix) {
 		if (name.endsWith(badSuffix)) {
 			return name.substring(0, name.length()-badSuffix.length());
 		} else {
@@ -255,7 +255,7 @@ public final class StringUtils {
 		}
 	}
 
-    public static Predicate<String> Contains(final String probe) {
+    public static final Predicate<String> Contains(final String probe) {
         checkNotNull(probe);
         return new Predicate<String>() {
             @Override
