@@ -7,8 +7,6 @@ import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 public final class MultimapUtils {
     private MultimapUtils() {
         throw new UnsupportedOperationException();

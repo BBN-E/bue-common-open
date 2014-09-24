@@ -1,17 +1,12 @@
 package com.bbn.bue.common.collections;
 
-import java.util.Iterator;
-import java.util.List;
-
-import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.UnmodifiableIterator;
+import com.google.common.collect.*;
+
+import java.util.Iterator;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -282,8 +277,6 @@ public final class IterableUtils {
 	 * position in the Iterable's sequence.  If an item occurs twice, an IllegalArgumentException
 	 * will be thrown.
 	 *
-	 * @param sequence
-	 * @return
 	 */
 	public static <T> ImmutableMap<T, Integer> itemToIndexMap(final Iterable<T> sequence)
 	{
@@ -297,6 +290,22 @@ public final class IterableUtils {
 
 		return ret.build();
 	}
+
+    /**
+     * Transforms an Iterable<T> to a Map<T, Integer> where each item is mapped to its zero-indexed
+     * position(s) in the Iterable's sequence.
+     *
+     */
+    public static <T> ImmutableMultimap<T, Integer> itemToIndexMultimap(
+            Iterable<T> iterable)
+    {
+        final ImmutableMultimap.Builder ret = ImmutableMultimap.builder();
+        int idx = 0;
+        for (final T x : iterable) {
+            ret.put(x, idx++);
+        }
+        return ret.build();
+    }
 
 	/**
 	 * Given a paired sequence of Iterables, produce a map with keys from
