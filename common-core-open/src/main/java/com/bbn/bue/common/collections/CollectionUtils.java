@@ -126,13 +126,22 @@ public final class CollectionUtils {
 
     /**
      * Guava function to map a collection to its size.
+     * Prefer {@link #sizeFunction()}.
+     * @deprecated
      */
-    public static  Function<Collection<?>, Integer> Size = new Function<Collection<?>, Integer>() {
+    public static final Function<Collection<?>, Integer> Size = new Function<Collection<?>, Integer>() {
         @Override
         public Integer apply(Collection<?> input) {
             return input.size();
         }
     };
+
+    /**
+     * Guava function to map a collection to its size.
+     */
+    public static final Function<Collection<?>, Integer> sizeFunction() {
+        return Size;
+    }
 
     /**
      * Like {@link Collections#max(java.util.Collection)} except with a default value returned in the
