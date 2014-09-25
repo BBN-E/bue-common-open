@@ -1,16 +1,17 @@
 package com.bbn.bue.common.scoring;
 
-import java.util.Comparator;
-import java.util.Map;
-
 import com.bbn.bue.common.primitives.DoubleUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.*;
-import com.google.common.primitives.Doubles;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+
+import java.util.Map;
 
 public final class Scoreds {
-	public Scoreds() { throw new UnsupportedOperationException(); }
+	private Scoreds() { throw new UnsupportedOperationException(); }
 
     /**
      * Returns a function which maps a scored item to the item itself.
