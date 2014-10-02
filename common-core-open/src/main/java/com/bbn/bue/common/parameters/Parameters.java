@@ -1,53 +1,21 @@
 package com.bbn.bue.common.parameters;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
+import com.bbn.bue.common.StringUtils;
+import com.bbn.bue.common.converters.*;
+import com.bbn.bue.common.parameters.exceptions.*;
+import com.bbn.bue.common.parameters.serifstyle.SerifStyleParameterFileLoader;
+import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.validators.*;
+import com.google.common.annotations.Beta;
+import com.google.common.base.Optional;
+import com.google.common.collect.*;
+
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.bbn.bue.common.StringUtils;
-import com.bbn.bue.common.converters.StrictStringToBoolean;
-import com.bbn.bue.common.converters.StringConverter;
-import com.bbn.bue.common.converters.StringToDouble;
-import com.bbn.bue.common.converters.StringToEnum;
-import com.bbn.bue.common.converters.StringToFile;
-import com.bbn.bue.common.converters.StringToInteger;
-import com.bbn.bue.common.converters.StringToOSFile;
-import com.bbn.bue.common.converters.StringToStringList;
-import com.bbn.bue.common.converters.StringToStringSet;
-import com.bbn.bue.common.converters.StringToSymbolList;
-import com.bbn.bue.common.converters.StringToSymbolSet;
-import com.bbn.bue.common.parameters.exceptions.InvalidEnumeratedPropertyException;
-import com.bbn.bue.common.parameters.exceptions.MissingRequiredParameter;
-import com.bbn.bue.common.parameters.exceptions.ParameterConversionException;
-import com.bbn.bue.common.parameters.exceptions.ParameterException;
-import com.bbn.bue.common.parameters.exceptions.ParameterValidationException;
-import com.bbn.bue.common.parameters.serifstyle.SerifStyleParameterFileLoader;
-import com.bbn.bue.common.symbols.Symbol;
-import com.bbn.bue.common.validators.AlwaysValid;
-import com.bbn.bue.common.validators.And;
-import com.bbn.bue.common.validators.FileExists;
-import com.bbn.bue.common.validators.IsDirectory;
-import com.bbn.bue.common.validators.IsFile;
-import com.bbn.bue.common.validators.IsInRange;
-import com.bbn.bue.common.validators.IsNonNegative;
-import com.bbn.bue.common.validators.IsPositive;
-import com.bbn.bue.common.validators.ValidationException;
-import com.bbn.bue.common.validators.Validator;
-import com.google.common.annotations.Beta;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -499,8 +467,18 @@ public final class Parameters {
 			return Optional.absent();
 		}
 	}
-	
-	/**
+
+    public Optional<String> getOptionalString(final String param) {
+        if(isPresent(param)) {
+            return Optional.of(getString(param));
+        }
+        else {
+            return Optional.absent();
+        }
+    }
+
+
+    /**
 	 * Gets an integer parameter.
 	 */
 	public int getInteger(final String param) {
