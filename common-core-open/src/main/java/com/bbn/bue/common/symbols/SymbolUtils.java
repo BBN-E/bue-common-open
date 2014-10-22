@@ -1,12 +1,12 @@
 package com.bbn.bue.common.symbols;
 
-import java.util.Comparator;
-
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import java.util.Comparator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -18,7 +18,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Beta
 public class SymbolUtils {
 	private SymbolUtils() { throw new UnsupportedOperationException(); }
-	/**
+
+  /**
 	 * Compares <code>Symbol</code>s by the <code>String</code>s used to create them.
 	 * @author rgabbard
 	 *
@@ -93,4 +94,12 @@ public class SymbolUtils {
 		}
 		return ret.build();
 	}
+
+  /**
+   * Returns a lowercased version of the specified symbol, where lowercasing is done by
+   * {@link String#toLowerCase()}.
+   */
+  public static Symbol lowercaseSymbol(Symbol s) {
+    return Symbol.from(s.toString().toLowerCase());
+  }
 }
