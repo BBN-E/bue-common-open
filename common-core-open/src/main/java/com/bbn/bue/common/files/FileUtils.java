@@ -1,14 +1,49 @@
 package com.bbn.bue.common.files;
 
-import com.bbn.bue.common.StringUtils;
-import com.bbn.bue.common.collections.MapUtils;
-import com.bbn.bue.common.symbols.Symbol;
-import com.google.common.base.*;
-import com.google.common.collect.*;
-import com.google.common.io.*;
+import com.google.common.base.Charsets;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.io.ByteSink;
+import com.google.common.io.ByteSource;
+import com.google.common.io.CharSink;
+import com.google.common.io.CharSource;
+import com.google.common.io.Closeables;
+import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 
-import java.io.*;
+import com.bbn.bue.common.StringUtils;
+import com.bbn.bue.common.collections.MapUtils;
+import com.bbn.bue.common.io.GZIPByteSource;
+import com.bbn.bue.common.symbols.Symbol;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,25 +62,55 @@ public final class FileUtils {
 	/**
 	 * Takes a file with filenames listed one per line and returns a list of
 	 * the corresponding File objects.  Ignores blank lines and lines with a
-	 * "#" in the first column position.
+	 * "#" in the first column position. Treats the file as UTF-8 encoded.
 	 *
 	 * @param fileList
 	 * @return
 	 * @throws IOException
 	 */
-	public static List<File> loadFileList(final File fileList) throws IOException {
-		final List<File> ret = Lists.newArrayList();
+	public static ImmutableList<File> loadFileList(final File fileList) throws IOException {
+          return loadFileList(Files.asCharSource(fileList, Charsets.UTF_8));
+        }
 
-		for (final String filename : Files.readLines(fileList, Charsets.UTF_8)) {
+  /**
+   * Takes a {@link com.google.common.io.CharSource} with filenames listed one per line and returns a list of
+   * the corresponding File objects.  Ignores blank lines and lines with a
+   * "#" in the first column position.
+   *
+   */
+        public static ImmutableList<File> loadFileList(final CharSource source) throws IOException {
+		final ImmutableList.Builder<File> ret = ImmutableList.builder();
+
+		for (final String filename : source.readLines()) {
 			if (!filename.isEmpty() && !filename.startsWith("#")) {
 				ret.add(new File(filename.trim()));
 			}
 		}
 
-		return ret;
+		return ret.build();
 	}
 
-    /**
+  /**
+   * Like {@link #loadFileList(java.io.File)}, except if the file name ends in ".gz" or ".tgz"
+   * it is treated as GZIP compressed. This is often convenient for loading e.g. document lists
+   * which benefit from being compressed for large corpora.
+   *
+   * @param fileList
+   * @return
+   * @throws IOException
+   */
+  public static ImmutableList<File> loadPossiblyCompressedFileList(File fileList)
+      throws IOException {
+    final CharSource source;
+    if (fileList.getName().endsWith(".gz") || fileList.getName().endsWith(".tgz")) {
+      source = GZIPByteSource.fromCompressed(fileList).asCharSource(Charsets.UTF_8);
+    } else {
+      source = Files.asCharSource(fileList, Charsets.UTF_8);
+    }
+    return loadFileList(source);
+  }
+
+  /**
      * Takes a file with relative pathnames listed one per line and returns a list of
      * the corresponding {@link java.io.File} objects, resolved against the provided
      * base path using the {@link java.io.File#File(java.io.File, String)} constructor.
@@ -445,4 +510,5 @@ public final class FileUtils {
             return Files.asCharSource(f, Charsets.UTF_8);
         }
     };
+
 }
