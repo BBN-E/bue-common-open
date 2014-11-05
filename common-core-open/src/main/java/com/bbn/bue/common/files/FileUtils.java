@@ -511,4 +511,13 @@ public final class FileUtils {
         }
     };
 
+    /**
+     * Throws an {@link java.io.IOException} if the supplied directory either
+     * does not exist or is not a directory.
+     */
+    public static void assertDirectoryExists(File directory) throws IOException {
+        if (!directory.isDirectory()) {
+            throw new IOException(directory + " does not exist or is not a directory");
+        }
+    }
 }
