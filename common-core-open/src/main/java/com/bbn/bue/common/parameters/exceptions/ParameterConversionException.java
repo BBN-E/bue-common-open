@@ -8,5 +8,12 @@ public class ParameterConversionException extends ParameterException {
 				param, value, expectation), cause);
 	}
 
+    public ParameterConversionException(String param, String value,
+                                        String expectation)
+    {
+        super(String.format("For parameter %s, expected %s but got string of wrong type %s.",
+                param, value, expectation));
+    }
+
 	private static final long serialVersionUID = 1L;	
 }
