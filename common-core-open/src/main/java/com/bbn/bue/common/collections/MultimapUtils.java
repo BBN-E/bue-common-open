@@ -1,5 +1,6 @@
 package com.bbn.bue.common.collections;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -27,12 +28,31 @@ public final class MultimapUtils {
      * @param <V>
      * @return
      */
-    public static <K,V> Map<K, V> copyAsMap(Multimap<K,V> multimap) {
+    public static <K,V> ImmutableMap<K, V> copyAsMap(Multimap<K,V> multimap) {
         final Map<K, Collection<V>> inputAsMap = multimap.asMap();
         final ImmutableMap.Builder<K,V> ret = ImmutableMap.builder();
 
         for (final Map.Entry<K, Collection<V>> mapping : inputAsMap.entrySet()) {
             ret.put(mapping.getKey(), Iterables.getOnlyElement(mapping.getValue()));
+        }
+
+        return ret.build();
+    }
+
+    /**
+     * Converts a {@link com.google.common.collect.Multimap} to a {@link java.util.Map} by
+     * selecting a single value for each key and discarding the others, with the selection
+     * procedure being defined by {@code reducerFunction}, which may not return {@code null}.
+     * Additionally, {@code multimap} may not have {@code null} keys.
+     *
+     */
+    public static <K,V> ImmutableMap<K, V> reduceToMap(Multimap<K,V> multimap,
+           Function<? super Collection<V>, ? extends V> reducerFunction)
+    {
+        final ImmutableMap.Builder<K, V> ret = ImmutableMap.builder();
+
+        for (final Map.Entry<K, Collection<V>> entry : multimap.asMap().entrySet()) {
+            ret.put(entry.getKey(), reducerFunction.apply(entry.getValue()));
         }
 
         return ret.build();
