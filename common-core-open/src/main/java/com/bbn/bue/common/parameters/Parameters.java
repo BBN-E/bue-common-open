@@ -244,7 +244,7 @@ public final class Parameters {
 		return ret;
 	}
 
-	/**
+    /**
 	 * Gets the parameter string *list* for the key <code>param</code>, then runs each element
 	 * throught the converter and checks it with the validator.
 	 * @param expectation What we expected to see, for produceing error messages.  e.g. "integer" or "comma-separated list of strings"
@@ -450,7 +450,6 @@ public final class Parameters {
 		return ret.build();
 	}
 
-
 	/**
 	 * Gets a "true/false" parameter.
 	 */
@@ -634,6 +633,28 @@ public final class Parameters {
 			"existing directory");
 	}
 
+    /**
+     * Gets a (possibly empty) list of existing directories.
+     * Will throw a {@link com.bbn.bue.common.parameters.exceptions.ParameterValidationException}
+     * if any of the supplied paths are not existing directories.
+     */
+    public ImmutableList<File> getExistingDirectories(String param) {
+        final List<String> fileStrings = getStringList(param);
+        final ImmutableList.Builder<File> ret = ImmutableList.builder();
+
+        for (final String dirName : fileStrings) {
+            final File dir = new File(dirName.trim());
+            if (!dir.isDirectory()) {
+                throw new ParameterValidationException(fullString(param), dirName,
+                        "path does not exist or is not a directory");
+            }
+            ret.add(dir);
+        }
+
+        return ret.build();
+    }
+
+
     public Optional<File> getOptionalExistingDirectory(final String param) {
         if (isPresent(param)) {
             return Optional.of(getExistingDirectory(param));
@@ -785,4 +806,5 @@ public final class Parameters {
 
 	private final Map<String, String> params;
 	private final List<String> namespace;
+
 }
