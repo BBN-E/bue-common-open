@@ -305,4 +305,17 @@ public final class StringUtils {
     public static String substring(String s, OffsetRange<CharOffset> substringBounds) {
         return s.substring(substringBounds.startInclusive().value(), substringBounds.endInclusive().value()+1);
     }
+
+    /**
+     * Acts just like {@link String#substring(int, int)} except that if either index is
+     * out-of-bounds, it is clipped to the most extreme legal value.  This guarantees
+     * that as long as {@code s} is non-null and {@code endIndexExclusive>=startIndexInclusive},
+     * no exception will be thrown when calling this method.
+     *
+     */
+    public static String safeSubstring(String s, int startIndexInclusive, int endIndexExclusive) {
+    final int trueStartIndex = Math.max(0, startIndexInclusive);
+    final int trueEndIndex = Math.min(endIndexExclusive, s.length());
+    return s.substring(trueStartIndex, trueEndIndex);
+}
 }
