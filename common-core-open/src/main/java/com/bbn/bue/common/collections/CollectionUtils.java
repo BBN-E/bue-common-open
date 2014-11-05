@@ -174,4 +174,17 @@ public final class CollectionUtils {
             return Collections.min(values);
         }
     }
+
+    /**
+     * Provides a {@link com.google.common.base.Function} which will create a set
+     * containing the same elements as the supplied collection.
+     */
+public static <T> Function<Collection<T>, ImmutableSet<T>> asSetFunction() {
+    return new Function<Collection<T>, ImmutableSet<T>>() {
+        @Override
+        public ImmutableSet<T> apply(Collection<T> input) {
+            return ImmutableSet.copyOf(input);
+        }
+    };
+}
 }
