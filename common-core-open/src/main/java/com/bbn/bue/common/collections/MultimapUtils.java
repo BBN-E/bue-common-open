@@ -28,7 +28,7 @@ public final class MultimapUtils {
      * @param <V>
      * @return
      */
-    public static <K,V> ImmutableMap<K, V> copyAsMap(Multimap<K,V> multimap) {
+    public static <K,V> Map<K, V> copyAsMap(Multimap<K,V> multimap) {
         final Map<K, Collection<V>> inputAsMap = multimap.asMap();
         final ImmutableMap.Builder<K,V> ret = ImmutableMap.builder();
 
