@@ -60,13 +60,6 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
         return Objects.equal(this.startInclusive, other.startInclusive) && Objects.equal(this.endInclusive, other.endInclusive);
     }
 
-    private static final Ordering<OffsetRange> ByLength = new Ordering<OffsetRange>() {
-        @Override
-        public int compare(final OffsetRange left, final OffsetRange right) {
-            return Ints.compare(left.length(), right.length());
-        }
-    };
-
     public static final <T extends Offset & Comparable<T>> Ordering<OffsetRange<T>> byLengthOrdering() {
         return new Ordering<OffsetRange<T>>() {
             @Override
