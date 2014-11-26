@@ -16,7 +16,7 @@ import com.google.common.collect.Sets;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class B3Scorer<T> {
-	public enum B3Method { ByCluster, ByElement };
+	public enum B3Method { ByCluster, ByElement }
 
     private B3Scorer(final Equivalence<T> equivalence, final B3Method method) {
     	this.equivalence = checkNotNull(equivalence);
