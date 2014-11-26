@@ -1,12 +1,14 @@
 package com.bbn.bue.common.parameters.exceptions;
 
 import java.io.File;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Stack;
 
 public class ErrorInIncludedParameterFileException extends ParameterFileException {
 	private static final long serialVersionUID = 1L;
 	
-	private ErrorInIncludedParameterFileException(Stack<ErrorInIncludedParameterFileException.ErrorLocation> includeStack, 
+	private ErrorInIncludedParameterFileException(Deque<ErrorLocation> includeStack,
 			Exception rootCause)
 	{
 		super(makeMessage(includeStack, rootCause));
@@ -17,7 +19,7 @@ public class ErrorInIncludedParameterFileException extends ParameterFileExceptio
 	public static ErrorInIncludedParameterFileException fromException(final File filename, final int lineNumber, 
 		Exception rootCause) 
 	{
-		Stack<ErrorInIncludedParameterFileException.ErrorLocation> includeStack = new Stack<ErrorInIncludedParameterFileException.ErrorLocation>();
+		final Deque<ErrorInIncludedParameterFileException.ErrorLocation> includeStack = new ArrayDeque<ErrorLocation>();
 		includeStack.push(new ErrorLocation(filename, lineNumber));
 		return new ErrorInIncludedParameterFileException(includeStack, rootCause);
 	}
@@ -25,18 +27,18 @@ public class ErrorInIncludedParameterFileException extends ParameterFileExceptio
 	public static ErrorInIncludedParameterFileException fromNextLevel(final File filename, final int lineNumber,
 		ErrorInIncludedParameterFileException nextLevel) 
 	{
-		final Stack<ErrorInIncludedParameterFileException.ErrorLocation> includeStack = new Stack<ErrorInIncludedParameterFileException.ErrorLocation>();
+		final Deque<ErrorInIncludedParameterFileException.ErrorLocation> includeStack = new ArrayDeque<ErrorLocation>();
 		includeStack.addAll(nextLevel.includeStack);
 		includeStack.push(new ErrorLocation(filename, lineNumber));
 		return new ErrorInIncludedParameterFileException(includeStack, nextLevel.rootCause);
 	}
 	
-	private static String makeMessage(Stack<ErrorInIncludedParameterFileException.ErrorLocation> includeStack, 
+	private static String makeMessage(Deque<ErrorLocation> includeStack,
 			Exception rootCause) 
 	{
 		final StringBuilder ret = new StringBuilder();
 		
-		while(!includeStack.empty()) {
+		while(!includeStack.isEmpty()) {
 			final ErrorInIncludedParameterFileException.ErrorLocation errorLocation = includeStack.pop();
 			ret.append(String.format("Included from %s:%d\n", 
 				errorLocation.file.getAbsolutePath(), errorLocation.lineNumber));
@@ -57,5 +59,5 @@ public class ErrorInIncludedParameterFileException extends ParameterFileExceptio
 	}
 	
 	final Exception rootCause;
-	final Stack<ErrorInIncludedParameterFileException.ErrorLocation> includeStack;
+	final Deque<ErrorLocation> includeStack;
 }
