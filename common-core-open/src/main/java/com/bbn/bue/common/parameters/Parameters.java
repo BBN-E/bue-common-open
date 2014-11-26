@@ -461,8 +461,7 @@ public final class Parameters {
 	public Optional<Boolean> getOptionalBoolean(final String param) {
 		if(isPresent(param)) {
 			return Optional.of(getBoolean(param));
-		}
-		else {
+		} else {
 			return Optional.absent();
 		}
 	}
@@ -470,8 +469,7 @@ public final class Parameters {
     public Optional<String> getOptionalString(final String param) {
         if(isPresent(param)) {
             return Optional.of(getString(param));
-        }
-        else {
+        } else {
             return Optional.absent();
         }
     }
