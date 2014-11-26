@@ -256,7 +256,7 @@ public final class FileUtils {
 	 * useful when you are writing a long binary file with a size header, but
 	 * don't know how many elements are there until the end.
 	 */
-	public static  void writeIntegerToStart(final File f, final int num) throws FileNotFoundException, IOException {
+	public static  void writeIntegerToStart(final File f, final int num) throws IOException {
 		final RandomAccessFile fixupFile = new RandomAccessFile(f, "rw");
 		fixupFile.writeInt(num);
 		fixupFile.close();
