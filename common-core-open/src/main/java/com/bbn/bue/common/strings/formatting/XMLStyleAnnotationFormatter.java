@@ -90,7 +90,7 @@ public final class XMLStyleAnnotationFormatter {
         private AnnotatedOffsetRange<CharOffset> offsetSpan;
         private Type tagType;
 
-        public enum Type { Start, End};
+        public enum Type { Start, End}
 
         public TagCursor(Iterable<AnnotatedOffsetRange<CharOffset>> annotations) {
             tagsInStartingOrder = startTagOrder.sortedCopy(annotations);

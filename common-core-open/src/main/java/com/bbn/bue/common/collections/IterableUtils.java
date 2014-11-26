@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class IterableUtils {
-	private IterableUtils() {};
+	private IterableUtils() {}
 
 	/**
 	 * Promotes a predicate over T to a predicate over Iterable<T>
@@ -137,7 +137,7 @@ public final class IterableUtils {
 		public Y second() { return second; }
 
 		@Override
-		public String toString() { return String.format("(%s,%s)", first, second);};
+		public String toString() { return String.format("(%s,%s)", first, second);}
 
 		@Override
 		public int hashCode() {
@@ -337,6 +337,7 @@ public final class IterableUtils {
 	 * Prefer allEqual, whose name is less ambiguous between equality and identity
 	 * @param iterable
 	 * @return
+     * @deprecated
 	 */
 	@Deprecated
 	public static <T> boolean allTheSame(final Iterable<T> iterable) {

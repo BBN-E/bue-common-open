@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public abstract class SymbolMixin {
 	@JsonCreator
-	public static synchronized Symbol from(@JsonProperty("string") final String string) {return null;};
+	public static synchronized Symbol from(@JsonProperty("string") final String string) {return null;}
 	@Override
 	public abstract @JsonProperty("string") String toString();
 }

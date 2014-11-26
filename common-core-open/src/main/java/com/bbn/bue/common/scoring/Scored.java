@@ -35,8 +35,8 @@ public final class Scored<T> {
         return new Scored<T>(entry.getKey(), entry.getValue());
     }
 
-    public double score() {return score;};
-    public T item() { return item; };
+    public double score() {return score;}
+    public T item() { return item; }
 
     private final T item;
     private final double score;
