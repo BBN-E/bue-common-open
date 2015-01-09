@@ -1,62 +1,52 @@
 package com.bbn.nlp.coreference.measures;
 
-import java.util.Map;
-import java.util.Set;
-
-import com.bbn.bue.common.EquivalenceUtils;
 import com.bbn.bue.common.collections.CollectionUtils;
 import com.bbn.bue.common.evaluation.FMeasureInfo;
 import com.bbn.bue.common.evaluation.PrecisionRecallPair;
-import com.google.common.base.Equivalence;
-import com.google.common.base.Equivalence.Wrapper;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+
+import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class B3Scorer<T> {
-	public enum B3Method { ByCluster, ByElement }
+/**
+ * Implements the B^3 coreference algorithm (Bagga and Baldwin, 1998)
+ *
+ * Elements being clustered are assumed to have properly defined equality and hashCode methods.
+ */
+public final class B3Scorer {
+	private enum B3Method { ByCluster, ByElement }
 
-    private B3Scorer(final Equivalence<T> equivalence, final B3Method method) {
-    	this.equivalence = checkNotNull(equivalence);
+    private B3Scorer(final B3Method method) {
     	this.method = checkNotNull(method);
     }
 
-    public static <T> B3Scorer<T> create(final B3Method method) {
-    	return new B3Scorer<T>(null, method);
+    public static B3Scorer createByElementScorer() {
+    	return new B3Scorer(B3Method.ByElement);
     }
 
-    public static <T> B3Scorer<T> createWithEquivalence(
-    	final Equivalence<T> equivalence, final B3Method method)
-    {
-    	return new B3Scorer<T>(new EquivalenceUtils.DefaultEquivalence<T>(), method);
-    }
-
-	public FMeasureInfo score(final Iterable<? extends Iterable<T>> predicted,
-			final Iterable<? extends Iterable<T>> gold)
+	public FMeasureInfo score(final Iterable<? extends Iterable<?>> predicted,
+			final Iterable<? extends Iterable<?>> gold)
 	{
-		final Iterable<? extends Set<Wrapper<T>>> predictedAsSets =
-				toIterableOfSetsOfWrappers(predicted);
-		final Iterable<? extends Set<Wrapper<T>>> goldAsSets =
-				toIterableOfSetsOfWrappers(gold);
+		final Iterable<Set<Object>> predictedAsSets = CorefScorerUtils.toSets(predicted);
+		final Iterable<Set<Object>> goldAsSets = CorefScorerUtils.toSets(gold);
 
 		if (method == B3Method.ByElement) {
-			return scoreWrappedByElement(predictedAsSets, goldAsSets);
+			return scoreSets(predictedAsSets, goldAsSets);
 		} else {
 			throw new RuntimeException("B3Method.ByCluster not yet implemented");
 		}
 	}
 
-	private <Q> FMeasureInfo scoreWrappedByElement(final Iterable<? extends Set<Q>> predicted,
-			final Iterable<? extends Set<Q>> gold)
+	private FMeasureInfo scoreSets(final Iterable<Set<Object>> predicted, final Iterable<Set<Object>> gold)
 	{
-		final Map<Q, ? extends Set<Q>> predictedItemToGroup =
+		final Map<Object, Set<Object>> predictedItemToGroup =
 			CollectionUtils.makeElementsToContainersMap(predicted);
-		final Map<Q, ? extends Set<Q>> goldItemToGroup =
+		final Map<Object, Set<Object>> goldItemToGroup =
 			CollectionUtils.makeElementsToContainersMap(gold);
 
-		checkPartitionsOverSameElements(predictedItemToGroup.keySet(),
+		CorefScorerUtils.checkPartitionsOverSameElements(predictedItemToGroup.keySet(),
 				goldItemToGroup.keySet());
 
 		// if this is empty, we know the other is too,
@@ -67,10 +57,10 @@ public final class B3Scorer<T> {
 
 		double precisionTotal = 0.0;
 		double recallTotal = 0.0;
-		for (final Q item : goldItemToGroup.keySet()) {
-			final Set<Q> goldGroup = goldItemToGroup.get(item);
-			final Set<Q> predictedGroup = predictedItemToGroup.get(item);
-			final Set<Q> inBoth = Sets.intersection(goldGroup, predictedGroup);
+		for (final Object item : goldItemToGroup.keySet()) {
+			final Set<Object> goldGroup = goldItemToGroup.get(item);
+			final Set<Object> predictedGroup = predictedItemToGroup.get(item);
+			final Set<Object> inBoth = Sets.intersection(goldGroup, predictedGroup);
 
 			precisionTotal += inBoth.size() / ((double)predictedGroup.size());
 			recallTotal += inBoth.size() / ((double)goldGroup.size());
@@ -81,36 +71,6 @@ public final class B3Scorer<T> {
 				(float)(recallTotal/goldItemToGroup.keySet().size()));
 	}
 
-	private <Q> void checkPartitionsOverSameElements(
-			final Set<Q> predictedItems,
-			final Set<Q> goldItems) {
-		if (!predictedItems.equals(goldItems)) {
-			final Set<Q> predictedButNotGold = Sets.difference(
-				predictedItems, goldItems);
-			final Set<Q> goldButNotPredicted = Sets.difference(
-					goldItems, predictedItems);
-			throw new RuntimeException(String.format(
-				"Elements in partitions must match. In predicted but not gold: %s. In gold but not predicted: %s",
-				predictedButNotGold, goldButNotPredicted));
-		}
-	}
-
-	private Iterable<? extends Set<Wrapper<T>>> toIterableOfSetsOfWrappers(
-			final Iterable<? extends Iterable<T>> iterables)
-	{
-		final ImmutableList.Builder<Set<Equivalence.Wrapper<T>>> ret =
-				ImmutableList.builder();
-
-		for (final Iterable<T> iterable : iterables) {
-			ret.add(FluentIterable.from(iterable)
-					.transform(EquivalenceUtils.Wrap(equivalence))
-					.toSet());
-		}
-
-		return ret.build();
-	}
-
-	private final Equivalence<T> equivalence;
 	private final B3Method method;
 }
 
