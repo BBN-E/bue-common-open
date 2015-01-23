@@ -187,4 +187,16 @@ public static <T> Function<Collection<T>, ImmutableSet<T>> asSetFunction() {
         }
     };
 }
+
+	/**
+	 * A copy of the input as an {@link com.google.common.collect.ImmutableList} which respects
+	 * iteration order, but where only the first occurrence of each element is kept. No input items
+	 * may be {@code null}.
+	 *
+	 */
+	public static <T> ImmutableList<T> asUniquedList(Iterable<T> items) {
+		return ImmutableSet.copyOf(items).asList();
+	}
+
+
 }
