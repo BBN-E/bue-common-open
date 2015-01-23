@@ -12,10 +12,7 @@ import com.google.common.collect.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -42,7 +39,9 @@ public final class Parameters {
 	 * null keys, empty keys, or null values.
 	 *
 	 * @param params
+	 * @deprecated Prefer fromMap()
 	 */
+	@Deprecated
 	public Parameters(final Map<String, String> params) {
 		this(params,ImmutableList.<String>of());
 	}
@@ -159,6 +158,25 @@ public final class Parameters {
 	public static Parameters loadSerifStyle(final File f) throws IOException {
 		final SerifStyleParameterFileLoader loader = new SerifStyleParameterFileLoader();
 		return new Parameters(loader.load(f));
+	}
+
+	public static Parameters fromMap(Map<String, String> map) {
+		return new Parameters(map);
+	}
+
+	/**
+	 * Creates a {@code Parameters} from a {@link java.util.Properties} by turning each
+	 * key and value in the {@code Properties} into a string. If multiple keys in the
+	 * properties object have the same string representation or if any key or value is null,
+	 * an {@link java.lang.IllegalArgumentException} or {@link java.lang.NullPointerException}
+	 * will be thrown.
+	 */
+	public static Parameters fromProperties(Properties properties) {
+		final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
+		for (final Map.Entry<Object,Object> property : properties.entrySet()) {
+			ret.put(property.getKey().toString(), property.getValue().toString());
+		}
+		return fromMap(ret.build());
 	}
 
 	/**
