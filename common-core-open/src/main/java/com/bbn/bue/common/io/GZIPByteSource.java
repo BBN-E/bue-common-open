@@ -13,22 +13,23 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 @Beta
 public class GZIPByteSource extends ByteSource {
-	private GZIPByteSource(final ByteSource wrappedByteSource) {
-		this.wrappedByteSource = checkNotNull(wrappedByteSource);
-	}
 
-	public static ByteSource fromCompressed(final ByteSource wrappedByteSource) {
-		return new GZIPByteSource(wrappedByteSource);
-	}
+  private GZIPByteSource(final ByteSource wrappedByteSource) {
+    this.wrappedByteSource = checkNotNull(wrappedByteSource);
+  }
 
-	public static ByteSource fromCompressed(final File f) {
-		return fromCompressed(Files.asByteSource(f));
-	}
+  public static ByteSource fromCompressed(final ByteSource wrappedByteSource) {
+    return new GZIPByteSource(wrappedByteSource);
+  }
 
-	@Override
-	public InputStream openStream() throws IOException {
-		return new GZIPInputStream(wrappedByteSource.openBufferedStream());
-	}
+  public static ByteSource fromCompressed(final File f) {
+    return fromCompressed(Files.asByteSource(f));
+  }
 
-	private final ByteSource wrappedByteSource;
+  @Override
+  public InputStream openStream() throws IOException {
+    return new GZIPInputStream(wrappedByteSource.openBufferedStream());
+  }
+
+  private final ByteSource wrappedByteSource;
 }

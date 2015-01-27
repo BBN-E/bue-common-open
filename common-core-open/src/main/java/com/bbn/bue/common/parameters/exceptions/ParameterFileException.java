@@ -5,9 +5,10 @@ import com.google.common.annotations.Beta;
 
 @Beta
 public class ParameterFileException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
 
-	public ParameterFileException(String msg) {
-		super(msg);
-	}
+  private static final long serialVersionUID = 1L;
+
+  public ParameterFileException(String msg) {
+    super(msg);
+  }
 }

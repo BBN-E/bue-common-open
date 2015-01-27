@@ -3,11 +3,12 @@ package com.bbn.bue.common.validators;
 import java.io.File;
 
 public class IsDirectory implements Validator<File> {
-	public void validate(File arg) throws ValidationException {
-		if (!arg.isDirectory()) {
-			throw new ValidationException(
-				String.format("%s either does not exist or is not a directory.",
-					arg.getAbsolutePath()));
-		}
-	}
+
+  public void validate(File arg) throws ValidationException {
+    if (!arg.isDirectory()) {
+      throw new ValidationException(
+          String.format("%s either does not exist or is not a directory.",
+              arg.getAbsolutePath()));
+    }
+  }
 }
