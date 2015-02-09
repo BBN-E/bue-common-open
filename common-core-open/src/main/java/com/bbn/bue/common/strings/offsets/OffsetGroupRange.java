@@ -5,34 +5,37 @@ import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class OffsetGroupRange {
-	private final OffsetGroup startInclusive;
-	private final OffsetGroup endInclusive;
 
-	public OffsetGroup startInclusive() {
-		return startInclusive;
-	}
+  private final OffsetGroup startInclusive;
+  private final OffsetGroup endInclusive;
 
-	public OffsetGroup endInclusive() {
-		return endInclusive;
-	}
+  public OffsetGroup startInclusive() {
+    return startInclusive;
+  }
 
-	public static OffsetGroupRange from(final OffsetGroup startInclusive, final OffsetGroup endInclusive) {
-		return new OffsetGroupRange(startInclusive, endInclusive);
-	}
+  public OffsetGroup endInclusive() {
+    return endInclusive;
+  }
+
+  public static OffsetGroupRange from(final OffsetGroup startInclusive,
+      final OffsetGroup endInclusive) {
+    return new OffsetGroupRange(startInclusive, endInclusive);
+  }
 
 	/*public static OffsetGroupRange fromTokenSpan(final Span span) {
-		return new OffsetGroupRange(span.startOffsetGroup(), span.endOffsetGroup());
+                return new OffsetGroupRange(span.startOffsetGroup(), span.endOffsetGroup());
 	}*/
 
-	private OffsetGroupRange(final OffsetGroup startInclusive, final OffsetGroup endInclusive) {
-		this.startInclusive = checkNotNull(startInclusive);
-		this.endInclusive = checkNotNull(endInclusive);
-	}
+  private OffsetGroupRange(final OffsetGroup startInclusive, final OffsetGroup endInclusive) {
+    this.startInclusive = checkNotNull(startInclusive);
+    this.endInclusive = checkNotNull(endInclusive);
+  }
 
-	@Override
-	public String toString() {
-		return Objects.toStringHelper(this).add("start", startInclusive).add("end", endInclusive).toString();
-	}
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(this).add("start", startInclusive).add("end", endInclusive)
+        .toString();
+  }
 
 	/*private boolean overlapsByCharOffset(final OffsetGroupRange range) {
 		// if range starts strictly to the right of this...
@@ -47,24 +50,26 @@ public final class OffsetGroupRange {
 	}*/
 
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(startInclusive, endInclusive);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(startInclusive, endInclusive);
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        final OffsetGroupRange other = (OffsetGroupRange) obj;
-        return Objects.equal(this.startInclusive, other.startInclusive) && Objects.equal(this.endInclusive, other.endInclusive);
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    final OffsetGroupRange other = (OffsetGroupRange) obj;
+    return Objects.equal(this.startInclusive, other.startInclusive) && Objects
+        .equal(this.endInclusive, other.endInclusive);
+  }
 
-    public OffsetRange<CharOffset> asCharOffsetRange() {
-        return OffsetRange.fromInclusiveEndpoints(startInclusive().charOffset(), endInclusive().charOffset());
-    }
+  public OffsetRange<CharOffset> asCharOffsetRange() {
+    return OffsetRange
+        .fromInclusiveEndpoints(startInclusive().charOffset(), endInclusive().charOffset());
+  }
 }

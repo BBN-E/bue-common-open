@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 public final class StringSink extends CharSink {
+
   private StringWriter sw = new StringWriter();
 
   private StringSink() {

@@ -7,8 +7,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public final class NullByteSink extends ByteSink {
-    @Override
-    public OutputStream openStream() throws IOException {
-        return ByteStreams.nullOutputStream();
-    }
+
+  @Override
+  public OutputStream openStream() throws IOException {
+    return ByteStreams.nullOutputStream();
+  }
 }

@@ -9,18 +9,19 @@ import java.util.zip.GZIPOutputStream;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class GZIPByteSink extends ByteSink {
-	private GZIPByteSink(final ByteSink wrappedByteSink) {
-		this.wrappedByteSink = checkNotNull(wrappedByteSink);
-	}
 
-	public static ByteSink gzipCompress(final ByteSink byteSink) {
-		return new GZIPByteSink(byteSink);
-	}
+  private GZIPByteSink(final ByteSink wrappedByteSink) {
+    this.wrappedByteSink = checkNotNull(wrappedByteSink);
+  }
 
-	@Override
-	public OutputStream openStream() throws IOException {
-		return new GZIPOutputStream(wrappedByteSink.openBufferedStream());
-	}
+  public static ByteSink gzipCompress(final ByteSink byteSink) {
+    return new GZIPByteSink(byteSink);
+  }
 
-	private final ByteSink wrappedByteSink;
+  @Override
+  public OutputStream openStream() throws IOException {
+    return new GZIPOutputStream(wrappedByteSink.openBufferedStream());
+  }
+
+  private final ByteSink wrappedByteSink;
 }

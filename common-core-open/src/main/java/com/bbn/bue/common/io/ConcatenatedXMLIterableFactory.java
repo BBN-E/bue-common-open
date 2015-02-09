@@ -20,20 +20,21 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * It is intended to be used only on XML documents output by BBN Serif.
  */
 public final class ConcatenatedXMLIterableFactory {
+
   private final String splitString;
   private final int maxDocBytes;
 
-  private static final int MEGABYTES = 1024*1024;
+  private static final int MEGABYTES = 1024 * 1024;
 
   private ConcatenatedXMLIterableFactory(String splitPattern,
-                                         int maxDocBytes) {
+      int maxDocBytes) {
     this.splitString = checkNotNull(splitPattern);
     checkArgument(maxDocBytes > 0);
     this.maxDocBytes = maxDocBytes;
   }
 
   public static ConcatenatedXMLIterableFactory splitOnXMLProlog() {
-    return new ConcatenatedXMLIterableFactory("<?xml ", 30*MEGABYTES);
+    return new ConcatenatedXMLIterableFactory("<?xml ", 30 * MEGABYTES);
   }
 
   public Iterable<CharSource> filesIn(CharSource source) {
@@ -41,11 +42,12 @@ public final class ConcatenatedXMLIterableFactory {
   }
 
   /**
-   * Since we can't declare an {@link java.io.IOException} on the {@link #iterator()}
-   * method, be aware that any exceptions during reading will be wrapped in
-   * a {@link ConcatenatedXMLException}.
+   * Since we can't declare an {@link java.io.IOException} on the {@link #iterator()} method, be
+   * aware that any exceptions during reading will be wrapped in a {@link
+   * ConcatenatedXMLException}.
    */
   private final class ConcatenatedXMLFile implements Iterable<CharSource> {
+
     private final CharSource source;
 
     public ConcatenatedXMLFile(CharSource source) {
@@ -63,6 +65,7 @@ public final class ConcatenatedXMLIterableFactory {
   }
 
   public static class ConcatenatedXMLException extends RuntimeException {
+
     private final Exception wrapped;
 
     public ConcatenatedXMLException(Exception wrapped) {
@@ -76,6 +79,7 @@ public final class ConcatenatedXMLIterableFactory {
   }
 
   private class ConcatenatedXMLIterator extends AbstractIterator<CharSource> {
+
     private final BufferedReader reader;
     private boolean first = true;
 
