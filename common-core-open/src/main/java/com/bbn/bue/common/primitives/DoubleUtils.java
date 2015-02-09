@@ -229,7 +229,7 @@ public final class DoubleUtils {
     double ret = 0.0;
     for (int i = 0; i < arr.length; ++i) {
       // ensures biggest value we ever exp is 0.
-      ret += Math.exp(ret - maxVal);
+      ret += Math.exp(arr[i] - maxVal);
     }
     return maxVal + Math.log(ret);
   }
