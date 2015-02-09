@@ -214,5 +214,23 @@ public final class DoubleUtils {
     return ret;
   }
 
+  /**
+   * Calculates {@code log(sum_i(exp(x_i)))} in a more numerically stable way than the naive
+   * implementation.  Such sums commonly arise in machine learning algorithms (e.g. calculating
+   * expectations in conditional random fields). If the input array is empty, {@link
+   * Double#NEGATIVE_INFINITY} is returned.
+   */
+  public static double logSumOfExponentials(double[] arr) {
+    if (arr.length == 0) {
+      return Double.NEGATIVE_INFINITY;
+    }
 
+    final double maxVal = Doubles.max(arr);
+    double ret = 0.0;
+    for (int i = 0; i < arr.length; ++i) {
+      // ensures biggest value we ever exp is 0.
+      ret += Math.exp(ret - maxVal);
+    }
+    return maxVal + Math.log(ret);
+  }
 }
