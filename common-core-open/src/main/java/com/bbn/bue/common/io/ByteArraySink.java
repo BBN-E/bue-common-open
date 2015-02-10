@@ -16,6 +16,19 @@ public class ByteArraySink extends ByteSink {
 
   private final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
+  /**
+   * @deprecated Prefer {@link #create()}
+   */
+  @Deprecated
+  public ByteArraySink() {
+
+  }
+
+  @SuppressWarnings("Deprecated")
+  public static ByteArraySink create() {
+    return new ByteArraySink();
+  }
+
   @Override
   public OutputStream openStream() throws IOException {
     stream.reset();
