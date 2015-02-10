@@ -1,6 +1,6 @@
 package com.bbn.bue.common.io;
 
-import com.bbn.bue.common.strings.offsets.CharOffset;
+import com.bbn.bue.common.strings.offsets.ByteOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
 
@@ -13,20 +13,20 @@ import java.util.Set;
 
 /* package-private */ class MapOffsetIndex implements OffsetIndex {
 
-  private final ImmutableMap<Symbol, OffsetRange<CharOffset>> map;
+  private final ImmutableMap<Symbol, OffsetRange<ByteOffset>> map;
 
   private MapOffsetIndex(
-      final Map<Symbol, OffsetRange<CharOffset>> map) {
+      final Map<Symbol, OffsetRange<ByteOffset>> map) {
     this.map = ImmutableMap.copyOf(map);
   }
 
-  public static MapOffsetIndex fromMap(Map<Symbol, OffsetRange<CharOffset>> map) {
+  public static MapOffsetIndex fromMap(Map<Symbol, OffsetRange<ByteOffset>> map) {
     return new MapOffsetIndex(map);
   }
 
 
   @Override
-  public Optional<OffsetRange<CharOffset>> charOffsetsOf(final Symbol key) {
+  public Optional<OffsetRange<ByteOffset>> byteOffsetsOf(final Symbol key) {
     return Optional.fromNullable(map.get(key));
   }
 

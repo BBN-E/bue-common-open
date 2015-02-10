@@ -23,4 +23,8 @@ public final class ByteOffset extends AbstractOffset implements Comparable<ByteO
   public int compareTo(ByteOffset o) {
     return Ints.compare(value(), o.value());
   }
+
+  public static ByteOffset asByteOffset(final int val) {
+    return new ByteOffset(val);
+  }
 }

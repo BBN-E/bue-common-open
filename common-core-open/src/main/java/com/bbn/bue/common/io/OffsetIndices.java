@@ -1,6 +1,6 @@
 package com.bbn.bue.common.io;
 
-import com.bbn.bue.common.strings.offsets.CharOffset;
+import com.bbn.bue.common.strings.offsets.ByteOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
 
@@ -22,13 +22,13 @@ public final class OffsetIndices {
 
   public static OffsetIndex readBinary(ByteSource source) throws IOException {
     final DataInputStream in = new DataInputStream(source.openBufferedStream());
-    final ImmutableMap.Builder<Symbol, OffsetRange<CharOffset>> builder = ImmutableMap.builder();
+    final ImmutableMap.Builder<Symbol, OffsetRange<ByteOffset>> builder = ImmutableMap.builder();
     final int numEntries = in.readInt();
 
     try {
       for (int i = 0; i < numEntries; ++i) {
         builder.put(Symbol.from(in.readUTF()),
-            OffsetRange.charOffsetRange(in.readInt(), in.readInt()));
+            OffsetRange.byteOffsetRange(in.readInt(), in.readInt()));
       }
     } finally {
       Closeables.closeQuietly(in);
@@ -49,7 +49,7 @@ public final class OffsetIndices {
       for (final Symbol key : keyOrder) {
         out.writeUTF(key.asString());
         // get is safe because we are iterating over the mapping's key set
-        final OffsetRange<CharOffset> range = offsetIndex.charOffsetsOf(key).get();
+        final OffsetRange<ByteOffset> range = offsetIndex.byteOffsetsOf(key).get();
         out.writeInt(range.startInclusive().asInt());
         out.writeInt(range.endInclusive().asInt());
       }

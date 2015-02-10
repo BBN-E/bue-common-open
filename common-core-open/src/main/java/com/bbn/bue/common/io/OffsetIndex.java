@@ -1,6 +1,6 @@
 package com.bbn.bue.common.io;
 
-import com.bbn.bue.common.strings.offsets.CharOffset;
+import com.bbn.bue.common.strings.offsets.ByteOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
 
@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public interface OffsetIndex {
 
-  public Optional<OffsetRange<CharOffset>> charOffsetsOf(Symbol key);
+  public Optional<OffsetRange<ByteOffset>> byteOffsetsOf(Symbol key);
 
   public Set<Symbol> keySet();
 }
