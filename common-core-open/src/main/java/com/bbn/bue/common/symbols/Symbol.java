@@ -13,11 +13,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 
 /**
- * Symbol (adapted from Serif) is represents an interned String. Symbol-ize Strings can be used to
+ * Symbol (adapted from Serif) is represents an interned String. Symbol-ized Strings can be used to
  * reduce memory requirements for frequently repeated Strings (e.g. parse node names) and to speed
  * up comparisons.
  *
- * It is guaranteed that for any <code>String</code>s <code>a</code> and <code>b</code>,
+ * It is guaranteed that for any <code>String</code>s <code>a</code> and <code>b</code>, if
  * <pre>
  * Symbol aSym = Symbol.from(a);
  * Symbol bSym = Symbol.from(b);
@@ -60,11 +60,18 @@ public final class Symbol implements Serializable {
   }
 
   /**
+   * Returns the string this Symbol represents. Will never be {@code null}.
+   */
+  public String asString() {
+    return string;
+  }
+
+  /**
    * (non-Javadoc) Returns the <code>String</code> this <code>Symbol</code> was created from.
    */
   @Override
   public String toString() {
-    return string;
+    return asString();
   }
 
   public static final Function<? super String, Symbol> FromString = new Function<String, Symbol>() {
