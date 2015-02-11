@@ -13,6 +13,7 @@ import com.google.common.io.Closeables;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public final class OffsetIndices {
 
@@ -60,7 +61,7 @@ public final class OffsetIndices {
 
   }
 
-  public static OffsetIndex forMap(final ImmutableMap<Symbol, OffsetRange<ByteOffset>> map) {
+  public static OffsetIndex forMap(final Map<Symbol, OffsetRange<ByteOffset>> map) {
     return MapOffsetIndex.fromMap(map);
   }
 }
