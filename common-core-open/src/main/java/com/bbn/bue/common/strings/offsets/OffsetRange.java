@@ -101,6 +101,13 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
         CharOffset.asCharOffset(endInclusive));
   }
 
+  public static OffsetRange<ByteOffset> byteOffsetRange(final int startInclusive,
+      final int endInclusive) {
+    return OffsetRange.fromInclusiveEndpoints(ByteOffset.asByteOffset(startInclusive),
+        ByteOffset.asByteOffset(endInclusive));
+  }
+
+
   /**
    * This returns optional because it is not possible to represent an empty offset span
    */
@@ -159,4 +166,5 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
   public String toString() {
     return "[" + startInclusive().toString() + "-" + endInclusive().toString() + "]";
   }
+
 }
