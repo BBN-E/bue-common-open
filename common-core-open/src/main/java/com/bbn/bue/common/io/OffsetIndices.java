@@ -59,4 +59,8 @@ public final class OffsetIndices {
     }
 
   }
+
+  public static OffsetIndex forMap(final ImmutableMap<Symbol, OffsetRange<ByteOffset>> map) {
+    return MapOffsetIndex.fromMap(map);
+  }
 }
