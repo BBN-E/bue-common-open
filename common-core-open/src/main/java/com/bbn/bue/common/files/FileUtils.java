@@ -2,6 +2,7 @@ package com.bbn.bue.common.files;
 
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.MapUtils;
+import com.bbn.bue.common.io.GZIPByteSink;
 import com.bbn.bue.common.io.GZIPByteSource;
 import com.bbn.bue.common.symbols.Symbol;
 
@@ -507,5 +508,37 @@ public final class FileUtils {
     if (!directory.isDirectory()) {
       throw new IOException(directory + " does not exist or is not a directory");
     }
+  }
+
+  /**
+   * Just like {@link Files#asByteSource(java.io.File)}, but decompresses the incoming data using
+   * GZIP.
+   */
+  public static ByteSource asCompressedByteSource(File f) throws IOException {
+    return GZIPByteSource.fromCompressed(Files.asByteSource(f));
+  }
+
+  /**
+   * Just like {@link Files#asByteSink(java.io.File, com.google.common.io.FileWriteMode...)}, but
+   * decompresses the incoming data using GZIP.
+   */
+  public static ByteSink asCompressedByteSink(File f) throws IOException {
+    return GZIPByteSink.gzipCompress(Files.asByteSink(f));
+  }
+
+  /**
+   * Just like {@link Files#asCharSource(java.io.File, java.nio.charset.Charset)}, but decompresses
+   * the incoming data using GZIP.
+   */
+  public static CharSource asCompressedCharSource(File f, Charset charSet) throws IOException {
+    return asCompressedByteSource(f).asCharSource(charSet);
+  }
+
+  /**
+   * Just like {@link Files#asCharSink(java.io.File, java.nio.charset.Charset,
+   * com.google.common.io.FileWriteMode...)}, but decompresses the incoming data using GZIP.
+   */
+  public static CharSink asCompressedCharSink(File f, Charset charSet) throws IOException {
+    return asCompressedByteSink(f).asCharSink(charSet);
   }
 }
