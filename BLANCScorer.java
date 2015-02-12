@@ -2,6 +2,7 @@ package com.bbn.nlp.coreference.measures;
 
 import com.bbn.bue.common.collections.CollectionUtils;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
 import java.util.Map;
@@ -31,38 +32,121 @@ public final class BLANCScorer {
    */
   public static final class BLANCResult {
 
+    /**
+     * The actual data
+     */
+    // number of pairwise coreference links agreed on by system and gold
+    private final double rc;
+    // number of pairwise non-coreference links agreed on by system and gold
+    private final double rn;
+    // number of pairwise links claimed by gold but not system
+    private final double wn;
+    // number of pairwise links claimed by system but not gold
+    private final double wc;
+
+    /**
+     * cached computations derived from the data above
+     */
+    // precision of coref links
+    private final double P_C;
+    // precision of non-coref links
+    private final double P_N;
+    // recall of coref links
+    private final double R_C;
+    // recall of non-coref links
+    private final double R_N;
+    // F1 of coref links
+    private final double F_C;
+    // F1 of non-coref links
+    private final double F_N;
+
     private final double blancP;
     private final double blancR;
     private final double blancF;
 
-    public BLANCResult(double blancP, double blancR, double blancF) {
-      checkArgument(blancP >= 0.0 && blancP <= 1.0);
-      checkArgument(blancR >= 0.0 && blancR <= 1.0);
-      checkArgument(blancF >= 0.0 && blancF <= 1.0);
+    private BLANCResult(double rc, double rn, double wn, double wc) {
+      checkArgument(rc >= 0.0);
+      checkArgument(rn >= 0.0);
+      checkArgument(wc >= 0.0);
+      checkArgument(wn >= 0.0);
 
-      this.blancP = blancP;
-      this.blancR = blancR;
-      this.blancF = blancF;
+      this.rc = rc;
+      this.rn = rn;
+      this.wn = wn;
+      this.wc = wc;
+
+      // compute and cache derived scores
+      // TODO: nan-to-zero may not be the correct thing here in all cases.
+      // consider a fully unlinked answer key: R_C has denominator zero,
+      // but we don't want to penalize systems for this.  Possibly we
+      // can fall back to only using the other value. But then we have sharp
+      // transitions between 0 links and 1 link. This bears careful thought.
+      this.P_C = nanToZero(rc / (rc + wc));
+      this.P_N = nanToZero(rn / (rn + wn));
+      this.R_C = nanToZero(rc / (rc + wn));
+      this.R_N = nanToZero(rn / (rn + wc));
+      this.F_C = nanToZero(2.0 * P_C * R_C / (P_C + R_C));
+      this.F_N = nanToZero(2.0 * P_N * R_N / (P_N + R_N));
+
+      this.blancP = 0.5 * P_C + 0.5 * P_N;
+      this.blancR = 0.5 * R_C + 0.5 * R_N;
+      this.blancF = 0.5 * F_C + 0.5 * F_N;
     }
 
-    public double blancP() {
+    public double numCorrectCorefLinks() {
+      return rc;
+    }
+
+    public double numCorrectNonCorefLinks() {
+      return rn;
+    }
+
+    public double numMissedNonCorefLinks() {
+      return wn;
+    }
+
+    public double numMissedCorefLinks() {
+      return wc;
+    }
+
+    public double corefLinkPrecision() {
+      return P_C;
+    }
+
+    public double nonCorefLinkPrecision() {
+      return P_N;
+    }
+
+    public double corefLinkRecall() {
+      return R_C;
+    }
+
+    public double nonCorefLinkRecall() {
+      return R_N;
+    }
+
+    public double corefLinkF1() {
+      return F_C;
+    }
+
+    public double nonCorefLinkF1() {
+      return F_N;
+    }
+
+    public double blancPrecision() {
       return blancP;
     }
 
-    public double blancR() {
+    public double blancRecall() {
       return blancR;
     }
 
-    public double blancF() {
+    public double blancF1() {
       return blancF;
-    }
-
-    private static BLANCResult fromBLANCPRF(double p, double r, double f) {
-      return new BLANCResult(p, r, f);
     }
   }
 
-  public BLANCResult score(final Iterable<? extends Iterable<?>> predicted,
+  public Optional<BLANCResult> score(final Iterable<? extends Iterable<?>> predicted,
       final Iterable<? extends Iterable<?>> gold) {
     final Iterable<Set<Object>> predictedAsSets = CorefScorerUtils.toSets(predicted);
     final Iterable<Set<Object>> goldAsSets = CorefScorerUtils.toSets(gold);
@@ -70,7 +154,7 @@ public final class BLANCScorer {
     return scoreSets(predictedAsSets, goldAsSets);
   }
 
-  private BLANCResult scoreSets(final Iterable<Set<Object>> predicted,
+  private Optional<BLANCResult> scoreSets(final Iterable<Set<Object>> predicted,
       final Iterable<Set<Object>> gold) {
 
     final Map<Object, Set<Object>> predictedItemToGroup =
@@ -84,7 +168,8 @@ public final class BLANCScorer {
     // if this is empty, we know the other is too,
     // by the above
     if (predictedItemToGroup.isEmpty()) {
-      return new BLANCResult(0.0, 0.0, 0.0);
+      // result is undefined
+      return Optional.absent();
     }
 
     // number of pairwise coreference links agreed on by system and gold
@@ -119,15 +204,8 @@ public final class BLANCScorer {
       rn += allItems.size() - goldPredictedUnionSize;
     }
 
-    // each link got counted twice above but it doesn't matter
-    final double P_C = nanToZero(((double) rc) / (rc + wc));
-    final double P_N = nanToZero(((double) rn) / (rn + wn));
-    final double R_C = nanToZero(((double) rc) / (rc + wn));
-    final double R_N = nanToZero(((double) rn) / (rn + wc));
-    final double F_C = nanToZero(2.0 * P_C * R_C / (P_C + R_C));
-    final double F_N = nanToZero(2.0 * P_N * R_N / (P_N + R_N));
-
-    return BLANCResult.fromBLANCPRF(0.5 * (P_C + P_N), 0.5 * (R_C + R_N), 0.5 * (F_C + F_N));
+    // all the links got counted twice above, so we divide by 2
+    return Optional.of(new BLANCResult(rc / 2.0, rn / 2.0, wn / 2.0, wc / 2.0));
   }
 
   private static double nanToZero(double x) {
