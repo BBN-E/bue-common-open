@@ -29,15 +29,6 @@ import java.util.Set;
     CorefScorerUtils.checkPartitionsOverSameElements(predictedItemToGroup.keySet(),
         goldItemToGroup.keySet());
 
-    // number of pairwise coreference links agreed on by system and gold
-    int rc = 0;
-    // number of pairwise non-coreference links agreed on by system and gold
-    int rn = 0;
-    // number of pairwise links claimed by gold but not system
-    int wn = 0;
-    // number of pairwise links claimed by system but not gold
-    int wc = 0;
-
     double corefLinksInBoth = 0.0;
     double corefLinksInKey = 0.0;
     double corefLinksInResponse = 0.0;
@@ -68,26 +59,6 @@ import java.util.Set;
             Sets.union(predictedNeighbors, goldNeighbors).immutableCopy();
         // -1 = don't count this item itself as a link
         nonCorefInBoth += Sets.difference(allItems, neighborsInEither).size() - 1;
-      /*final Set<Object> predictedCluster = predictedItemToGroup.get(item);
-      final Set<Object> goldCluster = goldItemToGroup.get(item);
-
-      // the number of correct coref links for this item is the size of the intersection
-      // of the gold and predicted clusters, minus this item itself.
-      final int goldPredictedIntersectionSize =
-          Sets.intersection(predictedCluster, goldCluster).size();
-      rc += goldPredictedIntersectionSize - 1;
-      // the number of links claimed by the system but not gold (wc)
-      // is the size of the difference between the system and gold cluster
-      wc += Sets.difference(predictedCluster, goldCluster).size();
-      // the number of links claimed by gold but not the system (wn)
-      // is the size of the difference between the gold and system cluster
-      wn += Sets.difference(goldCluster, predictedCluster).size();
-      // the number of coref non-coreference links is the number of items minus the items in the union of
-      // the gold and predicted clusters
-      final int goldPredictedUnionSize =
-          predictedCluster.size() + goldCluster.size() - goldPredictedIntersectionSize;
-      rn += allItems.size() - goldPredictedUnionSize;*/
-
     }
 
     return BLANCResult.fromSetCounts(true,
