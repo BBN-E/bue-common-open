@@ -541,4 +541,14 @@ public final class FileUtils {
   public static CharSink asCompressedCharSink(File f, Charset charSet) throws IOException {
     return asCompressedByteSink(f).asCharSink(charSet);
   }
+
+  // Guava predicates and functions
+  public static Predicate<File> isDirectoryPredicate() {
+    return new Predicate<File>() {
+      @Override
+      public boolean apply(final File input) {
+        return input.isDirectory();
+      }
+    };
+  }
 }
