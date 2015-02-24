@@ -702,6 +702,23 @@ public final class Parameters {
     return ret.build();
   }
 
+  /**
+   * Gets the first existing directory in a common-separated list. If none exists, throws an {@link
+   * com.bbn.bue.common.parameters.exceptions.ParameterValidationException}.
+   */
+  public File getFirstExistingDirectory(String param) {
+    final List<String> directoryStrings = getStringList(param);
+    for (final String dirName : directoryStrings) {
+      final File dir = new File(dirName.trim());
+      if (dir.isDirectory()) {
+        return dir;
+      }
+    }
+
+    throw new ParameterConversionException(fullString(param), directoryStrings.toString(),
+        "No provided path is an existing directory");
+  }
+
 
   public Optional<File> getOptionalExistingDirectory(final String param) {
     if (isPresent(param)) {
