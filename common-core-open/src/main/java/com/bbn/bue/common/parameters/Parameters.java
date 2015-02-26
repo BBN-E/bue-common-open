@@ -682,6 +682,14 @@ public final class Parameters {
   }
 
   /**
+   * Gets a file or directory parameter without specifying whether it exists. Prefer a more
+   * specific parameter accessor when possible.
+   */
+  public File getFileOrDirectory(final String param) {
+    return get(param, new StringToFile(), new AlwaysValid<File>(), "file or directory");
+  }
+
+  /**
    * Gets a (possibly empty) list of existing directories. Will throw a {@link
    * com.bbn.bue.common.parameters.exceptions.ParameterValidationException} if any of the supplied
    * paths are not existing directories.
