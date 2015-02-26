@@ -121,10 +121,26 @@ public final class LocatedString {
     return new LocatedString(text, offsets, bounds);
   }
 
+  /**  
+   * Return a LocatedString substring of this string.
+   * 
+   * NOTE: Because it recomputes the various offsets of every character in the 
+   * substring, this method is *significantly* more expensive than just
+   * fetching the String content of the substring.  If you just need the String 
+   * content, you should use rawSubstring() instead.
+   */
   public LocatedString substring(final OffsetGroup start, final OffsetGroup end) {
     return substring(start.charOffset(), end.charOffset());
   }
-
+  
+  /**  
+   * Return a LocatedString substring of this string.
+   * 
+   * NOTE: Because it recomputes the various offsets of every character in the 
+   * substring, this method is *significantly* more expensive than just
+   * fetching the String content of the substring.  If you just need the String 
+   * content, you should use rawSubstring() instead.
+   */
   public LocatedString substring(final CharOffset start, final CharOffset end) {
     final int startOffset = start.value() - bounds.startInclusive().charOffset().value();
     final int endOffset = end.value() - bounds.startInclusive().charOffset().value() + 1;
@@ -148,6 +164,14 @@ public final class LocatedString {
 		return new LocatedString(text2, offsets, bounds);
 	}*/
 
+  /**  
+   * Return a LocatedString substring of this string.
+   * 
+   * NOTE: Because it recomputes the various offsets of every character in the 
+   * substring, this method is *significantly* more expensive than just
+   * fetching the String content of the substring.  If you just need the String 
+   * content, you should use rawSubstring() instead.
+   */
   public LocatedString substring(final int startIndexInclusive, final int endIndexExclusive) {
     final String text = content.substring(startIndexInclusive, endIndexExclusive);
     final List<OffsetEntry> offsets = offsetsOfSubstring(startIndexInclusive, endIndexExclusive);
@@ -155,6 +179,42 @@ public final class LocatedString {
     return new LocatedString(text, offsets, bounds);
   }
 
+  /**
+   * Return a String substring of this string.
+   * 
+   * @param start
+   * @param end
+   * @return
+   */
+  public String rawSubstring(final OffsetGroup start, final OffsetGroup end) {
+    return rawSubstring(start.charOffset(), end.charOffset());
+  }
+
+  /**
+   * Return a String substring of this string.
+   * 
+   * @param start
+   * @param end
+   * @return
+   */
+  public String rawSubstring(final CharOffset start, final CharOffset end) {
+    final int startOffset = start.value() - bounds.startInclusive().charOffset().value();
+    final int endOffset = end.value() - bounds.startInclusive().charOffset().value() + 1;
+
+    return rawSubstring(startOffset, endOffset);
+  }
+
+  /**
+   * Return a String substring of this string.
+   * 
+   * @param startIndexInclusive
+   * @param endIndexExclusive
+   * @return
+   */
+  public String rawSubstring(final int startIndexInclusive, final int endIndexExclusive) {
+    return content.substring(startIndexInclusive, endIndexExclusive);
+  }
+  
   /**
    * Returns the earliest offset group within this {@code LocatedString} whose character offset
    * matches the one supplied. If not such offset group exists, throws a {@link
