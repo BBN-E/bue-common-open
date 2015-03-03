@@ -17,6 +17,12 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.util.Set;
 
+
+// TODO: add Javadoc.
+// TODO: Link to a description of CEAF.
+// TODO: remove commented out System.out.printlns
+// TODO: is FMeasureInfo the right return type? Is there any auxiliary info computed during scoring the user might be interested in that should also be returned?
+// TODO: add uint tests to TestCorefMeasures
 public final class MentionCEAFScorer {
 
   public FMeasureInfo score(final Iterable<? extends Iterable<?>> predicted,
@@ -154,7 +160,7 @@ public final class MentionCEAFScorer {
     return graph;
   }
 
-
+  //TODO: I assume this should be private instead of package-private?
   static ImmutableList<Node> toNodesWithPadding(final Iterable<? extends Iterable<?>> iterables,
       final int desiredSize, final String partitionId) {
     final ImmutableList.Builder<Node> ret = ImmutableList.builder();
