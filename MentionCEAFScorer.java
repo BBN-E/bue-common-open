@@ -17,7 +17,7 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.util.Set;
 
-public class MentionCEAFScorer {
+public final class MentionCEAFScorer {
 
   public FMeasureInfo score(final Iterable<? extends Iterable<?>> predicted,
       final Iterable<? extends Iterable<?>> gold) {
