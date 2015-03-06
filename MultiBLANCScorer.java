@@ -3,6 +3,7 @@ package com.bbn.nlp.coreference.measures;
 import com.bbn.bue.common.collections.CollectionUtils;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -27,6 +28,11 @@ import static com.google.common.collect.Iterables.concat;
  * Dissertation. University of Barcelona http://stel.ub.edu/cba2010/phd/phd.pdf
  */
 public final class MultiBLANCScorer implements BLANCScorer {
+  private final boolean useSelfEdges;
+
+  /* package-private */ MultiBLANCScorer(final boolean useSelfEdges) {
+    this.useSelfEdges = useSelfEdges;
+  }
 
   public BLANCResult score(final Iterable<? extends Iterable<?>> predicted,
       final Iterable<? extends Iterable<?>> gold) {
@@ -72,11 +78,18 @@ public final class MultiBLANCScorer implements BLANCScorer {
       final Collection<Set<Object>> predictedClusters = predictedItemToGroup.get(item);
       final Collection<Set<Object>> goldClusters = goldItemToGroup.get(item);
 
-      final Predicate<Object> NOT_ITSELF = not(equalTo(item));
+      final Predicate<Object> SELF_ADJUSTMENT_FILTER;
+      if (useSelfEdges) {
+        SELF_ADJUSTMENT_FILTER = Predicates.alwaysTrue();
+      } else {
+        SELF_ADJUSTMENT_FILTER = not(equalTo(item));
+      }
+      final int selfAdjustment = useSelfEdges ? 0 : -1;
+
       final ImmutableSet<Object> predictedNeighbors =
-          FluentIterable.from(concat(predictedClusters)).filter(NOT_ITSELF).toSet();
+          FluentIterable.from(concat(predictedClusters)).filter(SELF_ADJUSTMENT_FILTER).toSet();
       final ImmutableSet<Object> goldNeighbors =
-          FluentIterable.from(concat(goldClusters)).filter(NOT_ITSELF).toSet();
+          FluentIterable.from(concat(goldClusters)).filter(SELF_ADJUSTMENT_FILTER).toSet();
 
       // The contribution for this item is the size of the intersection
       // of the gold and predicted neighbor sets.
@@ -84,20 +97,18 @@ public final class MultiBLANCScorer implements BLANCScorer {
       corefLinksInResponse += predictedNeighbors.size();
       corefLinksInKey += goldNeighbors.size();
       if (inKey) {
-        // -1 = don't count this item itself as a link
-        nonCorefLinksInKey += keyItems.size() - goldNeighbors.size() - 1;
+        nonCorefLinksInKey += keyItems.size() - goldNeighbors.size() + selfAdjustment;
       }
 
       if (inResponse) {
-        // -1 = don't count this item itself as a link
-        nonCorefLinksInResponse += responseItems.size() - predictedNeighbors.size() - 1;
+        nonCorefLinksInResponse += responseItems.size() - predictedNeighbors.size() + selfAdjustment;
       }
 
       if (inKey && inResponse) {
         final ImmutableSet<Object> neighborsInEither =
             Sets.union(predictedNeighbors, goldNeighbors).immutableCopy();
         // -1 = don't count this item itself as a link
-        nonCorefInBoth += Sets.difference(itemsInBoth, neighborsInEither).size() - 1;
+        nonCorefInBoth += Sets.difference(itemsInBoth, neighborsInEither).size() + selfAdjustment;
       }
     }
 

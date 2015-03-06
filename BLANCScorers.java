@@ -26,9 +26,17 @@ public final class BLANCScorers {
    * and which allows items to be members of multiple clusters.
    */
   public static BLANCScorer getMultiBLANCScorer() {
-    return new MultiBLANCScorer();
+    return new MultiBLANCScorer(false);
   }
 
+  /**
+   * Gets a BLANC scorer which handles item mismatches between the predicted and gold clusterings
+   * and which allows items to be members of multiple clusters.  Treats each item as having a coref
+   * edge to itself.
+   */
+  public static BLANCScorer getMultiBLANCScorerWithSelfEdges() {
+    return new MultiBLANCScorer(true);
+  }
 
   /* package-private */
   static double nanToZero(double x) {
