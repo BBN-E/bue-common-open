@@ -14,7 +14,11 @@ public final class BLANCScorers {
    * allow items to be members of multiple clusters.
    */
   public static BLANCScorer getStandardBLANCScorer() {
-    return new StandardBLANCScorer();
+    return new StandardBLANCScorer(false);
+  }
+
+  public static BLANCScorer getStandardBLANCScorerWithSelfEdges() {
+    return new StandardBLANCScorer(true);
   }
 
   /**
