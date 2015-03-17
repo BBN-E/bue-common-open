@@ -641,6 +641,18 @@ public final class Parameters {
         "existing file");
   }
 
+  public File getFirstExistingFile(String param) {
+    final List<String> fileStrings = getStringList(param);
+    for (final String fileName : fileStrings) {
+      final File f = new File(fileName.trim());
+      if (f.isFile()) {
+        return f;
+      }
+    }
+
+    throw new ParameterConversionException(fullString(param), fileStrings.toString(),
+        "No provided path is an existing file");
+  }
   /**
    * Gets a file or directory, which is required to exist.
    */
