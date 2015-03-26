@@ -233,4 +233,25 @@ public final class DoubleUtils {
     }
     return maxVal + Math.log(ret);
   }
+
+
+  /**
+   * Shifts the provided {@code val} towards but not past zero.  If the absolute value of
+   * {@code val} is less than or equal to shift, zero will be returned. Otherwise, negative {@code val}s
+   * will have {@code shift} added and positive vals will have {@code shift} subtracted.
+   *
+   * {@code shift} must be non-negative
+   *
+   * Inspired by AdaGradRDA.ISTAHelper from FACTORIE.
+   */
+  public static double shiftTowardsZeroWithClipping(double val, double shift) {
+    checkArgument(shift>=0.0);
+    if (val > shift) {
+      return val - shift;
+    } else if (val < -shift) {
+      return val + shift;
+    } else {
+      return 0.0;
+    }
+  }
 }
