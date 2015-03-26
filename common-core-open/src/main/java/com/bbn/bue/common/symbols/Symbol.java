@@ -1,6 +1,7 @@
 package com.bbn.bue.common.symbols;
 
-import com.google.common.annotations.Beta;
+import com.bbn.bue.common.HasStableHashCode;
+
 import com.google.common.base.Function;
 
 import java.io.ObjectStreamException;
@@ -28,8 +29,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author rgabbard
  */
-@Beta
-public final class Symbol implements Serializable {
+public final class Symbol implements Serializable, HasStableHashCode {
 
   private static Map<String, WeakReference<Symbol>> symbols =
       new HashMap<String, WeakReference<Symbol>>();
@@ -74,6 +74,11 @@ public final class Symbol implements Serializable {
     return asString();
   }
 
+  @Override
+  public int stableHashCode() {
+    return string.hashCode();
+  }
+
   public static final Function<? super String, Symbol> FromString = new Function<String, Symbol>() {
     @Override
     public Symbol apply(String input) {
@@ -92,5 +97,6 @@ public final class Symbol implements Serializable {
   private Object readResolve() throws ObjectStreamException {
     return Symbol.from(this.string);
   }
+
 }
 
