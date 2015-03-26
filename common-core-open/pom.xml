@@ -17,9 +17,21 @@
 
   <build>
       <plugins>
+          <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>appassembler-maven-plugin</artifactId>
+          <configuration>
+          <programs>
+          <program>
+              <mainClass>com.bbn.bue.common.files.DocIDToFileMapContains</mainClass>
+              <name>DocIDToFileMapContains</name>
+          </program>
+          </programs>
+            </configuration>
+          </plugin>
   </plugins>
   </build>
- 
+
   <dependencies>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -38,5 +50,7 @@
           <version>1.7.5</version>
       </dependency>
   </dependencies>
+
+
 
 </project>
