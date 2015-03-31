@@ -1,10 +1,14 @@
 package com.bbn.bue.common.io;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.io.CharSource;
+import com.google.common.io.Files;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -39,6 +43,15 @@ public final class ConcatenatedXMLIterableFactory {
 
   public Iterable<CharSource> filesIn(CharSource source) {
     return new ConcatenatedXMLFile(source);
+  }
+
+  public Function<File, Iterable<CharSource>> asFunction() {
+    return new Function<File, Iterable<CharSource>>() {
+      @Override
+      public Iterable<CharSource> apply(final File input) {
+        return filesIn(Files.asCharSource(input, Charsets.UTF_8));
+      }
+    };
   }
 
   /**
