@@ -12,6 +12,7 @@
   <modules>
       <module>common-core-open</module>
       <module>common-core-jackson-serialization-open</module>
+      <module>nlp-core-open</module>
   </modules>
 
   <properties>
@@ -30,13 +31,42 @@
 
     <skipITs>true</skipITs>
 
-    <junit.version>4.11</junit.version>
-    <guava.version>18.0</guava.version>
-
         <!-- Sonar server properties. These only work BBN-internally -->
       <sonar.host.url>http://e-apache-2.bbn.com:9000</sonar.host.url>
       <sonar.jdbc.url>jdbc:mysql://mysql.d4m.bbn.com:3306/sonar?useUnicode=true&amp;characterEncoding=utf8</sonar.jdbc.url>
   </properties>
+
+  <dependencyManagement>
+      <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.2</version>
+        </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <pluginManagement>
