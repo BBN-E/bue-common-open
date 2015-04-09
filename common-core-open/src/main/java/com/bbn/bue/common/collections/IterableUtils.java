@@ -21,8 +21,6 @@ public final class IterableUtils {
   private IterableUtils() {
   }
 
-  ;
-
   /**
    * Promotes a predicate over T to a predicate over Iterable<T> that returns true if an only if any
    * the predicate is true for any of the iterable's contents.
@@ -145,8 +143,6 @@ public final class IterableUtils {
     public String toString() {
       return String.format("(%s,%s)", first, second);
     }
-
-    ;
 
     @Override
     public int hashCode() {
@@ -335,6 +331,8 @@ public final class IterableUtils {
 
   /**
    * Prefer allEqual, whose name is less ambiguous between equality and identity
+   *
+   * @deprecated
    */
   @Deprecated
   public static <T> boolean allTheSame(final Iterable<T> iterable) {

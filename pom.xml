@@ -3,16 +3,47 @@
 
   <groupId>com.bbn.bue</groupId>
   <artifactId>common-all-open</artifactId>
-  <version>2.13.0-SNAPSHOT</version>
+  <version>2.17.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>BBN Speech, Language, and Multimedia Utility Library (open source code)</name>
-  <url>http://www.bbn.com/</url>
+  <name>com.bbn.bue:common-all-open</name>
+  <description>Open-source code shared by several BBN Speech and Language projects</descripton>
+  <url>https://github.com/rgabbard-bbn/bue-common-open</url>
+
+  <licenses>
+      <license>
+          <name>MIT License</name>
+          <url>http://www.opensource.org/licenses/mit-license.php</url>
+      </license>
+  </licenses>
 
   <modules>
       <module>common-core-open</module>
       <module>common-core-jackson-serialization-open</module>
+      <module>nlp-core-open</module>
   </modules>
+
+  <developers>
+   <developer>
+      <name>Ryan Gabbard</name>
+      <email>rgabbard@bbn.com</email>
+      <organization>BBN Technologies</organization>
+      <organizationUrl>http://www.bbn.com</organizationUrl>
+    </developer> 
+    <developer>
+      <name>Jay DeYoung</name>
+      <email>jdeyoung@bbn.com</email>
+      <organization>BBN Technologies</organization>
+      <organizationUrl>http://www.bbn.com</organizationUrl>
+    </developer> 
+
+    <developer>
+      <name>Dave Kolas</name>
+      <email>dkolas@bbn.com</email>
+      <organization>BBN Technologies</organization>
+      <organizationUrl>http://www.bbn.com</organizationUrl>
+    </developer> 
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,13 +61,42 @@
 
     <skipITs>true</skipITs>
 
-    <junit.version>4.11</junit.version>
-    <guava.version>16.0</guava.version>
-
         <!-- Sonar server properties. These only work BBN-internally -->
       <sonar.host.url>http://e-apache-2.bbn.com:9000</sonar.host.url>
       <sonar.jdbc.url>jdbc:mysql://mysql.d4m.bbn.com:3306/sonar?useUnicode=true&amp;characterEncoding=utf8</sonar.jdbc.url>
   </properties>
+
+  <dependencyManagement>
+      <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.2</version>
+        </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <pluginManagement>
@@ -154,7 +214,10 @@
      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.5</version>
+        <version>2.5.1</version>
+        <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -181,5 +244,44 @@
       <developerConnection>scm:git:ssh://d225/d4m/ears/git/bue-common-open.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
+
+<distributionManagement>
+    <snapshotRepository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>nexus</id>
+      <name>BBN internal repository (snapshots)</name>
+      <url>http://e-nexus-01.bbn.com:8081/nexus/content/repositories/snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>nexus</id>
+      <name>BBN internal repository (releases)</name>
+      <url>http://e-nexus-01.bbn.com:8081/nexus/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>
+
+  <profiles>
+      <profile>
+          <id>public-release</id>
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-gpg-plugin</artifactId>
+      <version>1.5</version>
+      <executions>
+        <execution>
+          <id>sign-artifacts</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>sign</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+      </profile>
+  </profiles>
 
 </project>

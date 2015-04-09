@@ -21,9 +21,9 @@ public class StrictStringToBoolean implements StringConverter<Boolean> {
   @Override
   public Boolean decode(final String s) {
     checkNotNull(s);
-    if (s.equals("true")) {
+    if ("true".equals(s)) {
       return Boolean.TRUE;
-    } else if (s.equals("false")) {
+    } else if ("false".equals(s)) {
       return Boolean.FALSE;
     } else {
       throw new ConversionException(

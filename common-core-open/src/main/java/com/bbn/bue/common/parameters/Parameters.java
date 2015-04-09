@@ -48,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -72,7 +73,10 @@ public final class Parameters {
   /**
    * Constructs a Parameters object from a <code>Map</code>.  The Map may contain neither null keys,
    * empty keys, or null values.
+   *
+   * @deprecated Prefer fromMap()
    */
+  @Deprecated
   public Parameters(final Map<String, String> params) {
     this(params, ImmutableList.<String>of());
   }
@@ -183,6 +187,24 @@ public final class Parameters {
     return new Parameters(loader.load(f));
   }
 
+  public static Parameters fromMap(Map<String, String> map) {
+    return new Parameters(map);
+  }
+
+  /**
+   * Creates a {@code Parameters} from a {@link java.util.Properties} by turning each key and value
+   * in the {@code Properties} into a string. If multiple keys in the properties object have the
+   * same string representation or if any key or value is null, an {@link
+   * java.lang.IllegalArgumentException} or {@link java.lang.NullPointerException} will be thrown.
+   */
+  public static Parameters fromProperties(Properties properties) {
+    final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
+    for (final Map.Entry<Object, Object> property : properties.entrySet()) {
+      ret.put(property.getKey().toString(), property.getValue().toString());
+    }
+    return fromMap(ret.build());
+  }
+
   /**
    * Combines these parameters with the others supplied to make a new <code>Parameters</code>. The new parameters
    * will contain all mappings present in either. If a mapping is present in both, the <code>other</code> argument
@@ -191,7 +213,7 @@ public final class Parameters {
   // this is currently unused anywhere, and it will require a little
   // thought how best to make it interact with namespacing
         /*public Parameters compose(final Parameters other) {
-		checkNotNull(other);
+                checkNotNull(other);
 		final Map<String, String> newMap = Maps.newHashMap();
 		newMap.putAll(params);
 		newMap.putAll(other.params);
@@ -619,6 +641,18 @@ public final class Parameters {
         "existing file");
   }
 
+  public File getFirstExistingFile(String param) {
+    final List<String> fileStrings = getStringList(param);
+    for (final String fileName : fileStrings) {
+      final File f = new File(fileName.trim());
+      if (f.isFile()) {
+        return f;
+      }
+    }
+
+    throw new ParameterConversionException(fullString(param), fileStrings.toString(),
+        "No provided path is an existing file");
+  }
   /**
    * Gets a file or directory, which is required to exist.
    */
@@ -660,6 +694,14 @@ public final class Parameters {
   }
 
   /**
+   * Gets a file or directory parameter without specifying whether it exists. Prefer a more
+   * specific parameter accessor when possible.
+   */
+  public File getFileOrDirectory(final String param) {
+    return get(param, new StringToFile(), new AlwaysValid<File>(), "file or directory");
+  }
+
+  /**
    * Gets a (possibly empty) list of existing directories. Will throw a {@link
    * com.bbn.bue.common.parameters.exceptions.ParameterValidationException} if any of the supplied
    * paths are not existing directories.
@@ -678,6 +720,23 @@ public final class Parameters {
     }
 
     return ret.build();
+  }
+
+  /**
+   * Gets the first existing directory in a common-separated list. If none exists, throws an {@link
+   * com.bbn.bue.common.parameters.exceptions.ParameterValidationException}.
+   */
+  public File getFirstExistingDirectory(String param) {
+    final List<String> directoryStrings = getStringList(param);
+    for (final String dirName : directoryStrings) {
+      final File dir = new File(dirName.trim());
+      if (dir.isDirectory()) {
+        return dir;
+      }
+    }
+
+    throw new ParameterConversionException(fullString(param), directoryStrings.toString(),
+        "No provided path is an existing directory");
   }
 
 

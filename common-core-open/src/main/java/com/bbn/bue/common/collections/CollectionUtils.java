@@ -2,6 +2,8 @@ package com.bbn.bue.common.collections;
 
 import com.google.common.base.Function;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
@@ -12,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utilities for collections.
@@ -26,7 +29,7 @@ public final class CollectionUtils {
 
   /**
    * Takes some collections and creates a map from their elements to which collections contain them.
-   *  The Collections must be disjoint or an {@link java.lang.IllegalArgumentException} will be
+   * The Collections must be disjoint or an {@link java.lang.IllegalArgumentException} will be
    * thrown.
    */
   public static <T, C extends Collection<T>> Map<T, C> makeElementsToContainersMap(
@@ -41,6 +44,30 @@ public final class CollectionUtils {
 
     return ret.build();
   }
+
+  /**
+   * Takes some collections and creates a {@link com.google.common.collect.ListMultimap} from their
+   * elements to which collections contain them.  Unlike {@link #makeElementsToContainersMap(Iterable)},
+   * the same element may appear in multiple collections. However, {@code null} may not appear in
+   * any of the collections.  The returned multimap is a {@link com.google.common.collect.ListMultimap}
+   * to avoid having to do potentially expensive comparisons between the sets; we know there will be
+   * no duplicates because the input collections are sets.
+   */
+  public static <V, C extends Set<? extends V>> ImmutableListMultimap<V, C> makeSetElementsToContainersMultimap(
+      final Iterable<C> sets) {
+    // because these are sets we can safely use a list multimap without having to worry
+    // about duplicates
+    final ImmutableListMultimap.Builder<V, C> ret = ImmutableListMultimap.builder();
+
+    for (final C set : sets) {
+      for (final V item : set) {
+        ret.put(item, set);
+      }
+    }
+
+    return ret.build();
+  }
+
 
   /**
    * Returns a new Multiset resulting from transforming each element of the input Multiset by a
@@ -173,4 +200,15 @@ public final class CollectionUtils {
       }
     };
   }
+
+  /**
+   * A copy of the input as an {@link com.google.common.collect.ImmutableList} which respects
+   * iteration order, but where only the first occurrence of each element is kept. No input items
+   * may be {@code null}.
+   */
+  public static <T> ImmutableList<T> asUniquedList(Iterable<T> items) {
+    return ImmutableSet.copyOf(items).asList();
+  }
+
+
 }

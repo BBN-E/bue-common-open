@@ -2,6 +2,7 @@ package com.bbn.bue.common.files;
 
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.MapUtils;
+import com.bbn.bue.common.io.GZIPByteSink;
 import com.bbn.bue.common.io.GZIPByteSource;
 import com.bbn.bue.common.symbols.Symbol;
 
@@ -36,7 +37,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -243,8 +243,7 @@ public final class FileUtils {
    * leaving the rest of the file intact.  This is useful when you are writing a long binary file
    * with a size header, but don't know how many elements are there until the end.
    */
-  public static void writeIntegerToStart(final File f, final int num)
-      throws FileNotFoundException, IOException {
+  public static void writeIntegerToStart(final File f, final int num) throws IOException {
     final RandomAccessFile fixupFile = new RandomAccessFile(f, "rw");
     fixupFile.writeInt(num);
     fixupFile.close();
@@ -509,5 +508,47 @@ public final class FileUtils {
     if (!directory.isDirectory()) {
       throw new IOException(directory + " does not exist or is not a directory");
     }
+  }
+
+  /**
+   * Just like {@link Files#asByteSource(java.io.File)}, but decompresses the incoming data using
+   * GZIP.
+   */
+  public static ByteSource asCompressedByteSource(File f) throws IOException {
+    return GZIPByteSource.fromCompressed(Files.asByteSource(f));
+  }
+
+  /**
+   * Just like {@link Files#asByteSink(java.io.File, com.google.common.io.FileWriteMode...)}, but
+   * decompresses the incoming data using GZIP.
+   */
+  public static ByteSink asCompressedByteSink(File f) throws IOException {
+    return GZIPByteSink.gzipCompress(Files.asByteSink(f));
+  }
+
+  /**
+   * Just like {@link Files#asCharSource(java.io.File, java.nio.charset.Charset)}, but decompresses
+   * the incoming data using GZIP.
+   */
+  public static CharSource asCompressedCharSource(File f, Charset charSet) throws IOException {
+    return asCompressedByteSource(f).asCharSource(charSet);
+  }
+
+  /**
+   * Just like {@link Files#asCharSink(java.io.File, java.nio.charset.Charset,
+   * com.google.common.io.FileWriteMode...)}, but decompresses the incoming data using GZIP.
+   */
+  public static CharSink asCompressedCharSink(File f, Charset charSet) throws IOException {
+    return asCompressedByteSink(f).asCharSink(charSet);
+  }
+
+  // Guava predicates and functions
+  public static Predicate<File> isDirectoryPredicate() {
+    return new Predicate<File>() {
+      @Override
+      public boolean apply(final File input) {
+        return input.isDirectory();
+      }
+    };
   }
 }

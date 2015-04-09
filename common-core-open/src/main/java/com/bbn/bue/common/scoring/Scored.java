@@ -37,13 +37,9 @@ public final class Scored<T> {
     return score;
   }
 
-  ;
-
   public T item() {
     return item;
   }
-
-  ;
 
   private final T item;
   private final double score;

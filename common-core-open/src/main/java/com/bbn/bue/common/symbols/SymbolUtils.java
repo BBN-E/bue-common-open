@@ -5,6 +5,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
 
 import java.util.Comparator;
 
@@ -20,6 +21,15 @@ public class SymbolUtils {
 
   private SymbolUtils() {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * An ordering which compares <code>Symbol</code>s by the <code>String</code>s used to create them.
+   *
+   * @author rgabbard
+   */
+  public static Ordering<Symbol> byStringOrdering() {
+    return Ordering.from(new ByString());
   }
 
   /**

@@ -316,4 +316,13 @@ public final class StringUtils {
     final int trueEndIndex = Math.min(endIndexExclusive, s.length());
     return s.substring(trueStartIndex, trueEndIndex);
   }
+
+  /**
+   * Checks that the supplied string is non-empty. If it is empty, an {@link
+   * java.lang.IllegalArgumentException} is thrown with the supplied message.
+   */
+  public static String checkNonEmpty(String s, String msg) {
+    checkArgument(!s.isEmpty(), msg);
+    return s;
+  }
 }

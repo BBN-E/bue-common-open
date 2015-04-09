@@ -95,8 +95,6 @@ public final class XMLStyleAnnotationFormatter {
 
     public enum Type {Start, End}
 
-    ;
-
     public TagCursor(Iterable<AnnotatedOffsetRange<CharOffset>> annotations) {
       tagsInStartingOrder = startTagOrder.sortedCopy(annotations);
       tagsInEndingOrder = endTagOrder.sortedCopy(annotations);

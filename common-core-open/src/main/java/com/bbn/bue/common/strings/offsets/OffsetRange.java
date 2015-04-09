@@ -61,13 +61,6 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
         .equal(this.endInclusive, other.endInclusive);
   }
 
-  private static final Ordering<OffsetRange> ByLength = new Ordering<OffsetRange>() {
-    @Override
-    public int compare(final OffsetRange left, final OffsetRange right) {
-      return Ints.compare(left.length(), right.length());
-    }
-  };
-
   public static final <T extends Offset & Comparable<T>> Ordering<OffsetRange<T>> byLengthOrdering() {
     return new Ordering<OffsetRange<T>>() {
       @Override
@@ -107,6 +100,13 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
     return fromInclusiveEndpoints(CharOffset.asCharOffset(startInclusive),
         CharOffset.asCharOffset(endInclusive));
   }
+
+  public static OffsetRange<ByteOffset> byteOffsetRange(final int startInclusive,
+      final int endInclusive) {
+    return OffsetRange.fromInclusiveEndpoints(ByteOffset.asByteOffset(startInclusive),
+        ByteOffset.asByteOffset(endInclusive));
+  }
+
 
   /**
    * This returns optional because it is not possible to represent an empty offset span
@@ -166,4 +166,5 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
   public String toString() {
     return "[" + startInclusive().toString() + "-" + endInclusive().toString() + "]";
   }
+
 }

@@ -17,8 +17,6 @@ public abstract class SymbolMixin {
     return null;
   }
 
-  ;
-
   @Override
   public abstract
   @JsonProperty("string")
