@@ -16,3 +16,11 @@ Contact: rgabbard@bbn.com
 
 ## Building
 * from the root of this repository, `mvn install`
+
+## Note on Maven group IDs
+
+This repository departs from the usual practice of all sub-modules sharing
+or appending to the parent's group ID because it resulted from the merger
+of multiple git repositories and we did not want to break existing Maven
+references.
+
