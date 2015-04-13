@@ -7,7 +7,7 @@
   <packaging>pom</packaging>
 
   <name>com.bbn.bue:common-all-open</name>
-  <description>Open-source code shared by several BBN Speech and Language projects</descripton>
+  <description>Open-source code shared by several BBN Speech and Language projects</description>
   <url>https://github.com/rgabbard-bbn/bue-common-open</url>
 
   <licenses>
@@ -266,10 +266,6 @@
       <name>BBN internal repository (releases)</name>
       <url>http://e-nexus-01.bbn.com:8081/nexus/content/repositories/releases/</url>
     </repository>
-    <snapshotRepository>
-    <id>ossrh</id>
-    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-  </snapshotRepository> 
   </distributionManagement>
 
   <profiles>
@@ -304,6 +300,12 @@
     </plugin>
   </plugins>
 </build>
+<distributionManagement>
+    <snapshotRepository>
+    <id>ossrh</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  </snapshotRepository> 
+  </distributionManagement>
       </profile>
   </profiles>
 
