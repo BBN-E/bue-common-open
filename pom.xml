@@ -103,19 +103,6 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${maven.javadoc.plugin.version}</version>
-          <configuration>
-            <show>package</show>
-            <quiet>true</quiet>
-            <linksource>true</linksource>
-            <links>
-              <link>http://docs.guava-libraries.googlecode.com/git-history/v${guava.version}/javadoc/</link>
-            </links>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${maven.failsafe.plugin.version}</version>
           <executions>
@@ -178,28 +165,7 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <version>${maven.dependency.plugin.version}</version>
       </plugin>
-<plugin>
-      <artifactId>maven-source-plugin</artifactId>
-      <version>2.2.1</version>
-      <executions>
-        <execution>
-          <id>attach-sources</id>
-          <phase>deploy</phase>
-          <goals><goal>jar-no-fork</goal></goals> 
-        </execution>
-      </executions>
-    </plugin>
-    <plugin> 
-      <artifactId>maven-javadoc-plugin</artifactId> 
-      <executions> 
-        <execution> 
-          <id>attach-javadocs</id>
-          <phase>deploy</phase>
-          <goals><goal>jar</goal></goals> 
-        </execution> 
-      </executions> 
-    </plugin>
-    <plugin> 
+   <plugin> 
       <!-- explicitly define maven-deploy-plugin after other to force exec order -->
       <artifactId>maven-deploy-plugin</artifactId> 
       <version>2.7</version>
@@ -218,7 +184,7 @@
         <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
 <useReleaseProfile>false</useReleaseProfile>
-<releaseProfiles>release,public-release</releaseProfiles>
+<releaseProfiles>release</releaseProfiles>
 <goals>deploy</goals>
         </configuration>
       </plugin>
@@ -271,9 +237,30 @@
 
   <profiles>
       <profile>
-          <id>public-release</id>
+          <id>release</id>
 <build>
   <plugins>
+<plugin>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>2.2.1</version>
+      <executions>
+        <execution>
+          <id>attach-sources</id>
+          <goals><goal>jar-no-fork</goal></goals> 
+        </execution>
+      </executions>
+    </plugin>
+    <plugin> 
+      <artifactId>maven-javadoc-plugin</artifactId> 
+      <version>2.9.1</version>
+      <executions> 
+        <execution> 
+          <id>attach-javadocs</id>
+          <goals><goal>jar</goal></goals> 
+        </execution> 
+      </executions> 
+    </plugin>
+ 
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-gpg-plugin</artifactId>
