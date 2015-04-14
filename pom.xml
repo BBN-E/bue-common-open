@@ -7,7 +7,7 @@
   <packaging>pom</packaging>
 
   <name>com.bbn.bue:common-all-open</name>
-  <description>Open-source code shared by several BBN Speech and Language projects</descripton>
+  <description>Open-source code shared by several BBN Speech and Language projects</description>
   <url>https://github.com/rgabbard-bbn/bue-common-open</url>
 
   <licenses>
