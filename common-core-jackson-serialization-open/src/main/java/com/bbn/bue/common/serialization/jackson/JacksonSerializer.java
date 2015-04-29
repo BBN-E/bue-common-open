@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
@@ -21,15 +22,21 @@ public final class JacksonSerializer {
     this.mapper = checkNotNull(mapper);
   }
 
-  private static JacksonSerializer fromJSONFactory(JsonFactory jsonFactory) {
+  private static ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
     final ObjectMapper mapper = new ObjectMapper(jsonFactory);
     mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
     mapper.findAndRegisterModules();
-    return new JacksonSerializer(mapper);
+    return mapper;
   }
 
   public static JacksonSerializer forNormalJSON() {
-    return fromJSONFactory(new JsonFactory());
+    return new JacksonSerializer(mapperFromJSONFactory(new JsonFactory()));
+  }
+
+  public static JacksonSerializer forPrettyJSON() {
+    final ObjectMapper ret = mapperFromJSONFactory(new JsonFactory());
+    ret.enable(SerializationFeature.INDENT_OUTPUT);
+    return new JacksonSerializer(ret);
   }
 
   private static JacksonSerializer normalJSONCached;
@@ -51,7 +58,7 @@ public final class JacksonSerializer {
   }
 
   public static JacksonSerializer forSmileUncached() {
-    return fromJSONFactory(new SmileFactory());
+    return new JacksonSerializer(mapperFromJSONFactory(new SmileFactory()));
   }
 
 
