@@ -26,4 +26,12 @@ public class TestSerialization extends TestCase {
     assertEquals(foo, JacksonTestUtils.roundTripThroughSerializer(foo, serializer));
   }
 
+  @Test
+  public void testSerializingFromString() throws IOException {
+    final Map<String, FMeasureCounts> foo = ImmutableMap.of("Hello",
+        FMeasureCounts.from(1, 2, 3));
+    final String serialized = serializer.writeValueAsString(foo);
+    assertEquals(foo, serializer.deserializeFromString(serialized, foo.getClass()));
+  }
+
 }
