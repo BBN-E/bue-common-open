@@ -3,6 +3,7 @@ package com.bbn.bue.common.serialization.jackson;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.io.ByteSink;
@@ -62,6 +63,14 @@ public final class JacksonSerializer {
   public Object deserializeFrom(final ByteSource source) throws IOException {
     final RootObject rootObj = mapper.readValue(source.openStream(), RootObject.class);
     return rootObj.object();
+  }
+
+  public String writeValueAsString(Object value) throws JsonProcessingException {
+    return mapper.writeValueAsString(value);
+  }
+
+  public <T> T deserializeFromString(String content, Class<T> valueType) throws IOException {
+    return mapper.readValue(content, valueType);
   }
 
   private static final class RootObject {
