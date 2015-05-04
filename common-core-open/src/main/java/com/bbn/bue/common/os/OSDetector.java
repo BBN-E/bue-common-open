@@ -10,6 +10,8 @@ public final class OSDetector {
 
   public static void main(String[] args) {
 
+    System.err.println("Copyright 2015 Raytheon BBN Technologies Corp.");
+    System.err.println("All Rights Reserved.");
     System.out.println(OS);
 
     if (isWindows()) {
