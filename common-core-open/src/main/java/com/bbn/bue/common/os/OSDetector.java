@@ -1,5 +1,7 @@
 package com.bbn.bue.common.os;
 
+import com.bbn.bue.common.BBNUtils;
+
 public final class OSDetector {
 
   private OSDetector() {
@@ -9,9 +11,7 @@ public final class OSDetector {
   private static String OS = System.getProperty("os.name").toLowerCase();
 
   public static void main(String[] args) {
-
-    System.err.println("Copyright 2015 Raytheon BBN Technologies Corp.");
-    System.err.println("All Rights Reserved.");
+    BBNUtils.logCopyrightMessage();
     System.out.println(OS);
 
     if (isWindows()) {

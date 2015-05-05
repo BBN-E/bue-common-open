@@ -1,5 +1,6 @@
 package com.bbn.bue.common.files;
 
+import com.bbn.bue.common.BBNUtils;
 import com.bbn.bue.common.StringUtils;
 
 import com.google.common.base.Charsets;
@@ -24,8 +25,6 @@ public final class DocIDToFileMapContains {
     // we wrap the main method in this way to
     // ensure a non-zero return value on failure
     try {
-      System.err.println("Copyright 2015 Raytheon BBN Technologies Corp.");
-      System.err.println("All Rights Reserved.");
       trueMain(argv);
     } catch (Exception e) {
       e.printStackTrace();
@@ -34,6 +33,7 @@ public final class DocIDToFileMapContains {
   }
 
   private static void trueMain(String[] argv) throws IOException {
+    BBNUtils.logCopyrightMessage();
     if (argv.length != 2) {
       System.err.println("usage: DocIDToFileMapContains docIDToFileMap fileList");
       System.exit(1);
