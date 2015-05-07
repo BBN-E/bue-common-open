@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.bbn.bue.common.parameters.Parameters;
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -216,8 +217,11 @@ public final class EREtoACETypeMapper {
   }
   
   private static ImmutableList<String> linesFromResourceFile(final String resourceName) throws IOException {
+    return Resources.asCharSource(Resources.getResource(EREtoACETypeMapper.class, resourceName), Charsets.UTF_8).readLines();
+    
+    /*
     final ImmutableList.Builder<String> ret = ImmutableList.builder();
-
+    
     final InputStream inputStream = Resources.getResource(EREtoACETypeMapper.class, resourceName).openStream();
     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
     
@@ -227,6 +231,7 @@ public final class EREtoACETypeMapper {
     }
     
     return ret.build();
+    */
   }
   
 }
