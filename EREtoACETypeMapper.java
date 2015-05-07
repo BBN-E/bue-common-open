@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
+import com.google.common.io.Resources;
 
 public final class EREtoACETypeMapper {
   private final ImmutableMap<String, String> eventTypes;
@@ -216,8 +217,8 @@ public final class EREtoACETypeMapper {
   
   private static ImmutableList<String> linesFromResourceFile(final String resourceName) throws IOException {
     final ImmutableList.Builder<String> ret = ImmutableList.builder();
-    
-    final InputStream inputStream = EREtoACETypeMapper.class.getClassLoader().getResourceAsStream(resourceName);
+
+    final InputStream inputStream = Resources.getResource(EREtoACETypeMapper.class, resourceName).openStream();
     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
     
     String line;
