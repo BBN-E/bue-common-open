@@ -456,6 +456,41 @@ public final class FileUtils {
     return ret.build();
   }
 
+  private static final Splitter MAP_SPLITTER =
+      Splitter.on("\t").trimResults().omitEmptyStrings().limit(2);
+
+  /**
+   * Loads a file in the format {@code key value1} (tab-separated) into a {@link
+   * com.google.common.collect.ImmutableMap} of {@link String}s. Each key should only appear on one
+   * line, and there should be no duplicate values. Each key and value has whitespace trimmed off.
+   * Skips empty lines and allows comment-lines with {@code #} in the first position.
+   */
+  public static ImmutableMap<String, String> loadStringMap(CharSource source) throws IOException {
+    final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
+
+    int count = 0;
+    for (final String line : source.readLines()) {
+      ++count;
+      if (line.startsWith("#")) {
+        continue;
+      }
+      final List<String> parts = MAP_SPLITTER.splitToList(line);
+      if (parts.isEmpty()) {
+        continue;
+      }
+      if (parts.size() == 2) {
+        ret.put(parts.get(0), parts.get(1));
+      } else {
+        throw new RuntimeException(
+            "When reading a map from " + source + ", line " + count + " is invalid: "
+                + line);
+      }
+    }
+
+    return ret.build();
+  }
+
+
   public static void writeSymbolMultimap(Multimap<Symbol, Symbol> mm, CharSink charSink)
       throws IOException {
     final Joiner tabJoiner = Joiner.on('\t');
