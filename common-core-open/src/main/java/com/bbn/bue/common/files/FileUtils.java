@@ -91,7 +91,7 @@ public final class FileUtils {
    * takes a List of fileNames and returns a list of files, ignoring any empty entries white space
    * at the end of a name
    */
-  public static ImmutableList<File> loadFileList(final List<String> fileNames) throws IOException {
+  public static ImmutableList<File> loadFileList(final Iterable<String> fileNames) throws IOException {
     final ImmutableList.Builder<File> ret = ImmutableList.builder();
 
     for (String filename : fileNames) {
