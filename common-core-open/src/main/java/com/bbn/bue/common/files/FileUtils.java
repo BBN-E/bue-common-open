@@ -602,4 +602,23 @@ public final class FileUtils {
       }
     };
   }
+
+  /**
+   * wraps any IOException and throws a RuntimeException
+   * @param charset
+   * @return
+   */
+  public static Function<File, Iterable<String>> toLinesFunction(final Charset charset) {
+    return new Function<File, Iterable<String>>() {
+      @Override
+      public Iterable<String> apply(final File input) {
+        try {
+          return Files.readLines(input, charset);
+        } catch (IOException e) {
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        }
+      }
+    };
+  }
 }
