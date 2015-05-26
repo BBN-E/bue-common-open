@@ -88,6 +88,22 @@ public final class FileUtils {
   }
 
   /**
+   * takes a List of fileNames and returns a list of files, ignoring any empty entries white space
+   * at the end of a name
+   */
+  public static ImmutableList<File> loadFileList(final List<String> fileNames) throws IOException {
+    final ImmutableList.Builder<File> ret = ImmutableList.builder();
+
+    for (String filename : fileNames) {
+      if (!filename.isEmpty()) {
+        ret.add(new File(filename.trim()));
+      }
+    }
+
+    return ret.build();
+  }
+
+  /**
    * Like {@link #loadFileList(java.io.File)}, except if the file name ends in ".gz" or ".tgz" it is
    * treated as GZIP compressed. This is often convenient for loading e.g. document lists which
    * benefit from being compressed for large corpora.
