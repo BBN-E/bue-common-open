@@ -1,5 +1,6 @@
 package com.bbn.bue.common.math;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
@@ -54,6 +55,15 @@ public final class MathUtils {
     } else {
       return Optional.of(sorted.get(sorted.size() / 2));
     }
+  }
+
+  public static Function<Iterable<Double>, Optional<Double>> medianOfDoublesFunction() {
+    return new Function<Iterable<Double>, Optional<Double>>() {
+      @Override
+      public Optional<Double> apply(final Iterable<Double> input) {
+        return medianOfDoubles(input);
+      }
+    };
   }
 
 
