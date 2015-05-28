@@ -1,5 +1,9 @@
 package com.bbn.bue.common.math;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 public final class MathUtils {
@@ -26,6 +30,18 @@ public final class MathUtils {
       ret += x;
     }
     return ret;
+  }
+
+  public static Optional<Double> median(Iterable<Integer> sizes) {
+    final ImmutableList<Integer> sorted = Ordering.natural().immutableSortedCopy(sizes);
+    if(sorted.size() == 0) {
+      return Optional.absent();
+    }
+    if (sorted.size() % 2 == 0) {
+      return Optional.of(0.5 * (sorted.get(sorted.size() / 2) + sorted.get(sorted.size() / 2 - 1)));
+    } else {
+      return Optional.of((double) sorted.get(sorted.size() / 2));
+    }
   }
 
   public static double xLogX(double d) {
