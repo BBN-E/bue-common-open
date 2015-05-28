@@ -32,7 +32,7 @@ public final class MathUtils {
     return ret;
   }
 
-  public static Optional<Double> median(Iterable<Integer> sizes) {
+  public static Optional<Double> medianOfIntegers(Iterable<Integer> sizes) {
     final ImmutableList<Integer> sorted = Ordering.natural().immutableSortedCopy(sizes);
     if(sorted.size() == 0) {
       return Optional.absent();
@@ -43,6 +43,19 @@ public final class MathUtils {
       return Optional.of((double) sorted.get(sorted.size() / 2));
     }
   }
+
+  public static Optional<Double> medianOfDoubles(Iterable<Double> sizes) {
+    final ImmutableList<Double> sorted = Ordering.natural().immutableSortedCopy(sizes);
+    if(sorted.size() == 0) {
+      return Optional.absent();
+    }
+    if (sorted.size() % 2 == 0) {
+      return Optional.of(0.5 * (sorted.get(sorted.size() / 2) + sorted.get(sorted.size() / 2 - 1)));
+    } else {
+      return Optional.of(sorted.get(sorted.size() / 2));
+    }
+  }
+
 
   public static double xLogX(double d) {
     if (d == 0.0) {
