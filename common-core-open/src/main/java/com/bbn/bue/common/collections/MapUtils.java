@@ -129,6 +129,15 @@ public final class MapUtils {
     };
   }
 
+  public static <K, V> Function<Map<K, V>, Iterable<V>> getValues() {
+    return new Function<Map<K, V>, Iterable<V>>() {
+      @Override
+      public Iterable<V> apply(final Map<K, V> input) {
+        return input.values();
+      }
+    };
+  }
+
   public static <K, V extends Comparable<V>> Ordering<Map.Entry<K, V>> byValueOrderingAscending() {
     return Ordering.<V>natural().onResultOf(MapUtils.<K, V>getEntryValue());
   }
