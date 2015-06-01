@@ -1,10 +1,13 @@
 package com.bbn.nlp.coreference.measures;
 
+import com.google.common.annotations.Beta;
+
 /**
  * Scores coreference clusterings by the BLANC measure. See Marta Recasens Potau.  "Coreference:
  * Theory, Annotation, Resolution, and Evaluation." PhD. Dissertation. University of Barcelona
  * http://stel.ub.edu/cba2010/phd/phd.pdf
  */
+@Beta
 public interface BLANCScorer {
 
   /**

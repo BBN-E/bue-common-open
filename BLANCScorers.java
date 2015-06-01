@@ -1,8 +1,11 @@
 package com.bbn.nlp.coreference.measures;
 
+import com.google.common.annotations.Beta;
+
 /**
  * Utility and creation methods associated with BLANC scorers.
  */
+@Beta
 public final class BLANCScorers {
 
   private BLANCScorers() {

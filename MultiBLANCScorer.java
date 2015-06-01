@@ -2,6 +2,7 @@ package com.bbn.nlp.coreference.measures;
 
 import com.bbn.bue.common.collections.CollectionUtils;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
@@ -27,6 +28,7 @@ import static com.google.common.collect.Iterables.concat;
  * See Marta Recasens Potau.  "Coreference: Theory, Annotation, Resolution, and Evaluation." PhD.
  * Dissertation. University of Barcelona http://stel.ub.edu/cba2010/phd/phd.pdf
  */
+@Beta
 public final class MultiBLANCScorer implements BLANCScorer {
   private final boolean useSelfEdges;
 

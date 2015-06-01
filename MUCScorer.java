@@ -4,6 +4,7 @@ import com.bbn.bue.common.collections.CollectionUtils;
 import com.bbn.bue.common.evaluation.FMeasureInfo;
 import com.bbn.bue.common.evaluation.PrecisionRecallPair;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 
@@ -18,6 +19,7 @@ import java.util.Set;
  * model-theoretic coreference scoring scheme. In Proceedings fo the 6th Message Understanding
  * Conference (MUC6).
  */
+@Beta
 public final class MUCScorer {
 
   private MUCScorer() {

@@ -1,24 +1,5 @@
 package com.bbn.nlp.coreference.measures;
 
-import com.bbn.bue.common.evaluation.FMeasureInfo;
-import com.bbn.bue.common.evaluation.PrecisionRecallPair;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-
-import org.jgrapht.alg.KuhnMunkresMinimalWeightBipartitePerfectMatching;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleWeightedGraph;
-
-import java.util.Set;
-
-
-
 /**
  * This implements the Constrained Entity-Alignment F-Measure (CEAF) metric.
  * CEAF treats the gold and system entities as a bipartite graph (with gold vs system entities forming the two sides of the graph).
@@ -30,6 +11,7 @@ import java.util.Set;
  * In the above paper, Luo introduced mention-based CEAF and entity-based CEAF.
  * We implement mention-based CEAF here, i.e. using Equation (8) of the paper as the similarity measure between two entities.
  */
+/*@Beta
 public final class MentionCEAFScorer {
 
   private MentionCEAFScorer() {
@@ -235,3 +217,4 @@ public final class MentionCEAFScorer {
 
   }
 }
+*/

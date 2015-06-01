@@ -1,5 +1,6 @@
 package com.bbn.nlp.coreference.measures;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
 
 /**
@@ -9,6 +10,7 @@ import com.google.common.base.Optional;
  * would normally expect. The BLANC score itself it always defined, but various sub-scores may be
  * {@code NaN}.
  */
+@Beta
 public final class BLANCResult {
   // precision of coref links
   private final double P_C;
