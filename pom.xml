@@ -175,6 +175,14 @@
           <phase>deploy</phase>
           <goals><goal>deploy</goal></goals> 
         </execution> 
+        <execution>
+            <id>internal-deploy</id>
+            <phase>deploy</phase>
+            <goals><goal>deploy</goal></goals>
+            <configuration>
+                <altDeploymentRepository>releases::nexus::http://e-nexus-01.bbn.com:8081/nexus/content/repositories/releases/</altDeploymentRepository>
+            </configuration>
+        </execution>
       </executions> 
     </plugin>
      <plugin>
