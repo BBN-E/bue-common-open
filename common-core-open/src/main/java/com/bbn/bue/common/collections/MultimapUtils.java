@@ -87,4 +87,14 @@ public final class MultimapUtils {
       }
     };
   }
+
+  @Beta
+  public static <K,V> ImmutableMultimap<K,V> deriveFromKeys(final Iterable<K> keys,
+      final Function<K, Iterable<V>> valueFunction) {
+    ImmutableMultimap.Builder<K,V> mapBuilder = ImmutableMultimap.builder();
+    for(K key: keys) {
+      mapBuilder.putAll(key, valueFunction.apply(key));
+    }
+    return mapBuilder.build();
+  }
 }
