@@ -1,7 +1,13 @@
 package com.bbn.bue.common.collections;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
@@ -50,5 +56,35 @@ public final class MultimapUtils {
     }
 
     return ret.build();
+  }
+
+  @Beta
+  public static <K, V> Function<K, ImmutableSet<V>> multiMapAsFunction(final ImmutableSetMultimap<K, V> map) {
+    return new Function<K, ImmutableSet<V>>() {
+      @Override
+      public ImmutableSet<V> apply(final K input) {
+        return map.get(input);
+      }
+    };
+  }
+
+  @Beta
+  public static <K, V> Function<K, ImmutableList<V>> multiMapAsFunction(final ImmutableListMultimap<K, V> map) {
+    return new Function<K, ImmutableList<V>>() {
+      @Override
+      public ImmutableList<V> apply(final K input) {
+        return map.get(input);
+      }
+    };
+  }
+
+  @Beta
+  public static <K, V> Function<K, Iterable<V>> multiMapAsFunction(final ImmutableMultimap<K, V> map) {
+    return new Function<K, Iterable<V>>() {
+      @Override
+      public Iterable<V> apply(final K input) {
+        return map.get(input);
+      }
+    };
   }
 }
