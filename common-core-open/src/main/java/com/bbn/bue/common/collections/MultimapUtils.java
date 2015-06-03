@@ -2,11 +2,7 @@ package com.bbn.bue.common.collections;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -59,42 +55,14 @@ public final class MultimapUtils {
   }
 
   @Beta
-  public static <K, V> Function<K, ImmutableSet<V>> multiMapAsFunction(final ImmutableSetMultimap<K, V> map) {
-    return new Function<K, ImmutableSet<V>>() {
-      @Override
-      public ImmutableSet<V> apply(final K input) {
-        return map.get(input);
+  public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimap(
+      final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
+    final ImmutableSetMultimap.Builder<K1, V2> result = ImmutableSetMultimap.builder();
+    for(K1 k1: first.keySet()) {
+      for(V1 v1: first.get(k1)) {
+        result.putAll(k1, second.get(v1));
       }
-    };
-  }
-
-  @Beta
-  public static <K, V> Function<K, ImmutableList<V>> multiMapAsFunction(final ImmutableListMultimap<K, V> map) {
-    return new Function<K, ImmutableList<V>>() {
-      @Override
-      public ImmutableList<V> apply(final K input) {
-        return map.get(input);
-      }
-    };
-  }
-
-  @Beta
-  public static <K, V> Function<K, Iterable<V>> multiMapAsFunction(final ImmutableMultimap<K, V> map) {
-    return new Function<K, Iterable<V>>() {
-      @Override
-      public Iterable<V> apply(final K input) {
-        return map.get(input);
-      }
-    };
-  }
-
-  @Beta
-  public static <K,V> ImmutableMultimap<K,V> deriveFromKeys(final Iterable<K> keys,
-      final Function<K, Iterable<V>> valueFunction) {
-    ImmutableMultimap.Builder<K,V> mapBuilder = ImmutableMultimap.builder();
-    for(K key: keys) {
-      mapBuilder.putAll(key, valueFunction.apply(key));
     }
-    return mapBuilder.build();
+    return result.build();
   }
 }
