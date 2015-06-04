@@ -11,6 +11,8 @@ import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -64,11 +66,15 @@ public final class JacksonSerializer {
 
   public void serializeTo(final Object o, final ByteSink out) throws IOException {
     final RootObject rootObj = RootObject.forObject(o);
-    mapper.writeValue(out.openBufferedStream(), rootObj);
+    final OutputStream bufStream = out.openBufferedStream();
+    mapper.writeValue(bufStream, rootObj);
+    bufStream.close();
   }
 
   public Object deserializeFrom(final ByteSource source) throws IOException {
-    final RootObject rootObj = mapper.readValue(source.openStream(), RootObject.class);
+    final InputStream srcStream = source.openStream();
+    final RootObject rootObj = mapper.readValue(srcStream, RootObject.class);
+    srcStream.close();
     return rootObj.object();
   }
 
