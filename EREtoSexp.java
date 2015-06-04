@@ -90,7 +90,10 @@ public class EREtoSexp {
       
       final ImmutableList<String> lines = Files.asCharSource(new File(filename), Charsets.UTF_8).readLines();
       
-      final String docId = getDocid(lines.get(0));
+      String docId = filename.substring(filename.lastIndexOf("/")+1);
+      docId = docId.substring(0, docId.indexOf("."));
+      
+      //final String docId = getDocid(lines.get(0));
       
       List<Integer> chars = Lists.newArrayList();
       List<Integer> tags = Lists.newArrayList();
