@@ -6,11 +6,17 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.module.guice.GuiceAnnotationIntrospector;
+import com.fasterxml.jackson.module.guice.GuiceInjectableValues;
 import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
+import com.google.inject.Injector;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -22,53 +28,61 @@ public final class JacksonSerializer {
     this.mapper = checkNotNull(mapper);
   }
 
-  private static ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
-    final ObjectMapper mapper = new ObjectMapper(jsonFactory);
-    mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-    mapper.findAndRegisterModules();
-    return mapper;
-  }
-
   public static JacksonSerializer forNormalJSON() {
-    return new JacksonSerializer(mapperFromJSONFactory(new JsonFactory()));
+    return json().build();
   }
 
+  public static Builder json() {
+    return Builder.forJSONFactory(new JsonFactory());
+  }
+
+  /**
+   * @deprecated Prefer calling {@link Builder#prettyOutput()}.
+   * @return
+   */
+  @Deprecated
   public static JacksonSerializer forPrettyJSON() {
-    final ObjectMapper ret = mapperFromJSONFactory(new JsonFactory());
-    ret.enable(SerializationFeature.INDENT_OUTPUT);
-    return new JacksonSerializer(ret);
+    return json().prettyOutput().build();
   }
 
-  private static JacksonSerializer normalJSONCached;
-
+  /**
+   * @deprecated Caching is diabled, so this is no longer necessary
+   * @return
+   */
+  @Deprecated
   public static JacksonSerializer forNormalJSONUncached() {
-    if (normalJSONCached == null) {
-      normalJSONCached = forNormalJSONUncached();
-    }
-    return normalJSONCached;
+    return forNormalJSON();
   }
-
-  private static JacksonSerializer smileCached;
 
   public static JacksonSerializer forSmile() {
-    if (smileCached == null) {
-      smileCached = forSmileUncached();
-    }
-    return smileCached;
+    return Builder.forJSONFactory(new SmileFactory()).build();
   }
 
+  public static Builder smile() {
+    return Builder.forJSONFactory(new SmileFactory());
+  }
+
+  /**
+   * @deprecated Caching is disabled, so this is no longer necessary
+   * @return
+   */
+  @Deprecated
   public static JacksonSerializer forSmileUncached() {
-    return new JacksonSerializer(mapperFromJSONFactory(new SmileFactory()));
+    return forSmile();
   }
 
 
   public void serializeTo(final Object o, final ByteSink out) throws IOException {
     final RootObject rootObj = RootObject.forObject(o);
-    mapper.writeValue(out.openBufferedStream(), rootObj);
+    final OutputStream bufStream = out.openBufferedStream();
+    mapper.writeValue(bufStream, rootObj);
+    bufStream.close();
   }
 
   public Object deserializeFrom(final ByteSource source) throws IOException {
-    final RootObject rootObj = mapper.readValue(source.openStream(), RootObject.class);
+    final InputStream srcStream = source.openStream();
+    final RootObject rootObj = mapper.readValue(srcStream, RootObject.class);
+    srcStream.close();
     return rootObj.object();
   }
 
@@ -78,6 +92,50 @@ public final class JacksonSerializer {
 
   public <T> T deserializeFromString(String content, Class<T> valueType) throws IOException {
     return mapper.readValue(content, valueType);
+  }
+
+  public static final class Builder {
+    final ObjectMapper objectMapper;
+
+    private Builder(ObjectMapper objectMapper) {
+      this.objectMapper = checkNotNull(objectMapper);
+    }
+
+    private static Builder forJSONFactory(JsonFactory jsonFactory) {
+      return new Builder(mapperFromJSONFactory(jsonFactory));
+    }
+
+    public Builder prettyOutput() {
+      objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+      return this;
+    }
+
+    public Builder registerGuiceBindings(Injector injector) {
+      // this is from jackson-module-guice's ObjectMapperModule.get()
+      // we do this in a separate method because we do not currenly want to inject the ObjectMapper
+      final GuiceAnnotationIntrospector guiceIntrospector = new GuiceAnnotationIntrospector();
+      objectMapper.setInjectableValues(new GuiceInjectableValues(injector));
+      objectMapper.setAnnotationIntrospectors(
+          new AnnotationIntrospectorPair(
+              guiceIntrospector, objectMapper.getSerializationConfig().getAnnotationIntrospector()
+          ),
+          new AnnotationIntrospectorPair(
+              guiceIntrospector, objectMapper.getDeserializationConfig().getAnnotationIntrospector()
+          )
+      );
+      return this;
+    }
+
+    public JacksonSerializer build() {
+      return new JacksonSerializer(objectMapper);
+    }
+
+    private static ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
+      final ObjectMapper mapper = new ObjectMapper(jsonFactory);
+      mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+      mapper.findAndRegisterModules();
+      return mapper;
+    }
   }
 
   private static final class RootObject {

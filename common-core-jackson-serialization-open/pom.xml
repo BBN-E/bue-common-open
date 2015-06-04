@@ -19,7 +19,7 @@
       <plugins>
   </plugins>
   </build>
- 
+
   <dependencies>
       <dependency>
           <groupId>com.bbn.bue</groupId>
@@ -76,7 +76,17 @@
       <version>2.2.0</version>
     </dependency>
 
+      <dependency>
+          <groupId>com.google.inject</groupId>
+          <artifactId>guice</artifactId>
+          <version>3.0</version>
+      </dependency>
 
+      <dependency>
+          <groupId>com.fasterxml.jackson.module</groupId>
+          <artifactId>jackson-module-guice</artifactId>
+          <version>2.5.2</version>
+      </dependency>
 
 </dependencies>
 

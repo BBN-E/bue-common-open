@@ -1,7 +1,9 @@
 package com.bbn.bue.common.collections;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
@@ -50,5 +52,17 @@ public final class MultimapUtils {
     }
 
     return ret.build();
+  }
+
+  @Beta
+  public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimap(
+      final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
+    final ImmutableSetMultimap.Builder<K1, V2> result = ImmutableSetMultimap.builder();
+    for(K1 k1: first.keySet()) {
+      for(V1 v1: first.get(k1)) {
+        result.putAll(k1, second.get(v1));
+      }
+    }
+    return result.build();
   }
 }
