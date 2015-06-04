@@ -95,9 +95,18 @@ public class EREtoSexp {
       OffsetInfo.Builder offsetBuilder = OffsetInfo.builder();
 
       final ImmutableList<String> lines = Files.asCharSource(new File(filename), Charsets.UTF_8).readLines();
+<<<<<<< HEAD
 
       final String docId = getDocid(lines.get(0));
 
+=======
+      
+      String docId = filename.substring(filename.lastIndexOf("/")+1);
+      docId = docId.substring(0, docId.indexOf("."));
+      
+      //final String docId = getDocid(lines.get(0));
+      
+>>>>>>> 7a416c5a4467c97000db8dd78d4abcaf4693d284
       List<Integer> chars = Lists.newArrayList();
       List<Integer> tags = Lists.newArrayList();
       for(final String line : lines) {
