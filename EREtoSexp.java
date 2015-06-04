@@ -90,23 +90,20 @@ public class EREtoSexp {
     final ImmutableMap.Builder<String, OffsetInfo> ret = ImmutableMap.builder();
 
     final ImmutableList<String> filelist = Files.asCharSource(params.getExistingFile("ere.sourceFilelist"), Charsets.UTF_8).readLines();
+    
+    final int offsetAdjust = params.isPresent("ere.offsetAdjust") ? params.getInteger("ere.offsetAdjust") : 0;
 
     for(final String filename : filelist) {
       OffsetInfo.Builder offsetBuilder = OffsetInfo.builder();
 
       final ImmutableList<String> lines = Files.asCharSource(new File(filename), Charsets.UTF_8).readLines();
-<<<<<<< HEAD
-
-      final String docId = getDocid(lines.get(0));
-
-=======
       
       String docId = filename.substring(filename.lastIndexOf("/")+1);
       docId = docId.substring(0, docId.indexOf("."));
       
       //final String docId = getDocid(lines.get(0));
       
->>>>>>> 7a416c5a4467c97000db8dd78d4abcaf4693d284
+
       List<Integer> chars = Lists.newArrayList();
       List<Integer> tags = Lists.newArrayList();
       for(final String line : lines) {
@@ -138,12 +135,12 @@ public class EREtoSexp {
 
             if(i2==0 && i1>0) {
               offsetBuilder.withSpan( OffsetSpan.builder(runningCharLen, runningCharLen + i1-1).
-                  withOffset(Optional.of(-1*runningTagLen)).build() );
+                  withOffset(Optional.of(-1*(runningTagLen+offsetAdjust))).build() );
             }
             else {
               if(i1 > i2) {
                 offsetBuilder.withSpan( OffsetSpan.builder(runningCharLen+i2, runningCharLen + i1-1).
-                    withOffset(Optional.of(-1*(runningTagLen+l))).build() );
+                    withOffset(Optional.of(-1*(runningTagLen+l+offsetAdjust))).build() );
               }
             }
 
@@ -156,7 +153,7 @@ public class EREtoSexp {
           }
           if(i2<line.length()) {
             offsetBuilder.withSpan( OffsetSpan.builder(runningCharLen+i2, runningCharLen + line.length()-1).
-                withOffset(Optional.of(-1*(runningTagLen+l))).build() );
+                withOffset(Optional.of(-1*(runningTagLen+l+offsetAdjust))).build() );
           }
 
 
