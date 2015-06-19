@@ -18,7 +18,7 @@ import static com.google.common.base.Preconditions.checkState;
  * Default implementations of certain methods. They may not match precisely the semantics of your
  * mapper.
  */
-public abstract class AbstractOffsetMapper implements OffsetMapper {
+public abstract class AbstractOffsetMappping implements OffsetMapping {
 
   /**
    * @param closedSource - a range that is closed constructed as offset, offset + length - 1
