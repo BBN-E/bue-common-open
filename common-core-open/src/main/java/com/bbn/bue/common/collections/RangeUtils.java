@@ -8,7 +8,7 @@ import com.google.common.collect.Range;
  */
 public class RangeUtils {
 
-  public static <T extends Comparable> boolean isClosed(final Range<T> source) {
+  public static boolean isClosed(final Range<?> source) {
     return source.upperBoundType().equals(BoundType.CLOSED) && source.lowerBoundType()
         .equals(BoundType.CLOSED);
   }
