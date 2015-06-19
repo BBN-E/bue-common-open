@@ -4,9 +4,12 @@ import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
 
 /**
- * Created by jdeyoung on 6/19/15.
+ * Utility methods for dealing with Guava {@link Range}s.
  */
-public class RangeUtils {
+public final class RangeUtils {
+  private RangeUtils() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Returns true iff {@code range} is bounded and closed on both sides.  {@code range}
