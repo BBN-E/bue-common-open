@@ -3,6 +3,7 @@ package com.bbn.nlp.corpora.OffsetMapping;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
@@ -20,22 +21,10 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public abstract class AbstractOffsetMappping implements OffsetMapping {
 
-  /**
-   * @param closedSource - a range that is closed constructed as offset, offset + length - 1
-   * @return the cartesian product of {start mappings} and {end mappings}
-   */
   @Override
   public Collection<Range<Integer>> mapRange(final Range<Integer> closedSource) {
     checkArgument(isClosed(closedSource));
-    final ImmutableSet.Builder<Range<Integer>> resultRanges = ImmutableSet.builder();
-    if (isEntirelyMapped(closedSource)) {
-      Set<Integer> start = ImmutableSet.copyOf(mapOffset(closedSource.lowerEndpoint()));
-      Set<Integer> end = ImmutableSet.copyOf(mapOffset(closedSource.upperEndpoint()));
-      for (List<Integer> pair : Sets.cartesianProduct(start, end)) {
-        resultRanges.add(Range.closed(pair.get(0), pair.get(1)));
-      }
-    }
-    return resultRanges.build();
+
   }
 
   /**
@@ -54,23 +43,6 @@ public abstract class AbstractOffsetMappping implements OffsetMapping {
   }
 
   /**
-   * throws an Exception via checkState if there's more than one mapping
-   *
-   * @return the single mapping for this, if any
-   */
-  public Optional<Integer> mapOffsetExactlyOnce(final int source) {
-    if (isMapped(source)) {
-      final List<Integer> mappings = ImmutableList.copyOf(mapOffset(source));
-      checkState(mappings.size() <= 1);
-      if (mappings.size() == 0) {
-        return Optional.absent();
-      }
-      return Optional.of(mappings.get(0));
-    }
-    return Optional.absent();
-  }
-
-  /**
    * returns true unless an index in this range is unmapped
    */
   @Override
@@ -82,5 +54,22 @@ public abstract class AbstractOffsetMappping implements OffsetMapping {
       }
     }
     return true;
+  }
+}
+
+abstract class AbstractFunctionalOffsetMapping extends AbstractOffsetMappping
+    implements FunctionalOffsetMapping {
+
+  public Optional<Integer> mapOffsetUniquely(int sourceIdx) {
+    final Collection<Integer> mappings = mapOffset(sourceIdx);
+    checkState(mappings.size() < 2,
+        "%s does not obey the requirements of the FunctionalOffsetMapping"
+            + " interface: %s maps to %s", this.getClass(), sourceIdx, mappings);
+    if (!mappings.isEmpty()) {
+      // will never be null by check above
+      return Optional.of(Iterables.getFirst(mappings, null));
+    } else {
+      return Optional.absent();
+    }
   }
 }
