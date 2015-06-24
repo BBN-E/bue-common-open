@@ -4,6 +4,7 @@ import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.IterableUtils.ZipPair;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -224,5 +225,56 @@ public final class MapUtils {
     return Ordering.natural().max(
         FluentIterable.from(map.keySet())
             .transform(StringUtils.ToLength));
+  }
+
+  /**
+   * Just like {@link com.google.common.base.Functions#forMap(Map, Object)} except it allows a
+   * potentially non-constant {@link Function} as the default.
+   */
+  public static <K, V> Function<K, V> asFunction(Map<K, ? extends V> map,
+      Function<K, ? extends V> defaultFunction) {
+    return new ForMapWithDefaultFunction<K, V>(map, defaultFunction);
+  }
+
+  // indebted to Guava's Functions.forMap()
+  private static class ForMapWithDefaultFunction<K, V> implements Function<K, V> {
+
+    private final Map<K, ? extends V> map;
+    private final Function<K, ? extends V> defaultFunction;
+
+    private ForMapWithDefaultFunction(
+        final Map<K, ? extends V> map, final Function<K, ? extends V> defaultFunction) {
+      this.map = checkNotNull(map);
+      this.defaultFunction = checkNotNull(defaultFunction);
+    }
+
+    @Override
+    public V apply(final K input) {
+      final V result = map.get(input);
+      return (result != null || map.containsKey(result)) ? result : defaultFunction.apply(input);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(map, defaultFunction);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      }
+      final ForMapWithDefaultFunction other = (ForMapWithDefaultFunction) obj;
+      return Objects.equal(this.map, other.map)
+          && Objects.equal(this.defaultFunction, other.defaultFunction);
+    }
+
+    @Override
+    public String toString() {
+      return "asFunction(" + map + ", default=" + defaultFunction + ")";
+    }
   }
 }
