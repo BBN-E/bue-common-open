@@ -98,13 +98,13 @@ public class EREtoSexp {
 
       final ImmutableList<String> lines = Files.asCharSource(new File(filename), Charsets.UTF_8).readLines();
 
-      String docId = "";
+      final String docId;
       if(lines.get(0).indexOf("DOC id=")!=-1 || lines.get(0).indexOf("doc id=")!=-1) {
         docId = getDocid(lines.get(0));
       }
       else {
-        docId = filename.substring(filename.lastIndexOf("/")+1);
-        docId = docId.substring(0, docId.indexOf("."));
+        final String fileId = filename.substring(filename.lastIndexOf("/")+1);
+        docId = fileId.substring(0, fileId.indexOf("."));
       }
 
       List<Integer> chars = Lists.newArrayList();
