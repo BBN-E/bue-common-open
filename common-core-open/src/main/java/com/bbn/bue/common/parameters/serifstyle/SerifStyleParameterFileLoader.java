@@ -10,6 +10,9 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -48,6 +51,8 @@ import static com.google.common.base.Preconditions.checkState;
  */
 @Beta
 public class SerifStyleParameterFileLoader implements ParameterFileLoader {
+
+  private static final Logger log = LoggerFactory.getLogger(SerifStyleParameterFileLoader.class);
 
   /**
    * Creates a <code>SerifStyleParameterFileLoader</code> which crashes on undeclared overrides.
@@ -98,6 +103,7 @@ public class SerifStyleParameterFileLoader implements ParameterFileLoader {
 
   private void load(final File configFile, final Map<String, String> ret) throws IOException {
     final File absConfigFile = configFile.getAbsoluteFile();
+    log.info("Loading parameter file {}", absConfigFile);
 
     int i = 1;
     for (String line : Files.readLines(absConfigFile, Charsets.UTF_8)) {
