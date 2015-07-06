@@ -92,7 +92,7 @@ public final class LocatedString {
 
   public static LocatedString forString(final String text) {
     final OffsetGroup initialOffsets = OffsetGroup.from(new ByteOffset(0), new CharOffset(0),
-        new EDTOffset(0));
+        EDTOffset.asEDTOffset(0));
     return forString(text, initialOffsets);
   }
 
