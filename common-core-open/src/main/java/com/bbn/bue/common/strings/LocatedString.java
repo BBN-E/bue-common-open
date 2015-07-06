@@ -305,10 +305,10 @@ public final class LocatedString {
 
     @Override
     public String toString() {
-      return "StartPos: " + startPos +
-          "\nEndPos: " + endPos +
-          "\nStartOffset: " + startOffset +
-          "\nEndOffset: " + endOffset +
+      return "start: " + startPos +
+          "\nend: " + endPos +
+          "\nstartOffset: " + startOffset +
+          "\nendOffset: " + endOffset +
           "\nEDTSkip: " + isEDTSkipRegion;
     }
 

@@ -98,12 +98,12 @@ public final class OffsetGroup {
   public String toString() {
     final StringBuilder ret = new StringBuilder();
 
-    ret.append("OffsetGroup[");
-    ret.append("char=").append(charOffset.value())
-        .append(";edt=").append(edtOffset.value());
+    ret.append("OffGrp[");
+    ret.append("c=").append(charOffset.value())
+        .append(";e=").append(edtOffset.value());
 
     if (byteOffset != null) {
-      ret.append(";byte=").append(byteOffset.value());
+      ret.append(";b=").append(byteOffset.value());
     }
 
     if (asrTime != null) {
