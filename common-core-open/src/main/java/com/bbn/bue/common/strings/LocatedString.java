@@ -16,9 +16,6 @@ import java.util.NoSuchElementException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-/*import com.bbn.bue.common.strings.offsets.ASRTime;
-import com.bbn.bue.common.strings.offsets.ByteOffset;
-import com.bbn.bue.common.strings.offsets.CharOffset;*/
 
 /**
  * * Class for storing and manipulating strings that have been read in from a file, without losing
@@ -57,11 +54,6 @@ import com.bbn.bue.common.strings.offsets.CharOffset;*/
  */
 public final class LocatedString {
 
-  /*public LocatedString(String content, OffsetGroup start, OffsetGroup end) {
-          this.content = checkNotNull(content);
-          this.start = checkNotNull(start);
-          this.end = checkNotNull(end);
-  };*/
   public String text() {
     return content;
   }
@@ -121,24 +113,24 @@ public final class LocatedString {
     return new LocatedString(text, offsets, bounds);
   }
 
-  /**  
+  /**
    * Return a LocatedString substring of this string.
-   * 
-   * NOTE: Because it recomputes the various offsets of every character in the 
+   *
+   * NOTE: Because it recomputes the various offsets of every character in the
    * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String 
+   * fetching the String content of the substring.  If you just need the String
    * content, you should use rawSubstring() instead.
    */
   public LocatedString substring(final OffsetGroup start, final OffsetGroup end) {
     return substring(start.charOffset(), end.charOffset());
   }
-  
-  /**  
+
+  /**
    * Return a LocatedString substring of this string.
-   * 
-   * NOTE: Because it recomputes the various offsets of every character in the 
+   *
+   * NOTE: Because it recomputes the various offsets of every character in the
    * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String 
+   * fetching the String content of the substring.  If you just need the String
    * content, you should use rawSubstring() instead.
    */
   public LocatedString substring(final CharOffset start, final CharOffset end) {
@@ -164,12 +156,12 @@ public final class LocatedString {
 		return new LocatedString(text2, offsets, bounds);
 	}*/
 
-  /**  
+  /**
    * Return a LocatedString substring of this string.
-   * 
-   * NOTE: Because it recomputes the various offsets of every character in the 
+   *
+   * NOTE: Because it recomputes the various offsets of every character in the
    * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String 
+   * fetching the String content of the substring.  If you just need the String
    * content, you should use rawSubstring() instead.
    */
   public LocatedString substring(final int startIndexInclusive, final int endIndexExclusive) {
@@ -181,7 +173,7 @@ public final class LocatedString {
 
   /**
    * Return a String substring of this string.
-   * 
+   *
    * @param start
    * @param end
    * @return
@@ -192,7 +184,7 @@ public final class LocatedString {
 
   /**
    * Return a String substring of this string.
-   * 
+   *
    * @param start
    * @param end
    * @return
@@ -206,7 +198,7 @@ public final class LocatedString {
 
   /**
    * Return a String substring of this string.
-   * 
+   *
    * @param startIndexInclusive
    * @param endIndexExclusive
    * @return
@@ -214,7 +206,7 @@ public final class LocatedString {
   public String rawSubstring(final int startIndexInclusive, final int endIndexExclusive) {
     return content.substring(startIndexInclusive, endIndexExclusive);
   }
-  
+
   /**
    * Returns the earliest offset group within this {@code LocatedString} whose character offset
    * matches the one supplied. If not such offset group exists, throws a {@link
