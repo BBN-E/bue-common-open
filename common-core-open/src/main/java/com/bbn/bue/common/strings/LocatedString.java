@@ -227,6 +227,28 @@ public final class LocatedString {
     throw new NoSuchElementException();
   }
 
+  public boolean contains(LocatedString other) {
+    // TODO: we do it this way because the C++ is implemented this way,
+    // so implementing isSubstringOf is an easy, less error-prone
+    // translation. But .contains() is more idiomatic Java.
+    return other.isSubstringOf(this);
+  }
+
+  private boolean isSubstringOf(LocatedString other) {
+    /*int superstring_start_pos = superstring->positionOfStartOffset(start<CharOffset>());
+    if (superstring_start_pos < 0)
+      return false;
+    if (superstring_start_pos+length() > superstring->length())
+      return false;
+    if (start<CharOffset>() != superstring->start<CharOffset>(superstring_start_pos))
+      return false;
+    if (end<CharOffset>() != superstring->end<CharOffset>(superstring_start_pos+length()-1))
+      return false;
+    if (superstring->_text.compare(superstring_start_pos, length(), _text)!=0)
+      return false;
+    return true;*/
+  }
+
   /**
    * ***************************************************************************** Private
    * implementation
@@ -391,7 +413,7 @@ public final class LocatedString {
       final int prevEDTOffset = Math.max(start.edtOffset().value(), edtOffset - 1);
       offsets.add(new OffsetEntry(startPos, pos, start,
           OffsetGroup.from(new ByteOffset(byteOffset - 1), new CharOffset(charOffset - 1),
-              new EDTOffset(prevEDTOffset)), inTag > 0 || justLeftXMLTag));
+              EDTOffset.asEDTOffset(prevEDTOffset)), inTag > 0 || justLeftXMLTag));
     }
     return offsets.build();
   }
