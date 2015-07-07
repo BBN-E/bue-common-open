@@ -6,6 +6,7 @@ import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.EDTOffset;
 import com.bbn.bue.common.strings.offsets.OffsetGroup;
 import com.bbn.bue.common.strings.offsets.OffsetGroupRange;
+import com.bbn.bue.common.strings.offsets.OffsetRange;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
@@ -234,7 +235,45 @@ public final class LocatedString {
     return other.isSubstringOf(this);
   }
 
-  private boolean isSubstringOf(LocatedString other) {
+  /**
+   * finds the position of the first offset entry of this object which has an identical char offset to oe
+   *
+   * preserves the CPP interface, more or less
+   * @param oe
+   * @return
+   */
+  private int positionOfStartOffset(final OffsetEntry oe) {
+    for(int i = 0; i < this.offsets.size() ; i++) {
+      if (oe.startOffset().charOffset().asInt() == offsets.get(i).startOffset().charOffset().asInt()) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  private boolean isSubstringOf(LocatedString sup) {
+    final int superStringStartPos = sup.positionOfStartOffset(offsetEntries().get(0));
+    if(superStringStartPos < 0) {
+      return false;
+    }
+    // differs from cpp shortcut a little
+    final int superStringStartPosLength = sup.offsetEntries().get(superStringStartPos).startOffset().charOffset().asInt();
+    if(superStringStartPosLength + length() > sup.length()) {
+      return false;
+    }
+    final OffsetRange<CharOffset> thisCharOffsets = this.bounds().asCharOffsetRange();
+    if(thisCharOffsets.startInclusive().asInt() != superStringStartPos) {
+      return false;
+    }
+    if(thisCharOffsets.endInclusive().asInt() != sup.offsetEntries().get(superStringStartPos).endOffset().charOffset().asInt()) {
+      return false;
+    }
+    //TODO: if this is slow, do a point by point comparison instead of substring
+    if(!sup.content.substring(superStringStartPosLength, superStringStartPosLength + this.length()).equals(content)) {
+      return false;
+    }
+
+    return true;
     /*int superstring_start_pos = superstring->positionOfStartOffset(start<CharOffset>());
     if (superstring_start_pos < 0)
       return false;
