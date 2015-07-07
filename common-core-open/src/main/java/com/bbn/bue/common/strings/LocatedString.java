@@ -490,7 +490,7 @@ public final class LocatedString {
 
     final ImmutableList.Builder<OffsetEntry> ret = ImmutableList.builder();
 
-    for (int entryNum = entryBefore(startIndexInclusive); entryNum < offsets.size(); ++entryNum) {
+    for (int entryNum = lastEntryStartingBefore(startIndexInclusive); entryNum < offsets.size(); ++entryNum) {
       final OffsetEntry entry = offsets.get(entryNum);
       checkArgument(entry.startPos <= endIndexExclusive);
 
@@ -547,7 +547,7 @@ public final class LocatedString {
     return ret.build();
   }
 
-  private int entryBefore(final int pos) {
+  private int lastEntryStartingBefore(final int pos) {
     int i = 1;
     while (i < offsets.size() && offsets.get(i).startPos <= pos) {
       ++i;
