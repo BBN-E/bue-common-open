@@ -239,53 +239,64 @@ public final class LocatedString {
    * finds the position of the first offset entry of this object which has an identical char offset to oe
    *
    * preserves the CPP interface, more or less
-   * @param oe
+   * @param charOffset
    * @return
    */
-  private int positionOfStartOffset(final OffsetEntry oe) {
-    for(int i = 0; i < this.offsets.size() ; i++) {
-      if (oe.startOffset().charOffset().asInt() == offsets.get(i).startOffset().charOffset().asInt()) {
-        return i;
+  private int positionOfStartOffsetChar(final CharOffset charOffset) {
+    for(final OffsetEntry it: offsetEntries()) {
+      if(it.startOffset().charOffset().asInt() > charOffset.asInt()) {
+        return -1;
+      }
+      if(charOffset.asInt() <= it.endOffset().charOffset().asInt()) {
+        return it.startPos() + (charOffset.asInt() - it.startOffset().charOffset().asInt());
       }
     }
     return -1;
   }
 
+  private CharOffset getStartOffset(int pos) {
+    final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
+    checkArgument(pos >= oe.startPos() && pos <= oe.endPos() - 1);
+    if(pos == oe.startPos()) {
+      return oe.startOffset().charOffset();
+    } else {
+      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+    }
+  }
+
+  private CharOffset getEndOffset(int pos) {
+    final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
+    checkArgument(pos >= oe.startPos() && pos <= oe.endPos());
+    if(pos == oe.endPos() -1) {
+      return oe.endOffset().charOffset();
+    } else {
+      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+    }
+  }
+
   private boolean isSubstringOf(LocatedString sup) {
-    final int superStringStartPos = sup.positionOfStartOffset(offsetEntries().get(0));
-    if(superStringStartPos < 0) {
+    final int superStringStartPos =
+        sup.positionOfStartOffsetChar(offsetEntries().get(0).startOffset().charOffset());
+    if (superStringStartPos < 0) {
       return false;
     }
-    // differs from cpp shortcut a little
-    final int superStringStartPosLength = sup.offsetEntries().get(superStringStartPos).startOffset().charOffset().asInt();
-    if(superStringStartPosLength + length() > sup.length()) {
-      return false;
-    }
-    final OffsetRange<CharOffset> thisCharOffsets = this.bounds().asCharOffsetRange();
-    if(thisCharOffsets.startInclusive().asInt() != superStringStartPos) {
-      return false;
-    }
-    if(thisCharOffsets.endInclusive().asInt() != sup.offsetEntries().get(superStringStartPos).endOffset().charOffset().asInt()) {
-      return false;
-    }
-    //TODO: if this is slow, do a point by point comparison instead of substring
-    if(!sup.content.substring(superStringStartPosLength, superStringStartPosLength + this.length()).equals(content)) {
+    if (superStringStartPos + length() > sup.length()) {
       return false;
     }
 
+    final OffsetRange<CharOffset> thisCharOffsets = this.bounds().asCharOffsetRange();
+    if (thisCharOffsets.startInclusive().asInt() != sup.getStartOffset(superStringStartPos).asInt()) {
+      return false;
+    }
+    if (thisCharOffsets.endInclusive().asInt() != sup.getEndOffset(superStringStartPos + this.length()).asInt()-1) {
+      return false;
+    }
+    //TODO: if this is slow, do a point by point comparison instead of substring
+    if (!sup.content.substring(superStringStartPos, superStringStartPos + this.length()).equals(
+        content)) {
+      return false;
+    }
     return true;
-    /*int superstring_start_pos = superstring->positionOfStartOffset(start<CharOffset>());
-    if (superstring_start_pos < 0)
-      return false;
-    if (superstring_start_pos+length() > superstring->length())
-      return false;
-    if (start<CharOffset>() != superstring->start<CharOffset>(superstring_start_pos))
-      return false;
-    if (end<CharOffset>() != superstring->end<CharOffset>(superstring_start_pos+length()-1))
-      return false;
-    if (superstring->_text.compare(superstring_start_pos, length(), _text)!=0)
-      return false;
-    return true;*/
   }
 
   /**
