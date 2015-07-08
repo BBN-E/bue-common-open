@@ -3,6 +3,7 @@ package com.bbn.bue.common.collections;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -50,11 +51,16 @@ public final class IterableUtils {
   /**
    * Applys a one-to-many transform to each element of an {@code Iterable} and concatenates all the
    * results into one {@code Iterable}. This is done lazily.
+   *
+   * @deprecated Prefer {@link FluentIterable#transformAndConcat(Function)} now that it
+   * exists.
    */
+  @Deprecated
   public static <InType, OutType> Iterable<OutType> applyOneToManyTransform(
       final Iterable<InType> input,
       final Function<? super InType, ? extends Iterable<OutType>> function) {
-    return Iterables.concat(Iterables.transform(input, function));
+    return FluentIterable.from(input)
+        .transformAndConcat(function);
   }
 
   /**
