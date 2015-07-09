@@ -434,11 +434,11 @@ public final class LocatedString {
             (edtOffset == 0 || prevChar == '\r') ? edtOffset : (edtOffset - 1);
         offsets.add(
             new OffsetEntry(startPos, pos, start, OffsetGroup.from(new ByteOffset(byteOffset - 1),
-                new CharOffset(charOffset - 1), new EDTOffset(prevEDTOffset)), justLeftXMLTag));
+                new CharOffset(charOffset - 1), EDTOffset.asEDTOffset(prevEDTOffset)), justLeftXMLTag));
         startPos = pos;
         final int startEDTOffset = (c == '<') ? edtOffset - 1 : edtOffset;
         start = OffsetGroup.from(new ByteOffset(byteOffset), new CharOffset(charOffset),
-            new EDTOffset(startEDTOffset));
+            EDTOffset.asEDTOffset(startEDTOffset));
       }
 
       ++charOffset;

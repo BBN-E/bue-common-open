@@ -25,6 +25,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * </pre>
  * it is true that <code>(aSym == bSym) == a.equals(b)</code>.
  *
+ * Prefer using {@link #equalTo(Symbol)} to {@link #equals(Object)} when doing
+ * direct comparisons between symbols for type-safety.
+ *
  * The hashcode is not stable across program runs.
  *
  * @author rgabbard
@@ -64,6 +67,15 @@ public final class Symbol implements Serializable, HasStableHashCode {
    */
   public String asString() {
     return string;
+  }
+
+  /**
+   * A type-safe version of {@link #equals(Object)}.  We found that accidental comparisons of
+   * symbols to non-symbols was a frequent source of error, so prefer using this to {@link
+   * #equals(Object)} when the types should be known.
+   */
+  public boolean equalTo(Symbol other) {
+    return equals(other);
   }
 
   /**
