@@ -45,6 +45,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -167,14 +169,16 @@ public final class Parameters {
       final SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       out.format("#%s\n", timeFormat.format(new Date()));
     }
-    for (final Map.Entry<String, String> param : params.entrySet()) {
+    List<String> keys = new ArrayList<String>(params.keySet());
+    Collections.sort(keys);
+    for (final String rawKey : keys) {
       final String key;
       if (includeNamespacePrefix) {
-        key = fullString(param.getKey());
+        key = fullString(rawKey);
       } else {
-        key = param.getKey();
+        key = rawKey;
       }
-      out.format("%s: %s\n", key, param.getValue());
+      out.format("%s: %s\n", key, params.get(rawKey));
     }
 
     out.close();
