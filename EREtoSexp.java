@@ -3,7 +3,6 @@ package com.bbn.nlp.corpora.ere;
 import com.bbn.bue.common.parameters.Parameters;
 import com.bbn.nlp.corpora.ere.OffsetInfo.OffsetSpan;
 import com.bbn.serif.apf.APFDocument;
-import com.bbn.serif.apf.APFeventsToTACslotsMapper;
 import com.bbn.serif.apf.APFtoSexp;
 
 import com.google.common.base.Charsets;
@@ -41,9 +40,6 @@ public class EREtoSexp {
   private static void trueMain(final String paramFile) throws IOException {
     final Parameters params = Parameters.loadSerifStyle(new File(paramFile));
 
-    // for ERE events to TAC slot conversion
-    APFeventsToTACslotsMapper.loadFrom(params);
-    //
 
     final ImmutableMap<String, OffsetInfo> offsetInfo = offsetInfoFromSource(params);
     //for(final Map.Entry<String, OffsetInfo> entry : offsetInfo.entrySet()) {

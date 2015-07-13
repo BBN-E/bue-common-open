@@ -18,7 +18,7 @@ import com.bbn.serif.apf.APFTimeMention;
 import com.bbn.serif.apf.APFValue;
 import com.bbn.serif.apf.APFValueArgument;
 import com.bbn.serif.apf.APFValueMention;
-import com.bbn.serif.apf.APFeventsToTACslotsMapper;
+import com.bbn.serif.apf.APFEventsToTACSlotsMapper;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -35,19 +35,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.*;
+
 public final class EREtoAPF {
   private static final Logger log = LoggerFactory.getLogger(EREtoAPF.class);
 
-  final EREtoACETypeMapper ereToAceTypeMapper;
+  private final EREtoACETypeMapper ereToAceTypeMapper;
+  // for ERE events to TAC slot conversion
+  private final APFEventsToTACSlotsMapper slotsMapper;
 
-  private EREtoAPF(final EREtoACETypeMapper ereToAceTypeMapper) {
+
+  private EREtoAPF(final EREtoACETypeMapper ereToAceTypeMapper,
+      APFEventsToTACSlotsMapper slotsMapper) {
     this.ereToAceTypeMapper = ereToAceTypeMapper;
+    this.slotsMapper = checkNotNull(slotsMapper);
   }
 
   public static EREtoAPF from(final Parameters params) throws IOException {
     final EREtoACETypeMapper ereToAceTypeMapper = EREtoACETypeMapper.from(params);
 
-    return new EREtoAPF(ereToAceTypeMapper);
+    return new EREtoAPF(ereToAceTypeMapper, APFEventsToTACSlotsMapper.loadFrom(params));
   }
 
   public EREtoACETypeMapper getEREtoACETypeMapper() {
@@ -187,7 +194,7 @@ public final class EREtoAPF {
     for(APFEventMention apfEventMention : apfEvent.getEventMentions()) {
 
       Map<APFRelationMention, String> apfRelationMention2slot =
-          APFeventsToTACslotsMapper.getSlotFromAPFEventMention(apfEventMention,
+          slotsMapper.getSlotFromAPFEventMention(apfEventMention,
               apfEvent.getType(), apfEvent.getSubtype());
 
       for (APFRelationMention apfRelationMention : apfRelationMention2slot.keySet()) {
