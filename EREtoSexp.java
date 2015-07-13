@@ -70,7 +70,7 @@ public class EREtoSexp {
       System.out.println("");
     }
 
-    final String outfile = params.getString("sexp.filename");
+    final File outfile = params.getCreatableFile("sexp.filename");
     PrintWriter writer = new PrintWriter(outfile, "UTF-8");
     writer.write("(\n");
     for(final String outline : sexpLines) {
