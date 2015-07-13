@@ -3,6 +3,7 @@ package com.bbn.bue.common.symbols;
 import com.bbn.bue.common.HasStableHashCode;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Ordering;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -89,6 +90,15 @@ public final class Symbol implements Serializable, HasStableHashCode {
   @Override
   public int stableHashCode() {
     return string.hashCode();
+  }
+
+  public static Ordering<Symbol> stringOrdering() {
+    return new Ordering<Symbol>() {
+      @Override
+      public int compare(final Symbol left, final Symbol right) {
+        return left.asString().compareTo(right.asString());
+      }
+    };
   }
 
   public static final Function<? super String, Symbol> FromString = new Function<String, Symbol>() {
