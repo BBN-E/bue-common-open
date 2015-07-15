@@ -424,23 +424,37 @@ public final class Parameters {
 
   private <T> T parameterInitializedObjectForClass(final Class<?> clazz,
       final String param, final Class<T> superClass) {
-    Object ret;
+    Optional<Object> ret;
 
     try {
-      ret = createViaConstructor(clazz, param);
-    } catch (NoSuchMethodException nsme) {
-      try {
+
+      ret = createViaParamConstructor(clazz, param);
+      if (!ret.isPresent()) {
         ret = createViaStaticFactoryMethod(clazz, param);
-      } catch (NoSuchMethodException nsme2) {
-        throw new ParameterValidationException(fullString(param), getString(param),
-            new RuntimeException(String.format("Class %s has neither fromParameters(params) "
-                    + "static factory method or constructor which takes params",
-                clazz.getName())));
       }
+      if (!ret.isPresent()) {
+        ret = createViaZeroArgConstructor(clazz, param);
+      }
+    } catch (IllegalAccessException iae) {
+      throw new ParameterException("While attempting to load parameter-initialized object from "
+          + param + " :", iae);
+    } catch (InstantiationException e) {
+      throw new ParameterException("While attempting to load parameter-initialized object from "
+          + param + " :", e);
+    } catch (InvocationTargetException e) {
+      throw new ParameterException("While attempting to load parameter-initialized object from "
+          + param + " :", e);
     }
 
-    if (superClass.isInstance(ret)) {
-      return (T) ret;
+    if (!ret.isPresent()) {
+      throw new ParameterValidationException(fullString(param), getString(param),
+          new RuntimeException(String.format("Class %s has neither fromParameters(params) "
+                  + "static factory method or constructor which takes params",
+              clazz.getName())));
+    }
+
+    if (superClass.isInstance(ret.get())) {
+      return (T) ret.get();
     } else {
       throw new ParameterValidationException(fullString(param), getString(param),
           new RuntimeException(
@@ -448,28 +462,30 @@ public final class Parameters {
     }
   }
 
-  private Object createViaConstructor(Class<?> clazz, String param) throws NoSuchMethodException {
+  private Optional<Object> createViaZeroArgConstructor(final Class<?> clazz, final String param)
+      throws IllegalAccessException, InvocationTargetException, InstantiationException {
     try {
-      return clazz.getConstructor(Parameters.class).newInstance(this);
-    } catch (final IllegalArgumentException e) {
-      throw new ParameterValidationException(fullString(param), getString(param), e);
-    } catch (final InstantiationException e) {
-      throw new ParameterValidationException(fullString(param), getString(param), e);
-    } catch (final IllegalAccessException e) {
-      throw new ParameterValidationException(fullString(param), getString(param), e);
-    } catch (final InvocationTargetException e) {
-      throw new ParameterValidationException(fullString(param), getString(param), e);
+      return Optional.of(clazz.getConstructor().newInstance(this));
+    } catch (NoSuchMethodException nsme) {
+      return Optional.absent();
     }
   }
 
-  private Object createViaStaticFactoryMethod(Class<?> clazz, String param)
-      throws NoSuchMethodException {
+  private Optional<Object> createViaParamConstructor(Class<?> clazz, String param)
+      throws IllegalAccessException, InvocationTargetException, InstantiationException {
     try {
-      return clazz.getMethod("fromParameters", Parameters.class).invoke(null, this);
-    } catch (IllegalAccessException e) {
-      throw new ParameterValidationException(fullString(param), getString(param), e);
-    } catch (InvocationTargetException e) {
-      throw new ParameterValidationException(fullString(param), getString(param), e);
+      return Optional.of(clazz.getConstructor(Parameters.class).newInstance(this));
+    } catch (NoSuchMethodException nsme) {
+      return Optional.absent();
+    }
+  }
+
+  private Optional<Object> createViaStaticFactoryMethod(Class<?> clazz, String param)
+      throws InvocationTargetException, IllegalAccessException {
+    try {
+      return Optional.of(clazz.getMethod("fromParameters", Parameters.class).invoke(null, this));
+    } catch (NoSuchMethodException e) {
+      return Optional.absent();
     }
   }
 
