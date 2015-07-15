@@ -899,6 +899,10 @@ public final class Parameters {
     return ret;
   }
 
+  public String namespace() {
+    return StringUtils.DotJoiner.join(namespace);
+  }
+
   private final ImmutableMap<String, String> params;
   private final ImmutableList<String> namespace;
 
