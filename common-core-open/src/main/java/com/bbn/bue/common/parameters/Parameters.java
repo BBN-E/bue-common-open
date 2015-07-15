@@ -465,7 +465,7 @@ public final class Parameters {
   private Optional<Object> createViaZeroArgConstructor(final Class<?> clazz, final String param)
       throws IllegalAccessException, InvocationTargetException, InstantiationException {
     try {
-      return Optional.of(clazz.getConstructor().newInstance(this));
+      return Optional.of(clazz.getConstructor().newInstance());
     } catch (NoSuchMethodException nsme) {
       return Optional.absent();
     }
@@ -474,7 +474,7 @@ public final class Parameters {
   private Optional<Object> createViaParamConstructor(Class<?> clazz, String param)
       throws IllegalAccessException, InvocationTargetException, InstantiationException {
     try {
-      return Optional.of(clazz.getConstructor(Parameters.class).newInstance());
+      return Optional.of(clazz.getConstructor(Parameters.class).newInstance(this));
     } catch (NoSuchMethodException nsme) {
       return Optional.absent();
     }
