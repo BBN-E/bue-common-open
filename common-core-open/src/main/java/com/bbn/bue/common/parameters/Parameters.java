@@ -36,7 +36,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,6 +57,8 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
 
 
 /**
@@ -895,7 +899,33 @@ public final class Parameters {
     return ret;
   }
 
-  private final Map<String, String> params;
-  private final List<String> namespace;
+  private final ImmutableMap<String, String> params;
+  private final ImmutableList<String> namespace;
 
+  /**
+   * Creates a new {@code Parameters} which has all the parameters in both this one and {@code
+   * paramsToAdd}. If there are collisions between this and {@code paramsToAdd}, {@code
+   * paramsToAdd}'s value is preferred.
+   *
+   * The result maintains the namespace of {@code this} and parameters from {@code paramsToAdd} are
+   * copied into the current namespace using their names relative to the {@code paramsToAdd}'s
+   * working namespace.  For example, suppose {@code this}'s namespace is {@code com.bbn.foo} and
+   * {@code paramsToAdd}'s namespace is {@code com.bbn.bar.meep}.  If {code paramsToAdd} has a
+   * parameter whose original absolute name was {@code com.bbn.bar.meep.lalala.myParam}, it will
+   * become {@code com.bbn.foo.lalala.myParam} in the result.
+   *
+   * Beware this behavior may be confusing to users because error messages may refer to parameters
+   * which do not appear to exist.
+   */
+  public Parameters copyMergingIntoCurrentNamespace(final Parameters paramsToAdd) {
+    // we use the immutable map builder even though it requires tracking seen
+    // items separately to maintain determinism
+    final ImmutableMap.Builder<String, String> newParamsMap = ImmutableMap.builder();
+    final Set<String> seen = Sets.newHashSet();
+
+    newParamsMap.putAll(paramsToAdd.params);
+    seen.addAll(paramsToAdd.params.keySet());
+    newParamsMap.putAll(Maps.filterKeys(params, not(in(seen))));
+    return new Parameters(newParamsMap.build(), namespace);
+  }
 }
