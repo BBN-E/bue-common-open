@@ -948,4 +948,34 @@ public final class Parameters {
     newParamsMap.putAll(Maps.filterKeys(params, not(in(seen))));
     return new Parameters(newParamsMap.build(), namespace);
   }
+
+  public Builder modifiedCopyBuilder() {
+    final Builder ret = new Builder(namespace);
+    ret.putAll(params);
+    return ret;
+  }
+
+  public static final class Builder {
+
+    private final Map<String, String> params = Maps.newHashMap();
+    private final List<String> namespace;
+
+    private Builder(final List<String> namespace) {
+      this.namespace = Lists.newArrayList(namespace);
+    }
+
+    public Builder set(String key, String value) {
+      params.put(key, value);
+      return this;
+    }
+
+    public Builder putAll(Map<String, String> data) {
+      params.putAll(data);
+      return this;
+    }
+
+    public Parameters build() {
+      return new Parameters(params, namespace);
+    }
+  }
 }
