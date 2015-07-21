@@ -251,6 +251,18 @@ public final class Parameters {
     }
   }
 
+  public Symbol getSymbol(final String param) {
+    return Symbol.from(getString(param));
+  }
+
+  public Optional<Symbol> getOptionalSymbol(final String param) {
+    if (isPresent(param)) {
+      return Optional.of(getSymbol(param));
+    } else {
+      return Optional.absent();
+    }
+  }
+
   private String fullString(final String param) {
     if (namespace.isEmpty()) {
       return param;
