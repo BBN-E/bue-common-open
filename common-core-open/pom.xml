@@ -30,10 +30,6 @@
                   <mainClass>com.bbn.bue.common.parameters.ExpandParameters</mainClass>
                   <name>ExpandParameters</name>
               </program>
-              <program>
-                  <mainClass>com.bbn.bue.common.parameters.WindowizeParameters</mainClass>
-                  <name>WindowizeParameters</name>
-              </program>
           </programs>
             </configuration>
           </plugin>
