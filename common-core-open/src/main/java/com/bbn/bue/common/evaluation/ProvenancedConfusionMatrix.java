@@ -5,6 +5,7 @@ import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.symbols.Symbol;
 import com.bbn.bue.common.symbols.SymbolUtils;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -34,6 +35,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <CellFiller> What sort of entry to keep in each cell.
  * @author rgabbard
  */
+@Beta
 public final class ProvenancedConfusionMatrix<CellFiller> {
 
   private final Table<Symbol, Symbol, List<CellFiller>> table;

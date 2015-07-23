@@ -1,5 +1,6 @@
 package com.bbn.bue.common.evaluation;
 
+import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Beta
 public final class BrokenDownSummaryConfusionMatrix<SignatureType> {
 
   private ImmutableMap<SignatureType, SummaryConfusionMatrix> data;
