@@ -6,6 +6,7 @@ import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.EDTOffset;
 import com.bbn.bue.common.strings.offsets.OffsetGroup;
 import com.bbn.bue.common.strings.offsets.OffsetGroupRange;
+import com.bbn.bue.common.strings.offsets.OffsetRange;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
@@ -16,9 +17,6 @@ import java.util.NoSuchElementException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-/*import com.bbn.bue.common.strings.offsets.ASRTime;
-import com.bbn.bue.common.strings.offsets.ByteOffset;
-import com.bbn.bue.common.strings.offsets.CharOffset;*/
 
 /**
  * * Class for storing and manipulating strings that have been read in from a file, without losing
@@ -57,11 +55,6 @@ import com.bbn.bue.common.strings.offsets.CharOffset;*/
  */
 public final class LocatedString {
 
-  /*public LocatedString(String content, OffsetGroup start, OffsetGroup end) {
-          this.content = checkNotNull(content);
-          this.start = checkNotNull(start);
-          this.end = checkNotNull(end);
-  };*/
   public String text() {
     return content;
   }
@@ -100,7 +93,7 @@ public final class LocatedString {
 
   public static LocatedString forString(final String text) {
     final OffsetGroup initialOffsets = OffsetGroup.from(new ByteOffset(0), new CharOffset(0),
-        new EDTOffset(0));
+        EDTOffset.asEDTOffset(0));
     return forString(text, initialOffsets);
   }
 
@@ -121,24 +114,24 @@ public final class LocatedString {
     return new LocatedString(text, offsets, bounds);
   }
 
-  /**  
+  /**
    * Return a LocatedString substring of this string.
-   * 
-   * NOTE: Because it recomputes the various offsets of every character in the 
+   *
+   * NOTE: Because it recomputes the various offsets of every character in the
    * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String 
+   * fetching the String content of the substring.  If you just need the String
    * content, you should use rawSubstring() instead.
    */
   public LocatedString substring(final OffsetGroup start, final OffsetGroup end) {
     return substring(start.charOffset(), end.charOffset());
   }
-  
-  /**  
+
+  /**
    * Return a LocatedString substring of this string.
-   * 
-   * NOTE: Because it recomputes the various offsets of every character in the 
+   *
+   * NOTE: Because it recomputes the various offsets of every character in the
    * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String 
+   * fetching the String content of the substring.  If you just need the String
    * content, you should use rawSubstring() instead.
    */
   public LocatedString substring(final CharOffset start, final CharOffset end) {
@@ -164,12 +157,12 @@ public final class LocatedString {
 		return new LocatedString(text2, offsets, bounds);
 	}*/
 
-  /**  
+  /**
    * Return a LocatedString substring of this string.
-   * 
-   * NOTE: Because it recomputes the various offsets of every character in the 
+   *
+   * NOTE: Because it recomputes the various offsets of every character in the
    * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String 
+   * fetching the String content of the substring.  If you just need the String
    * content, you should use rawSubstring() instead.
    */
   public LocatedString substring(final int startIndexInclusive, final int endIndexExclusive) {
@@ -181,7 +174,7 @@ public final class LocatedString {
 
   /**
    * Return a String substring of this string.
-   * 
+   *
    * @param start
    * @param end
    * @return
@@ -192,7 +185,7 @@ public final class LocatedString {
 
   /**
    * Return a String substring of this string.
-   * 
+   *
    * @param start
    * @param end
    * @return
@@ -206,7 +199,7 @@ public final class LocatedString {
 
   /**
    * Return a String substring of this string.
-   * 
+   *
    * @param startIndexInclusive
    * @param endIndexExclusive
    * @return
@@ -214,7 +207,7 @@ public final class LocatedString {
   public String rawSubstring(final int startIndexInclusive, final int endIndexExclusive) {
     return content.substring(startIndexInclusive, endIndexExclusive);
   }
-  
+
   /**
    * Returns the earliest offset group within this {@code LocatedString} whose character offset
    * matches the one supplied. If not such offset group exists, throws a {@link
@@ -233,6 +226,77 @@ public final class LocatedString {
       }
     }
     throw new NoSuchElementException();
+  }
+
+  public boolean contains(LocatedString other) {
+    // TODO: we do it this way because the C++ is implemented this way,
+    // so implementing isSubstringOf is an easy, less error-prone
+    // translation. But .contains() is more idiomatic Java.
+    return other.isSubstringOf(this);
+  }
+
+  /**
+   * finds the position of the first offset entry of this object which has an identical char offset to oe
+   *
+   * preserves the CPP interface, more or less
+   * @param charOffset
+   * @return
+   */
+  private int positionOfStartOffsetChar(final CharOffset charOffset) {
+    for(final OffsetEntry it: offsetEntries()) {
+      if(it.startOffset().charOffset().asInt() > charOffset.asInt()) {
+        return -1;
+      }
+      if(charOffset.asInt() <= it.endOffset().charOffset().asInt()) {
+        return it.startPos() + (charOffset.asInt() - it.startOffset().charOffset().asInt());
+      }
+    }
+    return -1;
+  }
+
+  private CharOffset getStartOffset(int pos) {
+    final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
+    checkArgument(pos >= oe.startPos() && pos <= oe.endPos() - 1);
+    if(pos == oe.startPos()) {
+      return oe.startOffset().charOffset();
+    } else {
+      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+    }
+  }
+
+  private CharOffset getEndOffset(int pos) {
+    final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
+    checkArgument(pos >= oe.startPos() && pos <= oe.endPos());
+    if(pos == oe.endPos() -1) {
+      return oe.endOffset().charOffset();
+    } else {
+      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+    }
+  }
+
+  private boolean isSubstringOf(LocatedString sup) {
+    final int superStringStartPos =
+        sup.positionOfStartOffsetChar(offsetEntries().get(0).startOffset().charOffset());
+    if (superStringStartPos < 0) {
+      return false;
+    }
+    if (superStringStartPos + length() > sup.length()) {
+      return false;
+    }
+
+    final OffsetRange<CharOffset> thisCharOffsets = this.bounds().asCharOffsetRange();
+    if (thisCharOffsets.startInclusive().asInt() != sup.getStartOffset(superStringStartPos).asInt()) {
+      return false;
+    }
+    if (thisCharOffsets.endInclusive().asInt() != sup.getEndOffset(superStringStartPos + this.length()).asInt()-1) {
+      return false;
+    }
+    //TODO: if this is slow, do a point by point comparison instead of substring
+    if (!sup.content.substring(superStringStartPos, superStringStartPos + this.length()).equals(
+        content)) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -313,10 +377,10 @@ public final class LocatedString {
 
     @Override
     public String toString() {
-      return "StartPos: " + startPos +
-          "\nEndPos: " + endPos +
-          "\nStartOffset: " + startOffset +
-          "\nEndOffset: " + endOffset +
+      return "start: " + startPos +
+          "\nend: " + endPos +
+          "\nstartOffset: " + startOffset +
+          "\nendOffset: " + endOffset +
           "\nEDTSkip: " + isEDTSkipRegion;
     }
 
@@ -345,15 +409,16 @@ public final class LocatedString {
       final OffsetGroup initialOffsets, final boolean EDTOffsetsAreCharOffsets) {
     checkNotNull(text);
     checkNotNull(initialOffsets);
-    checkArgument(initialOffsets.byteOffset().isPresent());
 
     final ImmutableList.Builder<OffsetEntry> offsets = ImmutableList.builder();
 
     final Optional<ASRTime> weDontKnowASRTime = Optional.absent();
     int inTag = 0;
-    int byteOffset = initialOffsets.byteOffset().get().value();
+    boolean useByteOffsets = initialOffsets.byteOffset().isPresent();
+    int byteOffset = useByteOffsets ? initialOffsets.byteOffset().get().value() : Integer.MIN_VALUE;
     int charOffset = initialOffsets.charOffset().value();
     int edtOffset = initialOffsets.edtOffset().value();
+
     int pos = 0;
     int startPos = 0;
     boolean justLeftXMLTag = false;
@@ -369,11 +434,13 @@ public final class LocatedString {
         final int prevEDTOffset =
             (edtOffset == 0 || prevChar == '\r') ? edtOffset : (edtOffset - 1);
         offsets.add(
-            new OffsetEntry(startPos, pos, start, OffsetGroup.from(new ByteOffset(byteOffset - 1),
+            new OffsetEntry(startPos, pos, start,
+                OffsetGroup.from(useByteOffsets ? new ByteOffset(byteOffset - 1) : null,
                 new CharOffset(charOffset - 1), EDTOffset.asEDTOffset(prevEDTOffset)), justLeftXMLTag));
         startPos = pos;
         final int startEDTOffset = (c == '<') ? edtOffset - 1 : edtOffset;
-        start = OffsetGroup.from(new ByteOffset(byteOffset), new CharOffset(charOffset),
+        start = OffsetGroup
+            .from(useByteOffsets ? new ByteOffset(byteOffset) : null, new CharOffset(charOffset),
             EDTOffset.asEDTOffset(startEDTOffset));
       }
 
@@ -398,7 +465,8 @@ public final class LocatedString {
     if (pos > startPos) {
       final int prevEDTOffset = Math.max(start.edtOffset().value(), edtOffset - 1);
       offsets.add(new OffsetEntry(startPos, pos, start,
-          OffsetGroup.from(new ByteOffset(byteOffset - 1), new CharOffset(charOffset - 1),
+          OffsetGroup.from(useByteOffsets ? new ByteOffset(byteOffset - 1) : null,
+              new CharOffset(charOffset - 1),
               EDTOffset.asEDTOffset(prevEDTOffset)), inTag > 0 || justLeftXMLTag));
     }
     return offsets.build();
@@ -437,7 +505,7 @@ public final class LocatedString {
 
     final ImmutableList.Builder<OffsetEntry> ret = ImmutableList.builder();
 
-    for (int entryNum = entryBefore(startIndexInclusive); entryNum < offsets.size(); ++entryNum) {
+    for (int entryNum = lastEntryStartingBefore(startIndexInclusive); entryNum < offsets.size(); ++entryNum) {
       final OffsetEntry entry = offsets.get(entryNum);
       checkArgument(entry.startPos <= endIndexExclusive);
 
@@ -494,7 +562,7 @@ public final class LocatedString {
     return ret.build();
   }
 
-  private int entryBefore(final int pos) {
+  private int lastEntryStartingBefore(final int pos) {
     int i = 1;
     while (i < offsets.size() && offsets.get(i).startPos <= pos) {
       ++i;
