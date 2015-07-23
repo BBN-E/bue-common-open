@@ -39,7 +39,7 @@ public final class BrokenDownSummaryConfusionMatrix<SignatureType> {
   public static final class Builder<SignatureType> {
 
     private final Ordering<SignatureType> keyOrdering;
-    private final Map<SignatureType, SummaryConfusionMatrix.Builder> data = Maps.newHashMap();
+    private final Map<SignatureType, SummaryConfusionMatrices.Builder> data = Maps.newHashMap();
 
     private Builder(final Ordering<SignatureType> keyOrdering) {
       this.keyOrdering = checkNotNull(keyOrdering);
@@ -51,7 +51,7 @@ public final class BrokenDownSummaryConfusionMatrix<SignatureType> {
           .entrySet()) {
         final SignatureType signature = entry.getKey();
         if (!data.containsKey(signature)) {
-          data.put(signature, SummaryConfusionMatrix.builder());
+          data.put(signature, SummaryConfusionMatrices.builder());
         }
         data.get(signature).accumulate(entry.getValue());
       }

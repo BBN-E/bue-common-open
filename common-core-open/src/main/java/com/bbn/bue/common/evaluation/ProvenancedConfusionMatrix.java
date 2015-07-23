@@ -142,7 +142,7 @@ public final class ProvenancedConfusionMatrix<CellFiller> {
   }
 
   public SummaryConfusionMatrix buildSummaryMatrix() {
-    final SummaryConfusionMatrix.Builder builder = SummaryConfusionMatrix.builder();
+    final SummaryConfusionMatrices.Builder builder = SummaryConfusionMatrices.builder();
 
     for (final Cell<Symbol, Symbol, List<CellFiller>> cell : table.cellSet()) {
       builder.accumulate(cell.getRowKey(), cell.getColumnKey(), cell.getValue().size());
