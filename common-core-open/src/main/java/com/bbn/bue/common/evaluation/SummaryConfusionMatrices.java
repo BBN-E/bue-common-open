@@ -82,7 +82,7 @@ public final class SummaryConfusionMatrices {
    * all cells.  If the sum is 0, 0 is returned.  To pretty-print this you probably want to multiply
    * by 100.
    */
-  public final double accuracy(SummaryConfusionMatrix m) {
+  public static final double accuracy(SummaryConfusionMatrix m) {
     final double total = m.sumOfallCells();
     double matching = 0.0;
     for (final Symbol key : Sets.intersection(m.leftLabels(), m.rightLabels())) {
