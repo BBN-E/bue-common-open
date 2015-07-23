@@ -49,12 +49,12 @@ public final class SummaryConfusionMatrices {
     return prettyPrint(m, SymbolUtils.byStringOrdering());
   }
 
-  public final FMeasureCounts FMeasureVsAllOthers(SummaryConfusionMatrix m,
+  public static final FMeasureCounts FMeasureVsAllOthers(SummaryConfusionMatrix m,
       final Symbol positiveSymbol) {
     return FMeasureVsAllOthers(m, ImmutableSet.of(positiveSymbol));
   }
 
-  public final FMeasureCounts FMeasureVsAllOthers(SummaryConfusionMatrix m,
+  public static final FMeasureCounts FMeasureVsAllOthers(SummaryConfusionMatrix m,
       final Set<Symbol> positiveSymbols) {
     double truePositives = 0;
 
