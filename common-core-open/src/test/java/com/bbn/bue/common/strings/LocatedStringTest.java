@@ -1,10 +1,18 @@
 package com.bbn.bue.common.strings;
 
+import com.bbn.bue.common.strings.offsets.CharOffset;
+import com.bbn.bue.common.strings.offsets.EDTOffset;
+import com.bbn.bue.common.strings.offsets.OffsetGroup;
+
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
 
+import java.util.List;
+
 import static com.google.common.base.Preconditions.checkArgument;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 /**
@@ -26,6 +34,43 @@ public final class LocatedStringTest {
   private void stringContainsKnownSubStrings(final LocatedString complete) {
     assertTrue(deriveSubstring(complete, partOne).isPresent());
     assertTrue(deriveSubstring(complete, partTwo).isPresent());
+  }
+
+  @Test
+  public void substringTest() {
+    final String baseString = "H<b>ello</b> world";
+    final LocatedString locatedString = LocatedString.forString(baseString);
+    final List<OffsetGroup> posesInString = ImmutableList.of(
+        OffsetGroup.from(CharOffset.asCharOffset(0), EDTOffset.asEDTOffset(0)),
+        OffsetGroup.from(CharOffset.asCharOffset(1), EDTOffset.asEDTOffset(0)),
+        OffsetGroup.from(CharOffset.asCharOffset(2), EDTOffset.asEDTOffset(0)),
+        OffsetGroup.from(CharOffset.asCharOffset(3), EDTOffset.asEDTOffset(0)),
+        OffsetGroup.from(CharOffset.asCharOffset(4), EDTOffset.asEDTOffset(1)),
+        OffsetGroup.from(CharOffset.asCharOffset(5), EDTOffset.asEDTOffset(2)),
+        OffsetGroup.from(CharOffset.asCharOffset(6), EDTOffset.asEDTOffset(3)),
+        OffsetGroup.from(CharOffset.asCharOffset(7), EDTOffset.asEDTOffset(4)),
+        OffsetGroup.from(CharOffset.asCharOffset(8), EDTOffset.asEDTOffset(4)),
+        OffsetGroup.from(CharOffset.asCharOffset(9), EDTOffset.asEDTOffset(4)),
+        OffsetGroup.from(CharOffset.asCharOffset(10), EDTOffset.asEDTOffset(4)),
+        OffsetGroup.from(CharOffset.asCharOffset(11), EDTOffset.asEDTOffset(4)),
+        OffsetGroup.from(CharOffset.asCharOffset(12), EDTOffset.asEDTOffset(5)),
+        OffsetGroup.from(CharOffset.asCharOffset(13), EDTOffset.asEDTOffset(6)),
+        OffsetGroup.from(CharOffset.asCharOffset(14), EDTOffset.asEDTOffset(7)),
+        OffsetGroup.from(CharOffset.asCharOffset(15), EDTOffset.asEDTOffset(8)),
+        OffsetGroup.from(CharOffset.asCharOffset(16), EDTOffset.asEDTOffset(9)),
+        OffsetGroup.from(CharOffset.asCharOffset(17), EDTOffset.asEDTOffset(10)));
+
+    for (final OffsetGroup start : posesInString) {
+      for (final OffsetGroup end : posesInString) {
+        if (start.charOffset().value() < end.charOffset().value()) {
+          final LocatedString substring = locatedString.substring(start, end);
+          assertEquals(start.charOffset(), substring.startCharOffset());
+          assertEquals(end.charOffset(), substring.endCharOffset());
+          assertEquals(start.edtOffset(), substring.startEDTOffset());
+          assertEquals(end.edtOffset(), substring.endEDTOffset());
+        }
+      }
+    }
   }
 
   @Test
