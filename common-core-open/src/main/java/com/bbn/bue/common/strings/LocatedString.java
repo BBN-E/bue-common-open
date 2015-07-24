@@ -554,7 +554,7 @@ public final class LocatedString {
       ret.add(new OffsetEntry(newStartPos, newEndPos, newStartOffset, newEndOffset,
           entry.isEDTSkipRegion));
 
-      if (entry.endPos >= (endIndexExclusive - startIndexInclusive)) {
+      if (newEndPos >= (endIndexExclusive - startIndexInclusive)) {
         break;
       }
     }
