@@ -1,6 +1,5 @@
 package com.bbn.bue.common.collections;
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -68,7 +67,6 @@ public final class MultimapUtils {
    * This method will allow {@code first} to contain values not found as keys of {@code second}. If
    * you wish to disallow this, see {@link #composeToSetMultimapStrictly(Multimap, Multimap)}.
    */
-  @Beta
   public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimap(
       final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
     final ImmutableSetMultimap.Builder<K1, V2> result = ImmutableSetMultimap.builder();
@@ -91,7 +89,6 @@ public final class MultimapUtils {
    * the input multimaps. Strict compositions require that for each entry {@code (k,i)} in {@code
    * first}, there exists an entry {@code (i,v)} in {@code second}.
    */
-  @Beta
   public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimapStrictly(
       final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
     checkArgument(second.keySet().containsAll(first.values()));
