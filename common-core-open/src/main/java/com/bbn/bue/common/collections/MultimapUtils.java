@@ -54,12 +54,19 @@ public final class MultimapUtils {
     return ret.build();
   }
 
+  /**
+   * Composes two multimaps together - V1 is a typpe of K2 - Takes all K:k1, V:{v1} and for each of
+   * them replaces the V set with all values the elements of V point to.
+   *
+   * This is conceptually equivalent to treating a map as a function and composing two functions
+   * together.
+   */
   @Beta
   public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimap(
       final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
     final ImmutableSetMultimap.Builder<K1, V2> result = ImmutableSetMultimap.builder();
-    for(K1 k1: first.keySet()) {
-      for(V1 v1: first.get(k1)) {
+    for (K1 k1 : first.keySet()) {
+      for (V1 v1 : first.get(k1)) {
         result.putAll(k1, second.get(v1));
       }
     }
