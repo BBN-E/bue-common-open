@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class MultimapUtils {
 
@@ -72,7 +73,9 @@ public final class MultimapUtils {
       final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
     final ImmutableSetMultimap.Builder<K1, V2> result = ImmutableSetMultimap.builder();
     for (K1 k1 : first.keySet()) {
+      checkNotNull(k1);
       for (V1 v1 : first.get(k1)) {
+        checkNotNull(v1);
         result.putAll(k1, second.get(v1));
       }
     }
