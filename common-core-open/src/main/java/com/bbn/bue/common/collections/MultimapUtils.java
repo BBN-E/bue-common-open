@@ -58,12 +58,12 @@ public final class MultimapUtils {
   }
 
   /**
-   * Performs a (non-strict) composition of two multimaps to an {@link ImmutableSetMultimap}.
-   * This returns a new {@link ImmutableSetMultimap} which will contain an entry {@code (k,v)} if
-   * and only if there is some {@code i} such that {@code (k, i)} is in {@code first}
-   * and {@code (i,k)} is in {@code second}.  Neither {@code first} nor {@code second} is permitted
-   * to contain null keys or values. The output of this method is not a view and will not be updated
-   * for changes to the input multimaps.
+   * Performs a (non-strict) composition of two multimaps to an {@link ImmutableSetMultimap}. This
+   * returns a new {@link ImmutableSetMultimap} which will contain an entry {@code (k,v)} if and
+   * only if there is some {@code i} such that {@code (k, i)} is in {@code first} and {@code (i,v)}
+   * is in {@code second}.  Neither {@code first} nor {@code second} is permitted to contain null
+   * keys or values. The output of this method is not a view and will not be updated for changes to
+   * the input multimaps.
    *
    * This method will allow {@code first} to contain values not found as keys of {@code second}. If
    * you wish to disallow this, see {@link #composeToSetMultimapStrictly(Multimap, Multimap)}.
@@ -83,11 +83,13 @@ public final class MultimapUtils {
   }
 
   /**
-   * Performs a composition on two multimaps, strictly asserting that the domain of the second
-   * contains the range of the first.
-   *
-   * Performs the same operation as {@link MultimapUtils#composeToSetMultimap(Multimap, Multimap)},
-   * ensuring that the sets V1 and K2 are identical.
+   * Performs a (strict) composition of two multimaps to an {@link ImmutableSetMultimap}. This
+   * returns a new {@link ImmutableSetMultimap} which will contain an entry {@code (k,v)} if and
+   * only if there is some {@code i} such that {@code (k, i)} is in {@code first} and {@code (i, v)}
+   * is in {@code second}.  Neither {@code first} nor {@code second} is permitted to contain null
+   * keys or values. The output of this method is not a view and will not be updated for changes to
+   * the input multimaps. Strict compositions require that for each entry {@code (k,i)} in {@code
+   * first}, there exists an entry {@code (i,v)} in {@code second}.
    */
   @Beta
   public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimapStrictly(
