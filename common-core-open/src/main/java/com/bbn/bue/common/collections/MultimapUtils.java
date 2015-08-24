@@ -57,33 +57,15 @@ public final class MultimapUtils {
   }
 
   /**
-   * Performs a (non-strict) composition of two multimaps - using the keys of the first to access
-   * values of the second (through the intermediary values of the first and keys of the second).
+   * Performs a (non-strict) composition of two multimaps to an {@link ImmutableSetMultimap}.
+   * This returns a new {@link ImmutableSetMultimap} which will contain an entry {@code (k,v)} if
+   * and only if there is some {@code i} such that {@code (k, i)} is in {@code first}
+   * and {@code (i,k)} is in {@code second}.  Neither {@code first} nor {@code second} is permitted
+   * to contain null keys or values. The output of this method is not a view and will not be updated
+   * for changes to the input multimaps.
    *
-   * <br/>
-   * Takes every (key,{value}) in first and, treating each of {value} as a key to the second map,
-   * generates a map from first's key to all of the values of second, through the intermediate
-   * values in first. This is conceptually similar to function composition, with the range being a
-   * set. It is not precisely the same - each of the sets in the composition is expanded item by
-   * item, whereas a true composition would use the set as a key.
-   *
-   * <br/>
-   * Strictness refers to whether or not the range of the first multimap is contained in the domain
-   * of the second. Null keys and values are always disallowed, regardless of strictness.
-   *
-   * <br/>
-   * Replaces the loop:
-   * <pre>
-   * {@code
-   * ImmutableSetMultimap.Builder<K1,V2> result = ImmutableSetMultimap.builder();
-   * for(K1 k1: first.keySet()) {
-   *   for(V1 v1: first.get(k1)) {
-   *     result.putAll(k1, second.get(v1));
-   *   }
-   * }
-   * return result.build()
-   * }
-   * </pre>
+   * This method will allow {@code first} to contain values not found as keys of {@code second}. If
+   * you wish to disallow this, see {@link #composeToSetMultimapStrictly(Multimap, Multimap)}.
    */
   @Beta
   public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimap(
