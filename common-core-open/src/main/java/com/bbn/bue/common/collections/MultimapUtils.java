@@ -3,12 +3,15 @@ package com.bbn.bue.common.collections;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 import java.util.Collection;
 import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public final class MultimapUtils {
 
@@ -55,11 +58,13 @@ public final class MultimapUtils {
   }
 
   /**
-   * Composes two multimaps together - V1 is a typpe of K2 - Takes all K:k1, V:{v1} and for each of
-   * them replaces the V set with all values the elements of V point to.
+   * Composes two multimaps together - V1 is a subtype of K2 - Takes all K:k1, V:{v1} and for each
+   * of them replaces the V set with all values the elements of V point to.
    *
    * This is conceptually equivalent to treating a map as a function and composing two functions
-   * together.
+   * together. In the multimap case, the range is a set of sets.
+   *
+   * Null keys are disallowed. Null values are disallowed.
    */
   @Beta
   public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimap(
@@ -71,5 +76,16 @@ public final class MultimapUtils {
       }
     }
     return result.build();
+  }
+
+  /**
+   * Performs the same operation as {@link MultimapUtils#composeToSetMultimap(Multimap, Multimap)},
+   * ensuring that the sets V1 and K2 are identical.
+   */
+  @Beta
+  public static <K1, K2, V1 extends K2, V2> ImmutableSetMultimap<K1, V2> composeToSetMultimapStrictly(
+      final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
+    checkArgument(ImmutableSet.<K2>copyOf(first.values()).equals(ImmutableSet.copyOf(second.values())));
+    return composeToSetMultimap(first, second);
   }
 }
