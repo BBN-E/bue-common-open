@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -275,6 +276,37 @@ public final class MapUtils {
     @Override
     public String toString() {
       return "asFunction(" + map + ", default=" + defaultFunction + ")";
+    }
+  }
+
+  /**
+   * Creates a {@link ImmutableMap} by pairing up a sequence of keys and values. The {@code n}-th
+   * key is paired to the {@code n}-th value.  Neither null keys nor null values are permitted.  The
+   * keys must be unique or an {@link IllegalArgumentException} will be thrown.  If the numberof
+   * elements returned by the two {@link Iterable}s differ, an {@link IllegalArgumentException} will
+   * be thrown.
+   */
+  public static <K, V> ImmutableMap<K, V> copyParallelListsToMap(Iterable<K> keys,
+      Iterable<V> values) {
+    final ImmutableMap.Builder<K, V> ret = ImmutableMap.builder();
+
+    final Iterator<K> keyIt = keys.iterator();
+    final Iterator<V> valueIt = values.iterator();
+
+    while (keyIt.hasNext() && valueIt.hasNext()) {
+      ret.put(keyIt.next(), valueIt.next());
+    }
+
+    if (!keyIt.hasNext() && !valueIt.hasNext()) {
+      return ret.build();
+    } else {
+      if (keyIt.hasNext()) {
+        throw new IllegalArgumentException(
+            "When pairing keys and values, there were more keys than values");
+      } else {
+        throw new IllegalArgumentException(
+            "When pairing keys and values, there were more values than keys");
+      }
     }
   }
 }
