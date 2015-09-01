@@ -1,6 +1,7 @@
 package com.bbn.bue.common.collections;
 
 import com.google.common.base.Function;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -210,5 +211,10 @@ public final class CollectionUtils {
     return ImmutableSet.copyOf(items).asList();
   }
 
-
+  /**
+   * Turns null into an empty list and leaves other inputs untouched.
+   */
+  public static <T> List<T> coerceNullToEmpty(List<T> list) {
+    return MoreObjects.firstNonNull(list, ImmutableList.<T>of());
+  }
 }
