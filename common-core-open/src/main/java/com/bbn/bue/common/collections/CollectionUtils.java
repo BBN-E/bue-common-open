@@ -2,6 +2,7 @@ package com.bbn.bue.common.collections;
 
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -217,4 +218,17 @@ public final class CollectionUtils {
   public static <T> List<T> coerceNullToEmpty(List<T> list) {
     return MoreObjects.firstNonNull(list, ImmutableList.<T>of());
   }
+
+  /**
+   * A Guava {@link Predicate} which calls {@link Collection#isEmpty()} on provided collections.
+   */
+  public static Predicate<Collection<?>> isEmptyPredicate() {
+    return new Predicate<Collection<?>>() {
+      @Override
+      public boolean apply(final Collection<?> input) {
+        return input.isEmpty();
+      }
+    };
+  }
+
 }
