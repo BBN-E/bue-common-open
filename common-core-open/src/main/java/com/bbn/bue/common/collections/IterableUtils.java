@@ -374,4 +374,12 @@ public final class IterableUtils {
     }
     return true;
   }
+
+  /**
+   * Returns a new {@link Iterable} which behaves like the provided {@code Iterable} except with a
+   * single extra element at the end.  {@code item} may not be null.
+   */
+  public static <T, V extends T> Iterable<T> append(Iterable<T> iterable, V item) {
+    return Iterables.concat(iterable, ImmutableList.<T>of(item));
+  }
 }
