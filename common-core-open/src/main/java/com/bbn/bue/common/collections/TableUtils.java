@@ -84,4 +84,42 @@ public class TableUtils {
     }
   }
 
+  /**
+   * Creates a new {@link ImmutableTable} from the provided {@link com.google.common.collect.Table.Cell}s.
+   * The iteration order of the resulting table will respect the iteration order of the input cells.
+   * Null keys and values are forbidden.
+   */
+  public static <R, C, V> ImmutableTable<R, C, V> copyOf(Iterable<Table.Cell<R, C, V>> cells) {
+    final ImmutableTable.Builder<R, C, V> ret = ImmutableTable.builder();
+
+    for (final Table.Cell<R, C, V> cell : cells) {
+      ret.put(cell.getRowKey(), cell.getColumnKey(), cell.getValue());
+    }
+
+    return ret.build();
+  }
+
+  /**
+   * Guava {@link Function} to transform a cell to its row key.
+   */
+  public static <R, C, V> Function<Table.Cell<R, C, V>, R> toRowKeyFunction() {
+    return new Function<Table.Cell<R, C, V>, R>() {
+      @Override
+      public R apply(final Table.Cell<R, C, V> input) {
+        return input.getRowKey();
+      }
+    };
+  }
+
+  /**
+   * Guava {@link Function} to transform a cell to its column key.
+   */
+  public static <R, C, V> Function<Table.Cell<R, C, V>, C> toColumnKeyFunction() {
+    return new Function<Table.Cell<R, C, V>, C>() {
+      @Override
+      public C apply(final Table.Cell<R, C, V> input) {
+        return input.getColumnKey();
+      }
+    };
+  }
 }
