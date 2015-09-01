@@ -4,10 +4,12 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 
 import java.util.Comparator;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -115,5 +117,20 @@ public class SymbolUtils {
    */
   public static Symbol lowercaseSymbol(Symbol s) {
     return Symbol.from(s.toString().toLowerCase());
+  }
+
+  /**
+   * Creates a map of {@link Symbol}s from a map of {@link String}s.  No keys or values
+   * may be null.
+   */
+  public static ImmutableMap<Symbol, Symbol> mapFrom(Map<String, String> stringMap) {
+    final ImmutableMap.Builder<Symbol, Symbol> ret = ImmutableMap.builder();
+
+    for (Map.Entry<String, String> stringEntry : stringMap.entrySet()) {
+      ret.put(Symbol.from(stringEntry.getKey()),
+          Symbol.from(stringEntry.getValue()));
+    }
+
+    return ret.build();
   }
 }
