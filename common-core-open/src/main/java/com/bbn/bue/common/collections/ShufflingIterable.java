@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * This is an {@link Iterable} which provides its data in a random order
- * every time an iterator is requested. Note this must its entire underlying
+ * every time an iterator is requested. Note this must load its entire underlying
  * {@link Iterable} into memory.
  * @param <T>
  */
