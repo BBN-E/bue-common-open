@@ -254,4 +254,26 @@ public final class DoubleUtils {
       return 0.0;
     }
   }
+
+  /**
+   * Shifts the provided {@code val} towards but not past zero.  If the absolute value of {@code
+   * val} is less than or equal to shift, zero will be returned. Otherwise, negative {@code val}s
+   * will have {@code shift} added and positive vals will have {@code shift} subtracted.
+   *
+   * If {@code shift} is negative, the result is undefined.  This method is the same as {@link
+   * #shiftTowardsZeroWithClipping(double, double)} except that it eliminates the check on {@code
+   * shift} for speed in deep-inner loops. This is a profile/jitwatch-guided optimization.
+   *
+   * Inspired by AdaGradRDA.ISTAHelper from FACTORIE.
+   */
+  public static double shiftTowardsZeroWithClippingRecklessly(double val, double shift) {
+    if (val > shift) {
+      return val - shift;
+    } else if (val < -shift) {
+      return val + shift;
+    } else {
+      return 0.0;
+    }
+  }
+
 }
