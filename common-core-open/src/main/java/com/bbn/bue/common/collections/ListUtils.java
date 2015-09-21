@@ -18,7 +18,7 @@ public final class ListUtils {
    * This view will act like a {@link List} which has all of the items of
    * {@code first} followed by all of the items in {@code second}.
    */
-  public static <E> List<E> concat(List<E> first, List<E> second) {
+  public static <E> List<E> concat(List<? extends E> first, List<? extends E> second) {
     return new ConcatenatedListView<E>(first, second);
   }
 
@@ -26,10 +26,11 @@ public final class ListUtils {
    * See {@link #concat(List, List)}.
    */
   private static final class ConcatenatedListView<E> extends AbstractList<E> {
-    private final List<E> list1;
-    private final List<E> list2;
 
-    ConcatenatedListView(final List<E> list1, final List<E> list2) {
+    private final List<? extends E> list1;
+    private final List<? extends E> list2;
+
+    ConcatenatedListView(final List<? extends E> list1, final List<? extends E> list2) {
       // no defensive copies because this is a view
       this.list1 = checkNotNull(list1);
       this.list2 = checkNotNull(list2);
@@ -38,7 +39,7 @@ public final class ListUtils {
     @Override
     public E get(final int index) {
       final boolean useFirstList = index < list1.size();
-      final List<E> list = useFirstList ? list1 : list2;
+      final List<? extends E> list = useFirstList ? list1 : list2;
       final int modifiedIdx = useFirstList ? index : index - list1.size();
       return list.get(modifiedIdx);
     }
