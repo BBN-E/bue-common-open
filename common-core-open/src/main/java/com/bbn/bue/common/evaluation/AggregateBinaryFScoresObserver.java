@@ -45,8 +45,8 @@ public final class AggregateBinaryFScoresObserver
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, PRESENT, alignment.rightAligned().size());
     summaryConfusionMatrixB
-        .accumulatePredictedGold(PRESENT, ABSENT, alignment.rightUnaligned().size());
+        .accumulatePredictedGold(PRESENT, ABSENT, alignment.leftUnaligned().size());
     summaryConfusionMatrixB
-        .accumulatePredictedGold(ABSENT, PRESENT, alignment.leftUnaligned().size());
+        .accumulatePredictedGold(ABSENT, PRESENT, alignment.rightAligned().size());
   }
 }
