@@ -13,12 +13,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * .equal()}.
  */
 @Beta
-public final class InContextOf<T, Ctx> {
+public final class InContextOf<T, CtxT> {
 
   private final T item;
-  private final Ctx context;
+  private final CtxT context;
 
-  private InContextOf(final T item, final Ctx context) {
+  private InContextOf(final T item, final CtxT context) {
     this.item = checkNotNull(item);
     this.context = checkNotNull(context);
   }
@@ -27,7 +27,7 @@ public final class InContextOf<T, Ctx> {
     return new InContextOf<T, Ctx>(item, context);
   }
 
-  public Ctx context() {
+  public CtxT context() {
     return context;
   }
 
