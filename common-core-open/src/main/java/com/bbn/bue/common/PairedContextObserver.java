@@ -11,5 +11,5 @@ import com.google.common.annotations.Beta;
 @Beta
 public interface PairedContextObserver<CtxT, X, Y> extends Finishable {
 
-  void observe(CtxT id, X key, Y test);
+  void observe(CtxT id, X left, Y right);
 }
