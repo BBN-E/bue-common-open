@@ -1,7 +1,7 @@
 package com.bbn.bue.common.evaluation;
 
 import com.bbn.bue.common.Finishable;
-import com.bbn.bue.common.PairedContextObserver;
+import com.bbn.bue.common.Inspector;
 import com.bbn.bue.common.collections.BootstrapIterator;
 
 import com.google.common.collect.ImmutableList;
@@ -17,17 +17,15 @@ import java.util.Random;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class BootstrapObserver<CtxT, LeftT, RightT, SummaryT>
-    implements PairedContextObserver<CtxT, LeftT, RightT> {
-
+public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT> {
   private final int numSamples;
   private final Random rng;
-  private final ObservationSummarizer<CtxT, LeftT, RightT, SummaryT> observationSummarizer;
+  private final ObservationSummarizer<ObsT, SummaryT> observationSummarizer;
   private final ImmutableList<SummaryAggregator<SummaryT>> summaryAggregators;
   private final List<SummaryT> observationSummaries = Lists.newArrayList();
 
-  private BootstrapObserver(
-      final ObservationSummarizer<CtxT, LeftT, RightT, SummaryT> observationSummarizer,
+  private BootstrapInspector(
+      final ObservationSummarizer<ObsT, SummaryT> observationSummarizer,
       final Iterable<? extends SummaryAggregator<SummaryT>> summaryAggregators,
       final int numSamples, final Random rng) {
     checkArgument(numSamples > 0, "Number of bootstrap samples must be positive");
@@ -38,8 +36,8 @@ public final class BootstrapObserver<CtxT, LeftT, RightT, SummaryT>
   }
 
   @Override
-  public void observe(final CtxT id, final LeftT left, final RightT right) {
-    observationSummaries.add(observationSummarizer.summarizeObservation(id, left, right));
+  public void inspect(ObsT item) {
+    observationSummaries.add(observationSummarizer.summarizeObservation(item));
   }
 
   @Override
@@ -63,14 +61,12 @@ public final class BootstrapObserver<CtxT, LeftT, RightT, SummaryT>
    * observation is for one document, a good summary would be the number of true positives, false
    * positives, and false negatives.
    *
-   * @param <CtxT>     Contravariant
-   * @param <LeftT>    Contravariant
-   * @param <RightT>   Contravariant
-   * @param <SummaryT> The type of summary produced. Covariant
+   * @param <ObsT>     The type of thing to be observed. Contravariant.
+   * @param <SummaryT> The type of summary produced. Covariant.
    */
-  public interface ObservationSummarizer<CtxT, LeftT, RightT, SummaryT> {
+  public interface ObservationSummarizer<ObsT, SummaryT> {
 
-    SummaryT summarizeObservation(final CtxT id, final LeftT left, final RightT right);
+    SummaryT summarizeObservation(final ObsT item);
   }
 
   /**
@@ -87,23 +83,23 @@ public final class BootstrapObserver<CtxT, LeftT, RightT, SummaryT>
 
   // cast is safe - see covariance and contravariance notes on ObservationSummarizer
   @SuppressWarnings("unchecked")
-  public static <CtxT, LeftT, RightT, SummaryT> Builder<CtxT, LeftT, RightT, SummaryT> forSummarizer(
-      final ObservationSummarizer<? super CtxT, ? super LeftT, ? super RightT, ? extends SummaryT> observationSummarizer,
+  public static <ObsT, SummaryT> Builder<ObsT, SummaryT> forSummarizer(
+      final ObservationSummarizer<? super ObsT, ? extends SummaryT> observationSummarizer,
       final Random rng) {
-    return new Builder<CtxT, LeftT, RightT, SummaryT>(
-        (ObservationSummarizer<CtxT, LeftT, RightT, SummaryT>) observationSummarizer, rng);
+    return new Builder<ObsT, SummaryT>(
+        (ObservationSummarizer<ObsT, SummaryT>) observationSummarizer, rng);
   }
 
-  public static final class Builder<CtxT, LeftT, RightT, SummaryT> {
+  public static final class Builder<ObsT, SummaryT> {
 
     private int numSamples = 1000;
     private final Random rng;
-    private final ObservationSummarizer<CtxT, LeftT, RightT, SummaryT> observationSummarizer;
+    private final ObservationSummarizer<ObsT, SummaryT> observationSummarizer;
     private final ImmutableList.Builder<SummaryAggregator<SummaryT>> summaryAggregators =
         ImmutableList.builder();
 
     private Builder(
-        final ObservationSummarizer<CtxT, LeftT, RightT, SummaryT> observationSummarizer,
+        final ObservationSummarizer<ObsT, SummaryT> observationSummarizer,
         final Random rng) {
       this.rng = checkNotNull(rng);
       this.observationSummarizer = checkNotNull(observationSummarizer);
@@ -121,8 +117,8 @@ public final class BootstrapObserver<CtxT, LeftT, RightT, SummaryT>
       return this;
     }
 
-    public BootstrapObserver<CtxT, LeftT, RightT, SummaryT> build() {
-      return new BootstrapObserver<CtxT, LeftT, RightT, SummaryT>(observationSummarizer,
+    public BootstrapInspector<ObsT, SummaryT> build() {
+      return new BootstrapInspector<ObsT, SummaryT>(observationSummarizer,
           summaryAggregators.build(), numSamples, rng);
     }
   }

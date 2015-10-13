@@ -1,5 +1,6 @@
 package com.bbn.bue.common.evaluation;
 
+import com.bbn.bue.common.Inspector;
 import com.bbn.bue.common.symbols.Symbol;
 
 import com.google.common.annotations.Beta;
@@ -15,10 +16,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * based on its observations.
  *
  * At the moment this only writes confusion matrices but it will be extended to write more soon.
+ *
+ * Although this only implements {@code Inspector<Alignment<Object,Object>>}, it is safe to cast it
+ * to inspect any alignment.
  */
 @Beta
-public final class AggregateBinaryFScoresObserver
-    implements AlignmentScoringObserver<Object, Object, Object> {
+public final class AggregateBinaryFScoresObserver implements Inspector<Alignment<Object, Object>> {
 
   private final SummaryConfusionMatrices.Builder summaryConfusionMatrixB =
       SummaryConfusionMatrices.builder();
@@ -41,7 +44,7 @@ public final class AggregateBinaryFScoresObserver
   }
 
   @Override
-  public void observe(final Object id, final Alignment<Object, Object> alignment) {
+  public void inspect(final Alignment<Object, Object> alignment) {
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, PRESENT, alignment.rightAligned().size());
     summaryConfusionMatrixB
