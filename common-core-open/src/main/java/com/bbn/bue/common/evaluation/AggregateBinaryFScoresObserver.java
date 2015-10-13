@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * to inspect any alignment.
  */
 @Beta
-public final class AggregateBinaryFScoresObserver implements Inspector<Alignment<Object, Object>> {
+public final class AggregateBinaryFScoresObserver implements Inspector<Alignment<?, ?>> {
 
   private final SummaryConfusionMatrices.Builder summaryConfusionMatrixB =
       SummaryConfusionMatrices.builder();
@@ -44,7 +44,7 @@ public final class AggregateBinaryFScoresObserver implements Inspector<Alignment
   }
 
   @Override
-  public void inspect(final Alignment<Object, Object> alignment) {
+  public void inspect(final Alignment<?, ?> alignment) {
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, PRESENT, alignment.rightAligned().size());
     summaryConfusionMatrixB

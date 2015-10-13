@@ -68,4 +68,15 @@ public final class EquivalenceBasedProvenancedAligner<LeftT, RightT, EqClassT>
         leftEquivalenceClassToProvenance, rightEquivalenceClassToProvenance);
   }
 
+  @Override
+  public Function<EvalPair<? extends Iterable<? extends LeftT>, ? extends Iterable<? extends RightT>>, ProvenancedAlignment<EqClassT, LeftT, EqClassT, RightT>> asFunction() {
+    return new Function<EvalPair<? extends Iterable<? extends LeftT>, ? extends Iterable<? extends RightT>>, ProvenancedAlignment<EqClassT, LeftT, EqClassT, RightT>>() {
+      @Override
+      public ProvenancedAlignment<EqClassT, LeftT, EqClassT, RightT> apply(final
+      EvalPair<? extends Iterable<? extends LeftT>, ? extends Iterable<? extends RightT>> input) {
+        return align(input.key(), input.test());
+      }
+    };
+  }
+
 }
