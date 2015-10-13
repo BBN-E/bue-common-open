@@ -1,6 +1,7 @@
 package com.bbn.bue.common;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -51,5 +52,15 @@ public final class InContextOf<T, CtxT> {
     final InContextOf other = (InContextOf) obj;
     return Objects.equal(this.item, other.item)
         && Objects.equal(this.context, other.context);
+  }
+
+  public static <F, T, C> Function<InContextOf<F, C>, InContextOf<T, C>> passThroughContext(
+      final Function<F, T> f) {
+    return new Function<InContextOf<F, C>, InContextOf<T, C>>() {
+      @Override
+      public InContextOf<T, C> apply(final InContextOf<F, C> input) {
+        return InContextOf.createXInContextOfY(f.apply(input.item()), input.context());
+      }
+    };
   }
 }
