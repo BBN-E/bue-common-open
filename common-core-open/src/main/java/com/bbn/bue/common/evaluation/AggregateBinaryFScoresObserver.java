@@ -21,7 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * to inspect any alignment.
  */
 @Beta
-public final class AggregateBinaryFScoresObserver implements Inspector<Alignment<?, ?>> {
+public final class AggregateBinaryFScoresObserver<KeyT, TestT>
+    implements Inspector<Alignment<? extends KeyT, ? extends TestT>> {
 
   private final SummaryConfusionMatrices.Builder summaryConfusionMatrixB =
       SummaryConfusionMatrices.builder();
@@ -33,8 +34,9 @@ public final class AggregateBinaryFScoresObserver implements Inspector<Alignment
     this.outSink = checkNotNull(outSink);
   }
 
-  public static AggregateBinaryFScoresObserver createOutputtingTo(CharSink outputSink) {
-    return new AggregateBinaryFScoresObserver(outputSink);
+  public static <KeyT, TestT> AggregateBinaryFScoresObserver<KeyT, TestT> createOutputtingTo(
+      CharSink outputSink) {
+    return new AggregateBinaryFScoresObserver<KeyT, TestT>(outputSink);
   }
 
   @Override
@@ -44,12 +46,13 @@ public final class AggregateBinaryFScoresObserver implements Inspector<Alignment
   }
 
   @Override
-  public void inspect(final Alignment<?, ?> alignment) {
+  public void inspect(final Alignment<? extends KeyT, ? extends TestT> alignment) {
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, PRESENT, alignment.rightAligned().size());
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, ABSENT, alignment.leftUnaligned().size());
     summaryConfusionMatrixB
-        .accumulatePredictedGold(ABSENT, PRESENT, alignment.rightAligned().size());
+        .accumulatePredictedGold(ABSENT, PRESENT, alignment.rightUnaligned().size());
   }
 }
+
