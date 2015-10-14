@@ -47,7 +47,7 @@ public final class BootstrapIterator<ItemType> extends AbstractIterator<Collecti
     }
 
     for (int i = 0; i < data.size(); ++i) {
-      ret.add(data.get(rng.nextInt(Integer.MAX_VALUE) % data.size()));
+      ret.add(data.get(rng.nextInt(data.size())));
     }
 
     return ret.build();
