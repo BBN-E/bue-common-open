@@ -71,22 +71,35 @@ public final class EquivalenceBasedProvenancedAlignment<EqClassT, LeftT, RightT>
     return rightEquivalenceClassesToProvenances.keySet();
   }
 
+  // if it appears in the multimap, it's got to be an EqClassT
+  @SuppressWarnings("unchecked")
   @Override
-  public Collection<EqClassT> alignedToRightItem(final EqClassT rightItem) {
+  public Collection<EqClassT> alignedToRightItem(final Object rightItem) {
     if (rightEquivalenceClassesToProvenances.containsKey(rightItem)) {
-      return ImmutableList.of(rightItem);
+      return ImmutableList.of((EqClassT) rightItem);
+    } else {
+      return ImmutableList.of();
+    }
+  }
+
+  // if it appears in the multimap, it's got to be an EqClassT
+  @SuppressWarnings("unchecked")
+  @Override
+  public Collection<EqClassT> alignedToLeftItem(final Object leftItem) {
+    if (rightEquivalenceClassesToProvenances.containsKey(leftItem)) {
+      return ImmutableList.of((EqClassT) leftItem);
     } else {
       return ImmutableList.of();
     }
   }
 
   @Override
-  public Collection<EqClassT> alignedToLeftItem(final EqClassT leftItem) {
-    if (rightEquivalenceClassesToProvenances.containsKey(leftItem)) {
-      return ImmutableList.of(leftItem);
-    } else {
-      return ImmutableList.of();
-    }
+  public Set<EqClassT> allLeftItems() {
+    return leftEquivalenceClassesToProvenances.keySet();
   }
 
+  @Override
+  public Set<EqClassT> allRightItems() {
+    return rightEquivalenceClassesToProvenances.keySet();
+  }
 }
