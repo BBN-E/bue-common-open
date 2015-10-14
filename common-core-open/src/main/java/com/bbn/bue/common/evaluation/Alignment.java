@@ -7,19 +7,18 @@ import java.util.Set;
 
 /**
  * Represents a 'pairing up' of two groups of objects of the same type, the {@code key} set and the
- * {@code test} set.  The pairings are not necessarily bidirectional. Alignments are intended to be
+ * {@code test} set.  Alignments are intended to be
  * immutable, so it is always safe to case an {@code Alignment<T>} to {@code Alignment<S>} for any
  * super-type of {@code T}.
  *
  * The objects being aligned must have hash codes and equality methods compatible with use in sets
  * and maps.
  *
- * @param <LeftT>  The type of objects in the left set.
- * @param <RightT> The type of objects in the right set.
+ * @param <LeftT>  The type of objects in the left set. Covariant.
+ * @param <RightT> The type of objects in the right set. Covariant.
  */
 @Beta
 public interface Alignment<LeftT, RightT> {
-
   /**
    * Those items in the left set which were not paired with anything in the right.
    */
@@ -41,12 +40,19 @@ public interface Alignment<LeftT, RightT> {
   Set<RightT> rightAligned();
 
   /**
-   * Get all items in the left set, if any, which align to the provided right set item.
+   * Get all items in the left set, if any, which align to the provided right set item.  If x is in
+   * {@code alignedToRightItem(y)}, then y is in {@code alignedToRighItem(x)}.
    */
-  Collection<LeftT> alignedToRightItem(RightT rightItem);
+  Collection<LeftT> alignedToRightItem(Object rightItem);
 
   /**
-   * Get all items in the right set, if any, which align to the provided left set item.
+   * Get all items in the right set, if any, which align to the provided left set item.  If x is in
+   * {@code alignedToRightItem(y)}, then y is in {@code alignedToRighItem(x)}.
    */
-  Collection<RightT> alignedToLeftItem(LeftT leftItem);
+  Collection<RightT> alignedToLeftItem(Object leftItem);
+
+  Set<LeftT> allLeftItems();
+
+  Set<RightT> allRightItems();
 }
+
