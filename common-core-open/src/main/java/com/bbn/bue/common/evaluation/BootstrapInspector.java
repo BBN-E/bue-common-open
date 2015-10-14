@@ -17,6 +17,25 @@ import java.util.Random;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * An inspector which can use a supplied strategy to do some sort of scoring or inspection of a
+ * corpus using bootstrapping.  A strategy must supply two things: a way of mapping every observed
+ * item to some sort of summary (an {@link com.bbn.bue.common.evaluation.BootstrapInspector.ObservationSummarizer}
+ * and one or more ways of aggregating a collection of collections of summaries into a final output
+ * (a {@link com.bbn.bue.common.evaluation.BootstrapInspector.SummaryAggregator}.
+ *
+ * The bootstrap inspector will apply the {@code ObservationSummarizer} to each item it observes and
+ * remember the result.  When it is {@link #finish()}ed, it will then take a specified number of
+ * samples with replacement from the collection of summaries. Each of these samples will be
+ * presented to the {@code SummaryAggregators}. Finally, each {@code SummaryAggregator}'s {@code
+ * finish()} method will be called to produce final output.
+ *
+ * To make an example concrete, your {@code ObservationSummarizer} could produce the true positive,
+ * false positive, and false negative counts for some classification task on a document.  The
+ * aggregator could sum these of the corpus and create a corpus-wide F-measure and then output the
+ * mean and standard deviation of these F-measures. This would give you some idea how robust your
+ * F-measure is with respect to the corpus composition.
+ */
 public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT> {
   private final int numSamples;
   private final Random rng;
@@ -81,6 +100,13 @@ public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT>
     void observeSample(Collection<SummaryT> observationSummaries);
   }
 
+  public interface BootstrapStrategy<ObsT, SummaryT> {
+
+    ObservationSummarizer<ObsT, SummaryT> createObservationSummarizer();
+
+    Collection<SummaryAggregator<SummaryT>> createSummaryAggregators();
+  }
+
   // cast is safe - see covariance and contravariance notes on ObservationSummarizer
   @SuppressWarnings("unchecked")
   public static <ObsT, SummaryT> Builder<ObsT, SummaryT> forSummarizer(
@@ -88,6 +114,15 @@ public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT>
       final Random rng) {
     return new Builder<ObsT, SummaryT>(
         (ObservationSummarizer<ObsT, SummaryT>) observationSummarizer, rng);
+  }
+
+  public static <ObsT, SummaryT> Builder<ObsT, SummaryT> forStrategy(
+      final BootstrapStrategy<ObsT, SummaryT> strategy, final Random rng) {
+    final Builder<ObsT, SummaryT> ret = forSummarizer(strategy.createObservationSummarizer(), rng);
+    for (final SummaryAggregator<SummaryT> aggregator : strategy.createSummaryAggregators()) {
+      ret.withSummaryAggregator(aggregator);
+    }
+    return ret;
   }
 
   public static final class Builder<ObsT, SummaryT> {
@@ -105,6 +140,9 @@ public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT>
       this.observationSummarizer = checkNotNull(observationSummarizer);
     }
 
+    /**
+     * Specify the number of boostrap samples to use. Defaults to 1000.
+     */
     public Builder withNumSamples(int numSamples) {
       this.numSamples = numSamples;
       return this;
@@ -123,3 +161,4 @@ public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT>
     }
   }
 }
+
