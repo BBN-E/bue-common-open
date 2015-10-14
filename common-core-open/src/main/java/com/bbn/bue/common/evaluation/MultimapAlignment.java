@@ -69,13 +69,70 @@ public final class MultimapAlignment<LeftT, RightT> implements Alignment<LeftT, 
     return rightToLeft.keySet();
   }
 
+  // if it's in the map, it must be RightT
+  @SuppressWarnings("unchecked")
   @Override
-  public Set<LeftT> alignedToRightItem(final RightT rightItem) {
-    return rightToLeft.get(rightItem);
+  public Set<LeftT> alignedToRightItem(final Object rightItem) {
+    if (rightToLeft.containsKey(rightItem)) {
+      return rightToLeft.get((RightT)rightItem);
+    } else {
+      return ImmutableSet.of();
+    }
+  }
+
+  // if it's in the map, it must be LeftT
+  @SuppressWarnings("unchecked")
+  @Override
+  public Set<RightT> alignedToLeftItem(final Object leftItem) {
+    if (leftToRight.containsKey(leftItem)) {
+      return leftToRight.get((LeftT)leftItem);
+    } else {
+      return ImmutableSet.of();
+    }
+  }
+
+
+  @Override
+  public Set<LeftT> allLeftItems() {
+    return leftItems;
   }
 
   @Override
-  public Set<RightT> alignedToLeftItem(final LeftT leftItem) {
-    return leftToRight.get(leftItem);
+  public Set<RightT> allRightItems() {
+    return rightItems;
+  }
+
+  public static <LeftT, RightT> Builder<LeftT, RightT> builder() {
+    return new Builder<LeftT, RightT>();
+  }
+
+  public static final class Builder<LeftT, RightT> {
+    private final ImmutableSet.Builder<LeftT> allLeftItems = ImmutableSet.builder();
+    private final ImmutableSet.Builder<RightT> allRightItems = ImmutableSet.builder();
+    private final ImmutableSetMultimap.Builder<LeftT, RightT> leftToRight = ImmutableSetMultimap.builder();
+    private final ImmutableSetMultimap.Builder<RightT, LeftT> rightToLeft = ImmutableSetMultimap.builder();
+
+    private Builder() {}
+
+    public Builder addLeftItem(LeftT left) {
+      allLeftItems.add(left);
+      return this;
+    }
+
+    public Builder addRightItem(RightT right) {
+      allRightItems.add(right);
+      return this;
+    }
+
+    public Builder align(LeftT left, RightT right) {
+      leftToRight.put(left, right);
+      rightToLeft.put(right, left);
+      return this;
+    }
+
+    public MultimapAlignment<LeftT,RightT> build() {
+      return new MultimapAlignment<LeftT, RightT>(allLeftItems.build(), allRightItems.build(),
+          leftToRight.build(), rightToLeft.build());
+    }
   }
 }
