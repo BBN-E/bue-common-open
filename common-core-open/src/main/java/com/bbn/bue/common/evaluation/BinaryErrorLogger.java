@@ -4,6 +4,7 @@ import com.bbn.bue.common.HasDocID;
 import com.bbn.bue.common.Inspector;
 import com.bbn.bue.common.symbols.Symbol;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -25,6 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * extracted from the aligned input items. All aligned items must share the same document ID. If the
  * input alignment is empty, no file is written.
  */
+@Beta
 public final class BinaryErrorLogger<KeyT extends HasDocID, TestT extends HasDocID> implements
     Inspector<Alignment<? extends KeyT, ? extends TestT>> {
 

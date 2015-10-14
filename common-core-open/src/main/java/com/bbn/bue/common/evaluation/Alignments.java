@@ -1,5 +1,6 @@
 package com.bbn.bue.common.evaluation;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 /**
  * Utility methods for dealing with {@link Alignment}s.
  */
+@Beta
 public final class Alignments {
 
   private Alignments() {
