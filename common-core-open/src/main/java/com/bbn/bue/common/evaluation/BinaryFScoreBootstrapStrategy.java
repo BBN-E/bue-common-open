@@ -5,6 +5,7 @@ import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.math.PercentileComputer;
 import com.bbn.bue.common.symbols.Symbol;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -37,6 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * function where the alignment is filtered to include only items with the same value from the
  * function (e.g. to break down results by event type).
  */
+@Beta
 public final class BinaryFScoreBootstrapStrategy<T>
     implements
     BootstrapInspector.BootstrapStrategy<Alignment<? extends T, ? extends T>, Map<String, SummaryConfusionMatrix>> {

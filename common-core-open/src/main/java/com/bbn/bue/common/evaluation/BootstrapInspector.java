@@ -4,6 +4,7 @@ import com.bbn.bue.common.Finishable;
 import com.bbn.bue.common.Inspector;
 import com.bbn.bue.common.collections.BootstrapIterator;
 
+import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -36,6 +37,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * mean and standard deviation of these F-measures. This would give you some idea how robust your
  * F-measure is with respect to the corpus composition.
  */
+@Beta
 public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT> {
   private final int numSamples;
   private final Random rng;

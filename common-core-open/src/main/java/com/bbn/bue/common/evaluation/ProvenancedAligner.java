@@ -1,5 +1,6 @@
 package com.bbn.bue.common.evaluation;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 
 /**
@@ -8,6 +9,7 @@ import com.google.common.base.Function;
  * Note that unlike a regular {@link Aligner}, the resulting alignment may not be over the same type
  * of objects as the input (which will become the provenances).
  */
+@Beta
 public interface ProvenancedAligner<LeftT, LeftProvT, RightT, RightProvT> {
 
   ProvenancedAlignment<LeftT, LeftProvT, RightT, RightProvT> align(

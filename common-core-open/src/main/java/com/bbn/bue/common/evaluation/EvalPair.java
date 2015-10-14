@@ -1,5 +1,6 @@
 package com.bbn.bue.common.evaluation;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -11,6 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <KeyT>  The type of the "correct" item
  * @param <TestT> The type of the other item
  */
+@Beta
 public final class EvalPair<KeyT, TestT> {
 
   private final KeyT keyItem;
