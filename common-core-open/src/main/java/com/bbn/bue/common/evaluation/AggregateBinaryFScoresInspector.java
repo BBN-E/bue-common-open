@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * to inspect any alignment.
  */
 @Beta
-public final class AggregateBinaryFScoresObserver<KeyT, TestT>
+public final class AggregateBinaryFScoresInspector<KeyT, TestT>
     implements Inspector<Alignment<? extends KeyT, ? extends TestT>> {
 
   private final SummaryConfusionMatrices.Builder summaryConfusionMatrixB =
@@ -30,13 +30,13 @@ public final class AggregateBinaryFScoresObserver<KeyT, TestT>
   private static final Symbol PRESENT = Symbol.from("Present");
   private static final Symbol ABSENT = Symbol.from("Absent");
 
-  private AggregateBinaryFScoresObserver(final CharSink outSink) {
+  private AggregateBinaryFScoresInspector(final CharSink outSink) {
     this.outSink = checkNotNull(outSink);
   }
 
-  public static <KeyT, TestT> AggregateBinaryFScoresObserver<KeyT, TestT> createOutputtingTo(
+  public static <KeyT, TestT> AggregateBinaryFScoresInspector<KeyT, TestT> createOutputtingTo(
       CharSink outputSink) {
-    return new AggregateBinaryFScoresObserver<KeyT, TestT>(outputSink);
+    return new AggregateBinaryFScoresInspector<KeyT, TestT>(outputSink);
   }
 
   @Override
