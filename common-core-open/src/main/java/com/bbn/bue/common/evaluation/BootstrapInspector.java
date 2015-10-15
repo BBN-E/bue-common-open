@@ -36,6 +36,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * aggregator could sum these of the corpus and create a corpus-wide F-measure and then output the
  * mean and standard deviation of these F-measures. This would give you some idea how robust your
  * F-measure is with respect to the corpus composition.
+ *
+ * If you don't know how many samples to use, we suggest 1000 as a reasonable default.
  */
 @Beta
 public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT> {
@@ -113,23 +115,25 @@ public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT>
   @SuppressWarnings("unchecked")
   public static <ObsT, SummaryT> Builder<ObsT, SummaryT> forSummarizer(
       final ObservationSummarizer<? super ObsT, ? extends SummaryT> observationSummarizer,
+      int numSamples,
       final Random rng) {
     return new Builder<ObsT, SummaryT>(
-        (ObservationSummarizer<ObsT, SummaryT>) observationSummarizer, rng);
+        (ObservationSummarizer<ObsT, SummaryT>) observationSummarizer, numSamples, rng);
   }
 
-  public static <ObsT, SummaryT> Builder<ObsT, SummaryT> forStrategy(
-      final BootstrapStrategy<ObsT, SummaryT> strategy, final Random rng) {
-    final Builder<ObsT, SummaryT> ret = forSummarizer(strategy.createObservationSummarizer(), rng);
+  public static <ObsT, SummaryT> BootstrapInspector<ObsT, SummaryT> forStrategy(
+      final BootstrapStrategy<ObsT, SummaryT> strategy, int numSamples, final Random rng) {
+    final Builder<ObsT, SummaryT> ret =
+        forSummarizer(strategy.createObservationSummarizer(), numSamples, rng);
     for (final SummaryAggregator<SummaryT> aggregator : strategy.createSummaryAggregators()) {
       ret.withSummaryAggregator(aggregator);
     }
-    return ret;
+    return ret.build();
   }
 
   public static final class Builder<ObsT, SummaryT> {
 
-    private int numSamples = 1000;
+    private final int numSamples;
     private final Random rng;
     private final ObservationSummarizer<ObsT, SummaryT> observationSummarizer;
     private final ImmutableList.Builder<SummaryAggregator<SummaryT>> summaryAggregators =
@@ -137,17 +141,11 @@ public final class BootstrapInspector<ObsT, SummaryT> implements Inspector<ObsT>
 
     private Builder(
         final ObservationSummarizer<ObsT, SummaryT> observationSummarizer,
+        int numSamples,
         final Random rng) {
       this.rng = checkNotNull(rng);
-      this.observationSummarizer = checkNotNull(observationSummarizer);
-    }
-
-    /**
-     * Specify the number of boostrap samples to use. Defaults to 1000.
-     */
-    public Builder withNumSamples(int numSamples) {
       this.numSamples = numSamples;
-      return this;
+      this.observationSummarizer = checkNotNull(observationSummarizer);
     }
 
     // OK because SummaryAggregator is contravariant in SummaryT
