@@ -75,22 +75,14 @@ public final class EquivalenceBasedProvenancedAlignment<EqClassT, LeftT, RightT>
   @SuppressWarnings("unchecked")
   @Override
   public Collection<EqClassT> alignedToRightItem(final Object rightItem) {
-    if (rightEquivalenceClassesToProvenances.containsKey(rightItem)) {
-      return ImmutableList.of((EqClassT) rightItem);
-    } else {
-      return ImmutableList.of();
-    }
+    return getAlignedTo(rightItem);
   }
 
   // if it appears in the multimap, it's got to be an EqClassT
   @SuppressWarnings("unchecked")
   @Override
   public Collection<EqClassT> alignedToLeftItem(final Object leftItem) {
-    if (rightEquivalenceClassesToProvenances.containsKey(leftItem)) {
-      return ImmutableList.of((EqClassT) leftItem);
-    } else {
-      return ImmutableList.of();
-    }
+    return getAlignedTo(leftItem);
   }
 
   @Override
@@ -101,5 +93,18 @@ public final class EquivalenceBasedProvenancedAlignment<EqClassT, LeftT, RightT>
   @Override
   public Set<EqClassT> allRightItems() {
     return rightEquivalenceClassesToProvenances.keySet();
+  }
+
+  /**
+   * Any equivalence class is by definition aligned to itself if it is present on both the left
+   * and the right. Otherwise, it has no alignment.
+   */
+  private Collection<EqClassT> getAlignedTo(final Object item) {
+    if (rightEquivalenceClassesToProvenances.containsKey(item)
+        && leftEquivalenceClassesToProvenances.containsKey(item)) {
+      return ImmutableList.of((EqClassT) item);
+    } else {
+      return ImmutableList.of();
+    }
   }
 }
