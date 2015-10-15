@@ -99,10 +99,10 @@ public final class EquivalenceBasedProvenancedAlignment<EqClassT, LeftT, RightT>
    * Any equivalence class is by definition aligned to itself if it is present on both the left
    * and the right. Otherwise, it has no alignment.
    */
-  private Collection<EqClassT> getAlignedTo(final Object rightItem) {
-    if (rightEquivalenceClassesToProvenances.containsKey(rightItem)
-        && leftEquivalenceClassesToProvenances.containsKey(rightItem)) {
-      return ImmutableList.of((EqClassT) rightItem);
+  private Collection<EqClassT> getAlignedTo(final Object item) {
+    if (rightEquivalenceClassesToProvenances.containsKey(item)
+        && leftEquivalenceClassesToProvenances.containsKey(item)) {
+      return ImmutableList.of((EqClassT) item);
     } else {
       return ImmutableList.of();
     }
