@@ -202,4 +202,9 @@ public final class FMeasureCounts extends FMeasureInfo {
         .equal(this.falsePositives, other.falsePositives) && Objects
         .equal(this.falseNegatives, other.falseNegatives);
   }
+
+  @Override
+  public String toString() {
+    return String.format("TP=%.3f;FP=%.3f;FN=%.3f", truePositives, falsePositives, falseNegatives);
+  }
 }

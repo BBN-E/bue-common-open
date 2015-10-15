@@ -17,6 +17,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -91,7 +92,8 @@ public final class FileUtils {
    * takes a List of fileNames and returns a list of files, ignoring any empty entries white space
    * at the end of a name
    */
-  public static ImmutableList<File> loadFileList(final Iterable<String> fileNames) throws IOException {
+  public static ImmutableList<File> loadFileList(final Iterable<String> fileNames)
+      throws IOException {
     final ImmutableList.Builder<File> ret = ImmutableList.builder();
 
     for (String filename : fileNames) {
@@ -359,7 +361,11 @@ public final class FileUtils {
   }
 
   public static ImmutableList<Symbol> loadSymbolList(final File symbolListFile) throws IOException {
-    return FluentIterable.from(Files.readLines(symbolListFile, Charsets.UTF_8))
+    return loadSymbolList(Files.asCharSource(symbolListFile, Charsets.UTF_8));
+  }
+
+  public static ImmutableList<Symbol> loadSymbolList(final CharSource source) throws IOException {
+    return FluentIterable.from(source.readLines())
         .transform(Symbol.FromString)
         .toList();
   }
@@ -605,8 +611,6 @@ public final class FileUtils {
 
   /**
    * wraps any IOException and throws a RuntimeException
-   * @param charset
-   * @return
    */
   public static Function<File, Iterable<String>> toLinesFunction(final Charset charset) {
     return new Function<File, Iterable<String>>() {
@@ -620,5 +624,12 @@ public final class FileUtils {
         }
       }
     };
+  }
+
+  /**
+   * Returns a set consisting of the lines of the provided {@link CharSource}.
+   */
+  public static ImmutableSet<Symbol> loadSymbolSet(final CharSource source) throws IOException {
+    return ImmutableSet.copyOf(loadSymbolList(source));
   }
 }
