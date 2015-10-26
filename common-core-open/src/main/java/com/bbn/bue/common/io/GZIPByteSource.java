@@ -31,5 +31,10 @@ public class GZIPByteSource extends ByteSource {
     return new GZIPInputStream(wrappedByteSource.openBufferedStream());
   }
 
+  @Override
+  public String toString() {
+    return "GZIPByteSource(" + wrappedByteSource + ")";
+  }
+
   private final ByteSource wrappedByteSource;
 }
