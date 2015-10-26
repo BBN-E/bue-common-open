@@ -106,6 +106,21 @@ public final class FileUtils {
   }
 
   /**
+   * Writes the absolutes paths of the given files in iteration order, one-per-line. The currently
+   * implementation is just a quick one which forms the string in memory and writes it. If your file
+   * list is very large, you should modify it to work line-by-line, being very careful with all the
+   * trickiness of file I/O exception handling in Java 6.
+   */
+  public static void writeFileList(Iterable<File> files, CharSink sink) throws IOException {
+    // proper exception handling in JDK 6 is ugly, so we'll let Guava handle it for us
+    // at the expense of memory.  If you are writing huge file lists, go ahead and implement
+    // the line-by-line version, but it is out-of-scope for the moment
+    sink.write(FluentIterable.from(files)
+        .transform(ToAbsolutePath)
+        .join(StringUtils.NewlineJoiner));
+  }
+
+  /**
    * Like {@link #loadFileList(java.io.File)}, except if the file name ends in ".gz" or ".tgz" it is
    * treated as GZIP compressed. This is often convenient for loading e.g. document lists which
    * benefit from being compressed for large corpora.
