@@ -81,7 +81,12 @@ public final class JacksonSerializer {
 
   public Object deserializeFrom(final ByteSource source) throws IOException {
     final InputStream srcStream = source.openStream();
-    final RootObject rootObj = mapper.readValue(srcStream, RootObject.class);
+    final RootObject rootObj;
+    try {
+      rootObj = mapper.readValue(srcStream, RootObject.class);
+    } catch (Exception e) {
+      throw new IOException("While deserializing from " + source + ", encountered exception:", e);
+    }
     srcStream.close();
     return rootObj.object();
   }
