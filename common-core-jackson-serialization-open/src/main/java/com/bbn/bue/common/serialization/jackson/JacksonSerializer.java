@@ -157,7 +157,6 @@ public final class JacksonSerializer {
 
     private static ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
       final ObjectMapper mapper = new ObjectMapper(jsonFactory);
-      //mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
       mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
       mapper.findAndRegisterModules();
       return mapper;
