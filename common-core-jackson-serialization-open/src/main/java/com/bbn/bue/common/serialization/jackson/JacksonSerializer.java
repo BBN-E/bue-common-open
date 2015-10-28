@@ -120,7 +120,7 @@ public final class JacksonSerializer {
 
     /**
      * Specifies to use arrays rather than properties to encode type information. You will need to
-     * enable this to read any serialized objects from before 28 Oct 2015.  The newer default method
+     * enable this to read any serialized objects from before 28 Oct 2015 / bue-common-open 2.23.2 .  The newer default method
      * of using JSON properties to encode type information avoids certain bad interactions of
      * Jackson and generics.
      */
