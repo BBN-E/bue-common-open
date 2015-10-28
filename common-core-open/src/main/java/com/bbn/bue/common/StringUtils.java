@@ -10,6 +10,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
@@ -324,5 +325,18 @@ public final class StringUtils {
   public static String checkNonEmpty(String s, String msg) {
     checkArgument(!s.isEmpty(), msg);
     return s;
+  }
+
+  /**
+   * Produces a string representation of a positive integer padded with leading zeros. Enough zeros
+   * are adding so that the supplied {@code maxValue} would have the same number of digits.
+   */
+  public static String padWithMax(final int numToPad, final int maxValue) {
+    checkArgument(numToPad >= 0);
+    checkArgument(numToPad <= maxValue);
+    final int maxLength = Integer.toString(maxValue).length();
+    final String baseString = Integer.toString(numToPad);
+    final String padding = Strings.repeat("0", maxLength - baseString.length());
+    return padding + numToPad;
   }
 }
