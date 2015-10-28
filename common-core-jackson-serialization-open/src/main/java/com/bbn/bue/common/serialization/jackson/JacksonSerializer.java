@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
@@ -100,7 +101,9 @@ public final class JacksonSerializer {
   }
 
   public static final class Builder {
-    final ObjectMapper objectMapper;
+
+    private final ObjectMapper objectMapper;
+    private boolean usePropertyForTypeInformation = true;
 
     private Builder(ObjectMapper objectMapper) {
       this.objectMapper = checkNotNull(objectMapper);
@@ -112,6 +115,17 @@ public final class JacksonSerializer {
 
     public Builder prettyOutput() {
       objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+      return this;
+    }
+
+    /**
+     * Specifies to use arrays rather than properties to encode type information. You will need to
+     * enable this to read any serialized objects from before 28 Oct 2015 / bue-common-open 2.23.2 .  The newer default method
+     * of using JSON properties to encode type information avoids certain bad interactions of
+     * Jackson and generics.
+     */
+    public Builder useArraysToEncodeTypeInformation() {
+      this.usePropertyForTypeInformation = false;
       return this;
     }
 
@@ -132,12 +146,18 @@ public final class JacksonSerializer {
     }
 
     public JacksonSerializer build() {
+      if (usePropertyForTypeInformation) {
+        objectMapper.enableDefaultTypingAsProperty(ObjectMapper.DefaultTyping.NON_FINAL, "@class");
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      } else {
+        objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+      }
       return new JacksonSerializer(objectMapper);
     }
 
     private static ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
       final ObjectMapper mapper = new ObjectMapper(jsonFactory);
-      mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+      mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
       mapper.findAndRegisterModules();
       return mapper;
     }
