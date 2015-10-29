@@ -30,6 +30,10 @@
                   <mainClass>com.bbn.bue.common.parameters.ExpandParameters</mainClass>
                   <name>ExpandParameters</name>
               </program>
+              <program>
+                  <mainClass>com.bbn.bue.common.MakeCrossValidationBatches</mainClass>
+                  <name>makeCrossValidationBatches</name>
+              </program>
           </programs>
             </configuration>
           </plugin>
@@ -49,6 +53,11 @@
       <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+          <optional>true</optional>
       </dependency>
   </dependencies>
 
