@@ -3,7 +3,7 @@
 
   <groupId>com.bbn.bue</groupId>
   <artifactId>common-all-open</artifactId>
-  <version>2.24.2-SNAPSHOT</version>
+  <version>2.24.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>com.bbn.bue:common-all-open</name>
