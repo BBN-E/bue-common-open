@@ -48,6 +48,7 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -893,6 +894,25 @@ public final class Parameters {
     if (!isPresent(param1) && !isPresent(param2)) {
       throw new ParameterException(
           String.format("At least one of %s and %s must be defined.", param1, param2));
+    }
+  }
+
+  /**
+   * Throws a ParameterException if none of the supplied parameters are defined.
+   */
+  public void assertAtLeastOneDefined(final String param1, final String... moreParams) {
+    if (!isPresent(param1)) {
+      for (final String moreParam : moreParams) {
+        if (isPresent(moreParam)) {
+          return;
+        }
+      }
+      final List<String> paramsForError = Lists.newArrayList();
+      paramsForError.add(param1);
+      paramsForError.addAll(Arrays.asList(moreParams));
+      throw new ParameterException(
+          String.format("At least one of %s must be defined.",
+              StringUtils.CommaSpaceJoiner.join(paramsForError)));
     }
   }
 
