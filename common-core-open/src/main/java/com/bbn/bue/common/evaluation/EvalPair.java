@@ -64,4 +64,24 @@ public final class EvalPair<KeyT, TestT> {
       }
     };
   }
+
+  /**
+   * Turns two Guava {@link Function}s into another {@code Function} which operates over both sides of
+   * an {@link EvalPair}.
+   */
+  public static <F1, T1, F2, T2, KeyT extends F1, TestT extends F2>
+  Function<EvalPair<? extends KeyT, ? extends TestT>, EvalPair<T1, T2>> functionsOnBoth(
+      final Function<F1, T1> keyFunc, final Function<F2,T2> testFunc) {
+    return new Function<EvalPair<? extends KeyT, ? extends TestT>, EvalPair<T1, T2>>() {
+      @Override
+      public EvalPair<T1, T2> apply(final EvalPair<? extends KeyT, ? extends TestT> input) {
+        return EvalPair.of(keyFunc.apply(input.key()), testFunc.apply(input.test()));
+      }
+
+      @Override
+      public String toString() {
+        return "EvalPair.functionsOnBoth(" + keyFunc + ", " + testFunc + ")";
+      }
+    };
+  }
 }
