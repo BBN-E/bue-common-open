@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Set;
@@ -63,12 +64,13 @@ public final class EquivalenceBasedProvenancedAlignment<EqClassT, LeftT, RightT>
 
   @Override
   public Set<EqClassT> leftAligned() {
-    return leftEquivalenceClassesToProvenances.keySet();
+    return Sets.intersection(leftEquivalenceClassesToProvenances.keySet(),
+        rightEquivalenceClassesToProvenances.keySet()).immutableCopy();
   }
 
   @Override
   public Set<EqClassT> rightAligned() {
-    return rightEquivalenceClassesToProvenances.keySet();
+    return leftAligned();
   }
 
   // if it appears in the multimap, it's got to be an EqClassT
