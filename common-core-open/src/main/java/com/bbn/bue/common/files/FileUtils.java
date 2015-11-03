@@ -117,7 +117,8 @@ public final class FileUtils {
     // the line-by-line version, but it is out-of-scope for the moment
     sink.write(FluentIterable.from(files)
         .transform(ToAbsolutePath)
-        .join(StringUtils.NewlineJoiner));
+        .join(StringUtils.NewlineJoiner)
+        .concat("\n"));
   }
 
   /**
