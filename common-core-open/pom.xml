@@ -32,7 +32,7 @@
               </program>
               <program>
                   <mainClass>com.bbn.bue.common.MakeCrossValidationBatches</mainClass>
-                  <name>makeCrossValidationBatches</name>
+                  <name>MakeCrossValidationBatches</name>
               </program>
           </programs>
             </configuration>
