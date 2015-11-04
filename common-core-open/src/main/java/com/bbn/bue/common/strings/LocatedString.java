@@ -141,6 +141,19 @@ public final class LocatedString {
     return substring(startOffset, endOffset);
   }
 
+  /**
+   * Return a LocatedString substring of this string covering the indicated character offsets, where
+   * both bounds are inclusive.
+   *
+   * NOTE: Because it recomputes the various offsets of every character in the
+   * substring, this method is *significantly* more expensive than just
+   * fetching the String content of the substring.  If you just need the String
+   * content, you should use rawSubstring() instead.
+   */
+  public LocatedString substring(final OffsetRange<CharOffset> characterOffsetsInclusive) {
+    return substring(characterOffsetsInclusive.startInclusive(), characterOffsetsInclusive.endInclusive());
+  }
+
 	/*public LocatedString substringConvertP(OffsetGroup start, OffsetGroup end) {
                 final int startOffset = start.charOffset().value() - bounds.start.charOffset().value();
 		final int endOffset = end.charOffset().value() - bounds.start.charOffset().value() + 1;
