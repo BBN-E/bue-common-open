@@ -42,7 +42,7 @@ public final class MakeCrossValidationBatches {
   }
 
   private static void errorExit(final String msg) {
-    System.err.println(msg);
+    System.err.println("Error: " + msg);
     System.exit(1);
   }
 
@@ -61,6 +61,11 @@ public final class MakeCrossValidationBatches {
 
     // Load the list of files
     final List<File> inputFiles = Lists.newArrayList(FileUtils.loadFileList(fileList));
+
+    // Check for duplicates
+    if (Sets.newHashSet(inputFiles).size() != inputFiles.size()) {
+      errorExit("Input file list contains duplicate entries");
+    }
 
     // Check numbatches
     if (numBatches < 2) {
