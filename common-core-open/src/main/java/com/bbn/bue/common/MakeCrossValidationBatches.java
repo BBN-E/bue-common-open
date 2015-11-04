@@ -1,18 +1,18 @@
 package com.bbn.bue.common;
 
+import com.bbn.bue.common.collections.CollectionUtils;
 import com.bbn.bue.common.files.FileUtils;
 import com.bbn.bue.common.parameters.Parameters;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
-import com.google.common.math.IntMath;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -59,7 +59,7 @@ public final class MakeCrossValidationBatches {
         "com.bbn.bue.common.crossValidation.numBatches");
     final int randomSeed = parameters.getInteger("com.bbn.bue.common.crossValidation.randomSeed");
 
-    // Load the list of files
+    // Load the list of files. We use ArrayList as we will sort in place shortly.
     final List<File> inputFiles = Lists.newArrayList(FileUtils.loadFileList(fileList));
 
     // Check for duplicates
@@ -76,26 +76,9 @@ public final class MakeCrossValidationBatches {
 
     // Shuffle files
     Collections.shuffle(inputFiles, new Random(randomSeed));
-    // Divide into folds, with the remainder falling into the last fold
-    List<List<File>> folds =
-        Lists.partition(inputFiles, IntMath.divide(inputFiles.size(), numBatches, RoundingMode.DOWN));
-    // If there are more folds than desired, distribute elements of the last fold to the other folds
-    if (folds.size() > numBatches) {
-      // First, make the outer list modifiable
-      folds = Lists.newLinkedList(folds);
-      // Remove the extra fold
-      final List<File> extras = folds.remove(folds.size() - 1);
-
-      // Make the folds modifiable
-      for (int i = 0; i < folds.size(); i++) {
-        folds.set(i, Lists.newLinkedList(folds.get(i)));
-      }
-
-      // Distribute the extra elements
-      for (int extraIdx = 0, foldIdx = 0; extraIdx < extras.size(); extraIdx++, foldIdx = (foldIdx + 1) % folds.size()) {
-        folds.get(foldIdx).add(extras.get(extraIdx));
-      }
-    }
+    // Divide into folds
+    final ImmutableList<ImmutableList<File>> folds =
+        CollectionUtils.partition(inputFiles, numBatches);
 
     // Sanity checks
     // Correct number of folds
