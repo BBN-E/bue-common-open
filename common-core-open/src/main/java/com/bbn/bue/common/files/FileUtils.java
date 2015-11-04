@@ -219,6 +219,19 @@ public final class FileUtils {
         loadStringToFileMap(source), Symbol.FromString);
   }
 
+  /**
+   * Writes a map from symbols to file absolute paths to a file. Each line has a mapping with the key and value
+   * separated by a single tab.  The file will have a trailing newline.
+   */
+  public static void writeSymbolToFileMap(Map<Symbol, File> symbolToFileMap, CharSink sink) throws IOException {
+    final StringBuilder sb = new StringBuilder();
+
+    Joiner.on("\n").withKeyValueSeparator("\t").appendTo(sb,
+        Maps.transformValues(symbolToFileMap, FileUtils.ToAbsolutePath));
+    sb.append("\n");
+    sink.write(sb.toString());
+  }
+
   public static Map<Symbol, CharSource> loadSymbolToFileCharSourceMap(CharSource source)
       throws IOException {
 
