@@ -108,14 +108,30 @@ public final class MakeCrossValidationBatches {
               }
             });
 
-        final File trainingOutputFile = new File(outputDirectory, outputName + "." +
+        // Write out file maps
+        final File trainingMapOutputFile = new File(outputDirectory, outputName + "." +
             StringUtils.padWithMax(batchNum, numBatches - 1) + ".training.docIDToFileMap");
-        FileUtils.writeSymbolToFileMap(trainDocIdMap, Files.asCharSink(trainingOutputFile,
+        FileUtils.writeSymbolToFileMap(trainDocIdMap, Files.asCharSink(trainingMapOutputFile,
             Charsets.UTF_8));
-        final File testOutputFile = new File(outputDirectory, outputName + "." +
+        final File testMapOutputFile = new File(outputDirectory, outputName + "." +
             StringUtils.padWithMax(batchNum, numBatches - 1) + ".test.docIDToFileMap");
-        FileUtils.writeSymbolToFileMap(testDocIdMap, Files.asCharSink(testOutputFile,
+        FileUtils.writeSymbolToFileMap(testDocIdMap, Files.asCharSink(testMapOutputFile,
             Charsets.UTF_8));
+
+        // Write out file lists
+        final ImmutableList<File> trainingFilesForBatch = ImmutableList.copyOf(trainDocIdMap.values());
+        final ImmutableList<File> testFilesForBatch = ImmutableList.copyOf(testDocIdMap.values());
+        final File trainingOutputFile = new File(outputDirectory, outputName + "." +
+            StringUtils.padWithMax(batchNum, numBatches - 1) + ".training.list");
+        FileUtils.writeFileList(trainingFilesForBatch,
+            Files.asCharSink(trainingOutputFile,
+                Charsets.UTF_8));
+        final File testOutputFile = new File(outputDirectory, outputName + "." +
+            StringUtils.padWithMax(batchNum, numBatches - 1) + ".test.list");
+        FileUtils.writeFileList(testFilesForBatch,
+            Files.asCharSink(testOutputFile,
+                Charsets.UTF_8));
+
         ++batchNum;
         totalTest += testDocIdMap.size();
       }
