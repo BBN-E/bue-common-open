@@ -29,20 +29,20 @@
       <email>rgabbard@bbn.com</email>
       <organization>BBN Technologies</organization>
       <organizationUrl>http://www.bbn.com</organizationUrl>
-    </developer> 
+   </developer>
     <developer>
       <name>Jay DeYoung</name>
       <email>jdeyoung@bbn.com</email>
       <organization>BBN Technologies</organization>
       <organizationUrl>http://www.bbn.com</organizationUrl>
-    </developer> 
+    </developer>
 
     <developer>
       <name>Dave Kolas</name>
       <email>dkolas@bbn.com</email>
       <organization>BBN Technologies</organization>
       <organizationUrl>http://www.bbn.com</organizationUrl>
-    </developer> 
+    </developer>
   </developers>
 
   <properties>
@@ -54,7 +54,7 @@
     <maven.dependency.plugin.version>2.4</maven.dependency.plugin.version>
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
-    <appassembler.maven.plugin.version>1.2.2</appassembler.maven.plugin.version>
+      <appassembler.maven.plugin.version>1.10</appassembler.maven.plugin.version>
     <maven.surefire.plugin.version>2.12.2</maven.surefire.plugin.version>
     <maven.surefire.report.plugin.version>2.12.2</maven.surefire.report.plugin.version>
     <maven.failsafe.plugin.version>2.12.2</maven.failsafe.plugin.version>
@@ -165,16 +165,18 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <version>${maven.dependency.plugin.version}</version>
       </plugin>
-   <plugin> 
+        <plugin>
       <!-- explicitly define maven-deploy-plugin after other to force exec order -->
-      <artifactId>maven-deploy-plugin</artifactId> 
+            <artifactId>maven-deploy-plugin</artifactId>
       <version>2.7</version>
-      <executions> 
-        <execution> 
+            <executions>
+                <execution>
           <id>deploy</id>
           <phase>deploy</phase>
-          <goals><goal>deploy</goal></goals> 
-        </execution> 
+                    <goals>
+                        <goal>deploy</goal>
+                    </goals>
+                </execution>
         <execution>
             <id>internal-deploy</id>
             <phase>deploy</phase>
@@ -183,7 +185,7 @@
                 <altDeploymentRepository>nexus::default::http://e-nexus-01.bbn.com:8081/nexus/content/repositories/releases/</altDeploymentRepository>
             </configuration>
         </execution>
-      </executions> 
+            </executions>
     </plugin>
      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -254,21 +256,25 @@
       <executions>
         <execution>
           <id>attach-sources</id>
-          <goals><goal>jar-no-fork</goal></goals> 
+            <goals>
+                <goal>jar-no-fork</goal>
+            </goals>
         </execution>
       </executions>
     </plugin>
-    <plugin> 
-      <artifactId>maven-javadoc-plugin</artifactId> 
+      <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
       <version>2.9.1</version>
-      <executions> 
-        <execution> 
+          <executions>
+              <execution>
           <id>attach-javadocs</id>
-          <goals><goal>jar</goal></goals> 
-        </execution> 
-      </executions> 
+                  <goals>
+                      <goal>jar</goal>
+                  </goals>
+              </execution>
+          </executions>
     </plugin>
- 
+
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-gpg-plugin</artifactId>
@@ -300,7 +306,7 @@
     <snapshotRepository>
     <id>ossrh</id>
     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-  </snapshotRepository> 
+    </snapshotRepository>
   </distributionManagement>
       </profile>
   </profiles>

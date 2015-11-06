@@ -157,6 +157,28 @@ public final class MapUtils {
     return ordering.sortedCopy(map.entrySet());
   }
 
+  /**
+   * Returns an immutable copy of the given map whose iteration order has keys sorted by the key
+   * type's natural ordering. No map keys or values may be {@code null}.
+   */
+  public static <K extends Comparable<K>, V> ImmutableMap<K, V> copyWithSortedKeys(
+      final Map<K, V> map) {
+    return copyWithKeysSortedBy(map, Ordering.<K>natural());
+  }
+
+  /**
+   * Returns an immutable copy of the given map whose iteration order has keys sorted by the given
+   * {@link Ordering}. No map keys or values may be {@code null}.
+   */
+  public static <K, V> ImmutableMap<K, V> copyWithKeysSortedBy(final Map<K, V> map,
+      final Ordering<? super K> ordering) {
+    final ImmutableMap.Builder<K, V> ret = ImmutableMap.builder();
+    for (final K key : ordering.sortedCopy(map.keySet())) {
+      ret.put(key, map.get(key));
+    }
+    return ret.build();
+  }
+
   public static <K extends Comparable<K>, V> Ordering<Entry<K, V>> byKeyDescendingOrdering() {
     return Ordering.<K>natural().onResultOf(MapUtils.<K, V>getEntryKey());
   }

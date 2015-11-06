@@ -34,6 +34,14 @@
                   <mainClass>com.bbn.bue.common.MakeCrossValidationBatches</mainClass>
                   <name>MakeCrossValidationBatches</name>
               </program>
+              <program>
+                  <mainClass>com.bbn.bue.common.files.MergeFileLists</mainClass>
+                  <name>MergeFileLists</name>
+              </program>
+              <program>
+                  <mainClass>com.bbn.bue.common.files.MergeDocIDToFileMaps</mainClass>
+                  <name>MergeDocIDToFileMaps</name>
+              </program>
           </programs>
             </configuration>
           </plugin>
