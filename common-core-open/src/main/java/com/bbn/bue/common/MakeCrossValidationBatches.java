@@ -5,7 +5,6 @@ import com.bbn.bue.common.files.FileUtils;
 import com.bbn.bue.common.parameters.Parameters;
 import com.bbn.bue.common.symbols.Symbol;
 import com.google.common.base.Charsets;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -23,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import static com.google.common.base.Predicates.in;
 
 /**
  * Given a list of files and a number of splits, creates training/test file lists for
@@ -94,19 +95,10 @@ public final class MakeCrossValidationBatches {
             Sets.difference(ImmutableSet.copyOf(docIds), testDocIds).immutableCopy();
 
         final Map<Symbol, File> trainDocIdMap =
-            Maps.filterKeys(docIdMap, new Predicate<Symbol>() {
-              @Override
-              public boolean apply(Symbol input) {
-                return trainDocIds.contains(input);
-              }
-            });
+            Maps.filterKeys(docIdMap, in(trainDocIds));
+
         final Map<Symbol, File> testDocIdMap =
-            Maps.filterKeys(docIdMap, new Predicate<Symbol>() {
-              @Override
-              public boolean apply(Symbol input) {
-                return testDocIds.contains(input);
-              }
-            });
+            Maps.filterKeys(docIdMap, in(testDocIds));
 
         // Write out file maps
         final File trainingMapOutputFile = new File(outputDirectory, outputName + "." +
