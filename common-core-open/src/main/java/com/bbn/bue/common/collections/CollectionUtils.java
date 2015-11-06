@@ -9,14 +9,20 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
+import com.google.common.math.IntMath;
 
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utilities for collections.
@@ -231,4 +237,62 @@ public final class CollectionUtils {
     };
   }
 
+  /**
+   * Partitions a list into the specified number of partitions as evenly as is possible. The final
+   * "extra" elements that cannot be evenly distributed are distributed starting with the first
+   * partitions. For example, three partitions of (1, 2, 3, 4) results in ((1, 4), (2), (3)).
+   * Unlike {@link Lists#partition(List, int)}, this returns {@link ImmutableList}s, not list views,
+   * and computations are computed eagerly.
+   *
+   * @param partitions the number of partitions to divide the list into
+   * @return a list of the partitions, which are themselves lists
+   */
+  public static <E> ImmutableList<ImmutableList<E>> partitionAlmostEvenly(final List<E> list,
+      final int partitions) {
+    checkNotNull(list);
+    checkArgument(partitions > 0,
+        "Number of partitions must be positive");
+    checkArgument(partitions <= list.size(),
+        "Cannot request more partitions than there are list items");
+
+    // Divide into partitions, with the remainder falling into the last partition
+    final List<List<E>> prelimPartitions =
+        Lists.partition(list, IntMath.divide(list.size(), partitions, RoundingMode.DOWN));
+    // Create output
+    final ImmutableList.Builder<ImmutableList<E>> ret = ImmutableList.builder();
+
+    // If we evenly partitioned, just do the type conversion and return. The type conversion is
+    // performed because Lists#partition returns list views.
+    if (prelimPartitions.size() == partitions) {
+      for (List<E> partition : prelimPartitions) {
+        ret.add(ImmutableList.copyOf(partition));
+      }
+    } else {
+      // Otherwise, distribute the extras
+      final ImmutableList.Builder<ImmutableList.Builder<E>> builderOfBuilders =
+          ImmutableList.builder();
+
+      // Make new builder for all but the extras, which come from the last index
+      final int lastIdx = prelimPartitions.size() - 1;
+      final List<E> extras = prelimPartitions.get(lastIdx);
+      for (int i = 0; i < lastIdx; i++) {
+        builderOfBuilders.add(ImmutableList.<E>builder().addAll(prelimPartitions.get(i)));
+      }
+      final ImmutableList<ImmutableList.Builder<E>> builders = builderOfBuilders.build();
+
+      // Distribute the extra elements. We cannot overrun the bounds of builders because the number
+      // of extras is always at least one less than the number of builders (otherwise, we would've
+      // just had larger partitions).
+      int partitionIdx = 0;
+      for (E item : extras) {
+        builders.get(partitionIdx++).add(item);
+      }
+
+      // Fill in output
+      for (ImmutableList.Builder<E> builder : builders) {
+        ret.add(builder.build());
+      }
+    }
+    return ret.build();
+  }
 }
