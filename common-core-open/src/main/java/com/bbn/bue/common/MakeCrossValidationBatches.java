@@ -66,8 +66,8 @@ public final class MakeCrossValidationBatches {
     final int randomSeed = parameters.getInteger("com.bbn.bue.common.crossValidation.randomSeed");
     final boolean useDocIdMap = parameters.getBoolean("com.bbn.bue.common.crossValidation.useDocIdMap");
 
-    if (numBatches < 2) {
-      errorExit("Bad numBatches value: Need two or more batches to divide data into");
+    if (numBatches < 1) {
+      errorExit("Bad numBatches value: Need one or more batches to divide data into");
     }
 
     if (useDocIdMap) {
