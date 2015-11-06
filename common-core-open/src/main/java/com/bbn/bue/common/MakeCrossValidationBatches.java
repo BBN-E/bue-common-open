@@ -85,7 +85,7 @@ public final class MakeCrossValidationBatches {
 
       // Divide into folds
       final ImmutableList<ImmutableList<Symbol>> folds =
-          CollectionUtils.partition(docIds, numBatches);
+          CollectionUtils.partitionAlmostEvenly(docIds, numBatches);
 
       int batchNum = 0;
       int totalTest = 0;
@@ -144,7 +144,7 @@ public final class MakeCrossValidationBatches {
 
       // Divide into folds
       final ImmutableList<ImmutableList<File>> folds =
-          CollectionUtils.partition(inputFiles, numBatches);
+          CollectionUtils.partitionAlmostEvenly(inputFiles, numBatches);
 
       int batchNum = 0;
       int totalTest = 0;

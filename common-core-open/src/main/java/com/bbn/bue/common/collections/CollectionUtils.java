@@ -241,11 +241,13 @@ public final class CollectionUtils {
    * Partitions a list into the specified number of partitions as evenly as is possible. The final
    * "extra" elements that cannot be evenly distributed are distributed starting with the first
    * partitions. For example, three partitions of (1, 2, 3, 4) results in ((1, 4), (2), (3)).
+   * Unlike {@link Lists#partition(List, int)}, this returns {@link ImmutableList}s, not list views,
+   * and computations are computed eagerly.
    *
    * @param partitions the number of partitions to divide the list into
    * @return a list of the partitions, which are themselves lists
    */
-  public static <E> ImmutableList<ImmutableList<E>> partition(final List<E> list,
+  public static <E> ImmutableList<ImmutableList<E>> partitionAlmostEvenly(final List<E> list,
       final int partitions) {
     checkNotNull(list);
     checkArgument(partitions > 0,
