@@ -68,7 +68,7 @@ public class MergeDocIDToFileMaps {
       }
       mergedMap.putAll(mapFromFile);
     }
-    outputMap.mkdirs();
+    outputMap.getParentFile().mkdirs();
 
     final ImmutableMap<Symbol, File> sortedMergedMap = MapUtils.copyWithKeysSortedBy(mergedMap,
         SymbolUtils.byStringOrdering());

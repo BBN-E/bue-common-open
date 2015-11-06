@@ -50,7 +50,7 @@ public final class MergeFileLists {
       log.info("Loaded {} files from {}", fileFromFileList, fileList);
       ret.addAll(fileFromFileList);
     }
-    outputFile.mkdirs();
+    outputFile.getParentFile().mkdirs();
 
     final ImmutableSet<File> mergedFiles = ret.build();
     log.info("Wrote list of {} files to {}", mergedFiles.size(), outputFile);
