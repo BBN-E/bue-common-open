@@ -103,10 +103,10 @@ public final class BinaryFScoreBootstrapStrategy<T>
     return ImmutableList.of(prfAggregator());
   }
 
-  private static final ImmutableList<Double> PERCENTILES_TO_PRINT =
-      // If you edit these, do not remove 0.5 as it will cause the output of means to break
-      ImmutableList.of(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99);
   private static final double PERCENTILE_MEAN = 0.5;
+  private static final ImmutableList<Double> PERCENTILES_TO_PRINT =
+      // Do not remove PERCENTILE_MEAN; doing so will cause the outputting of means to break
+      ImmutableList.of(0.01, 0.05, 0.25, PERCENTILE_MEAN, 0.75, 0.95, 0.99);
   private static final ImmutableList<String> MEASURES = ImmutableList.of(
       "F1",
       "Prec",
