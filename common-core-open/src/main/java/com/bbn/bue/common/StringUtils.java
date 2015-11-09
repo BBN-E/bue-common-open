@@ -72,7 +72,7 @@ public final class StringUtils {
   }
 
   /**
-   * * Returns the index of the {@code n}-th occurence of {@code needle} in {@code s}. If {@ needle}
+   * * Returns the index of the {@code n}-th occurence of {@code needle} in {@code s}. If {@code needle}
    * does not appear in {@code s}, returns -1.
    *
    * @param s      The string to search. Cannot be null.
