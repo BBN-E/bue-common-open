@@ -4,11 +4,12 @@ import com.bbn.bue.common.OptionalUtils;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.math.PercentileComputer;
 import com.bbn.bue.common.symbols.Symbol;
-
 import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -102,8 +103,16 @@ public final class BinaryFScoreBootstrapStrategy<T>
     return ImmutableList.of(prfAggregator());
   }
 
+  private static final double PERCENTILE_MEAN = 0.5;
   private static final ImmutableList<Double> PERCENTILES_TO_PRINT =
-      ImmutableList.of(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99);
+      // Do not remove PERCENTILE_MEAN; doing so will cause the outputting of means to break
+      ImmutableList.of(0.01, 0.05, 0.25, PERCENTILE_MEAN, 0.75, 0.95, 0.99);
+  private static final ImmutableList<String> MEASURES = ImmutableList.of(
+      "F1",
+      "Prec",
+      "Rec",
+      "Acc"
+  );
 
   public BootstrapInspector.SummaryAggregator<Map<String, SummaryConfusionMatrix>> prfAggregator() {
     return new BootstrapInspector.SummaryAggregator<Map<String, SummaryConfusionMatrix>>() {
@@ -148,19 +157,26 @@ public final class BinaryFScoreBootstrapStrategy<T>
       @Override
       public void finish() throws IOException {
         final StringBuilder chart = new StringBuilder();
+        final StringBuilder delim = new StringBuilder();
+        final StringBuilder meansDelim = new StringBuilder();
         final ImmutableListMultimap<String, Double> f1s = f1sB.build();
         final ImmutableListMultimap<String, Double> precisions = precisionsB.build();
         final ImmutableListMultimap<String, Double> recalls = recallsB.build();
         final ImmutableListMultimap<String, Double> accuracies = accuraciesB.build();
 
+        // Set up chart title
         chart.append(name).append("\n\n");
+
+        // Set up delim headers
+        addDelimPercentileHeader(name, delim);
+        addDelimMeansHeader(name, MEASURES, meansDelim);
 
         // all four multimaps have the same keyset
         for (final String key : f1s.keySet()) {
-          dumpPercentilesForMetric(key,
+          final ImmutableMap<String, PercentileComputer.Percentiles> percentileMap =
               ImmutableMap.of(
                   "F1", percentileComputer
-                  .calculatePercentilesAdoptingData(Doubles.toArray(f1s.get(key))),
+                      .calculatePercentilesAdoptingData(Doubles.toArray(f1s.get(key))),
                   "Prec",
                   percentileComputer
                       .calculatePercentilesAdoptingData(Doubles.toArray(precisions.get(key))),
@@ -169,29 +185,100 @@ public final class BinaryFScoreBootstrapStrategy<T>
                       .calculatePercentilesAdoptingData(Doubles.toArray(recalls.get(key))),
                   "Acc",
                   percentileComputer
-                      .calculatePercentilesAdoptingData(Doubles.toArray(accuracies.get(key)))),
-              chart);
-          chart.append("\n\n");
+                      .calculatePercentilesAdoptingData(Doubles.toArray(accuracies.get(key))));
+
+          // Aggregate means
+          final ImmutableMap.Builder<String, Double> meansMapBuilder =
+              ImmutableMap.builder();
+          for (final Map.Entry<String, PercentileComputer.Percentiles> percentileEntry
+              : percentileMap.entrySet()) {
+            final Optional<Double> optPercentile = percentileEntry.getValue().percentile(PERCENTILE_MEAN);
+            meansMapBuilder.put(percentileEntry.getKey(), optPercentile.or(Double.NaN));
+          }
+
+          // Write to chart
+          dumpPercentilesForMetric(key, percentileMap, chart);
+          chart.append("\n");
+
+          // Write to delim
+          addDelimPercentilesForMetric(key, percentileMap, delim);
+          addMeansRow(key, meansMapBuilder.build(), meansDelim);
         }
 
+        // Make output dir as needed
         outputDir.mkdir();
+
+        // Write chart
         Files.asCharSink(new File(outputDir, name + ".bootstrapped.txt"),
             Charsets.UTF_8).write(chart.toString());
+        // Write delim
+        Files.asCharSink(new File(outputDir, name + ".bootstrapped.csv"),
+            Charsets.UTF_8).write(delim.toString());
+        // Write means-only delimited
+        Files.asCharSink(new File(outputDir, name + ".bootstrapped.means.csv"),
+            Charsets.UTF_8).write(meansDelim.toString());
       }
 
       private void dumpPercentilesForMetric(String chartTitle,
           ImmutableMap<String, PercentileComputer.Percentiles> percentilesByRow,
           StringBuilder output) {
-        output.append(chartTitle).append("\n\n");
-        output.append(renderLine("Name", PERCENTILES_TO_PRINT));
-        output.append(Strings.repeat("*", 70)).append("\n");
+        output.append(chartTitle).append("\n");
+        final String header = renderLine("Measure", PERCENTILES_TO_PRINT);
+        output.append(header);
+        // Offset length by one since it include a newline
+        output.append(Strings.repeat("*", header.length() - 1)).append("\n");
         for (final Map.Entry<String, PercentileComputer.Percentiles> percentileEntry : percentilesByRow
             .entrySet()) {
           output.append(renderLine(percentileEntry.getKey(),
               Lists.transform(percentileEntry.getValue().percentiles(PERCENTILES_TO_PRINT),
                   OptionalUtils.deoptionalizeFunction(Double.NaN))));
         }
-        output.append("\n\n\n");
+        output.append("\n");
+      }
+
+      private void addDelimMeansHeader(final String name, final List<String> measures,
+          final StringBuilder output) {
+        final ImmutableList.Builder<String> header = ImmutableList.builder();
+        header.add(name);
+        header.addAll(measures);
+        renderCells(header.build(), output);
+      }
+
+      private void addMeansRow(final String name, Map<String, Double> measures,
+          final StringBuilder output) {
+        final ImmutableList.Builder<String> row = ImmutableList.builder();
+        row.add(name);
+        final ImmutableList.Builder<Double> scores = ImmutableList.builder();
+        for (Map.Entry<String, Double> measure : measures.entrySet()) {
+          scores.add(measure.getValue());
+        }
+        row.addAll(renderDoubles(scores.build()));
+        renderCells(row.build(), output);
+      }
+
+      private void addDelimPercentileHeader(final String name, final StringBuilder output) {
+        final ImmutableList.Builder<String> header = ImmutableList.builder();
+        header.add(name);
+        header.add("Measure");
+        header.addAll(renderDoubles(PERCENTILES_TO_PRINT));
+        renderCells(header.build(), output);
+      }
+
+      private void addDelimPercentilesForMetric(
+          final String key,
+          final ImmutableMap<String, PercentileComputer.Percentiles> percentilesByRow,
+          final StringBuilder output) {
+        // Add entries for each row to the builder
+        for (final Map.Entry<String, PercentileComputer.Percentiles> percentileEntry : percentilesByRow
+            .entrySet()) {
+          final ImmutableList.Builder<String> row = ImmutableList.builder();
+          row.add(key);
+          row.add(percentileEntry.getKey());
+          row.addAll(renderDoubles(Lists.transform(
+              percentileEntry.getValue().percentiles(PERCENTILES_TO_PRINT),
+              OptionalUtils.deoptionalizeFunction(Double.NaN))));
+          renderCells(row.build(), output);
+        }
       }
 
       private String renderLine(String name, List<Double> values) {
@@ -204,7 +291,19 @@ public final class BinaryFScoreBootstrapStrategy<T>
         ret.append("\n");
         return ret.toString();
       }
+
+      private List<String> renderDoubles(final List<Double> values) {
+        final ImmutableList.Builder<String> ret = ImmutableList.builder();
+        for (final double val : values) {
+          ret.add(String.format("%.2f", 100.0 * val));
+        }
+        return ret.build();
+      }
+
+      private void renderCells(final List<String> cells, final StringBuilder builder) {
+        Joiner.on(",").appendTo(builder, cells);
+        builder.append("\n");
+      }
     };
   }
-
 }
