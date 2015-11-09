@@ -4,11 +4,11 @@ import com.bbn.bue.common.OptionalUtils;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.math.PercentileComputer;
 import com.bbn.bue.common.symbols.Symbol;
-
 import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -148,19 +148,24 @@ public final class BinaryFScoreBootstrapStrategy<T>
       @Override
       public void finish() throws IOException {
         final StringBuilder chart = new StringBuilder();
+        final StringBuilder delim = new StringBuilder();
         final ImmutableListMultimap<String, Double> f1s = f1sB.build();
         final ImmutableListMultimap<String, Double> precisions = precisionsB.build();
         final ImmutableListMultimap<String, Double> recalls = recallsB.build();
         final ImmutableListMultimap<String, Double> accuracies = accuraciesB.build();
 
+        // Set up chart title
         chart.append(name).append("\n\n");
+
+        // Set up delim header
+        addDelimHeader(name, delim);
 
         // all four multimaps have the same keyset
         for (final String key : f1s.keySet()) {
-          dumpPercentilesForMetric(key,
+          final ImmutableMap<String, PercentileComputer.Percentiles> percentileMap =
               ImmutableMap.of(
                   "F1", percentileComputer
-                  .calculatePercentilesAdoptingData(Doubles.toArray(f1s.get(key))),
+                      .calculatePercentilesAdoptingData(Doubles.toArray(f1s.get(key))),
                   "Prec",
                   percentileComputer
                       .calculatePercentilesAdoptingData(Doubles.toArray(precisions.get(key))),
@@ -169,21 +174,32 @@ public final class BinaryFScoreBootstrapStrategy<T>
                       .calculatePercentilesAdoptingData(Doubles.toArray(recalls.get(key))),
                   "Acc",
                   percentileComputer
-                      .calculatePercentilesAdoptingData(Doubles.toArray(accuracies.get(key)))),
-              chart);
+                      .calculatePercentilesAdoptingData(Doubles.toArray(accuracies.get(key))));
+
+          // Write to chart
+          dumpPercentilesForMetric(key, percentileMap, chart);
           chart.append("\n");
+
+          // Write to delim
+          addDelimPercentilesForMetric(key, percentileMap, delim);
         }
 
+        // Make output dir as needed
         outputDir.mkdir();
+
+        // Write chart
         Files.asCharSink(new File(outputDir, name + ".bootstrapped.txt"),
             Charsets.UTF_8).write(chart.toString());
+        // Write delim
+        Files.asCharSink(new File(outputDir, name + ".bootstrapped.csv"),
+            Charsets.UTF_8).write(delim.toString());
       }
 
       private void dumpPercentilesForMetric(String chartTitle,
           ImmutableMap<String, PercentileComputer.Percentiles> percentilesByRow,
           StringBuilder output) {
         output.append(chartTitle).append("\n");
-        final String header = renderLine("Name", PERCENTILES_TO_PRINT);
+        final String header = renderLine("Measure", PERCENTILES_TO_PRINT);
         output.append(header);
         // Offset length by one since it include a newline
         output.append(Strings.repeat("*", header.length() - 1)).append("\n");
@@ -196,6 +212,32 @@ public final class BinaryFScoreBootstrapStrategy<T>
         output.append("\n");
       }
 
+      private void addDelimHeader(final String name, final StringBuilder output) {
+        // Create header
+        final ImmutableList.Builder<String> header = ImmutableList.builder();
+        header.add(name);
+        header.add("Measure");
+        header.addAll(renderDoubles(PERCENTILES_TO_PRINT));
+        renderCells(header.build(), output);
+      }
+
+      private void addDelimPercentilesForMetric(
+          final String key,
+          final ImmutableMap<String, PercentileComputer.Percentiles> percentilesByRow,
+          final StringBuilder output) {
+
+        for (final Map.Entry<String, PercentileComputer.Percentiles> percentileEntry : percentilesByRow
+            .entrySet()) {
+          final ImmutableList.Builder<String> row = ImmutableList.builder();
+          row.add(key);
+          row.add(percentileEntry.getKey());
+          row.addAll(renderDoubles(Lists.transform(
+              percentileEntry.getValue().percentiles(PERCENTILES_TO_PRINT),
+              OptionalUtils.deoptionalizeFunction(Double.NaN))));
+          renderCells(row.build(), output);
+        }
+      }
+
       private String renderLine(String name, List<Double> values) {
         final StringBuilder ret = new StringBuilder();
 
@@ -206,7 +248,19 @@ public final class BinaryFScoreBootstrapStrategy<T>
         ret.append("\n");
         return ret.toString();
       }
+
+      private List<String> renderDoubles(final List<Double> values) {
+        final ImmutableList.Builder<String> ret = ImmutableList.builder();
+        for (final double val : values) {
+          ret.add(String.format("%.2f", 100.0 * val));
+        }
+        return ret.build();
+      }
+
+      private void renderCells(final List<String> cells, final StringBuilder builder) {
+        Joiner.on(",").appendTo(builder, cells);
+        builder.append("\n");
+      }
     };
   }
-
 }
