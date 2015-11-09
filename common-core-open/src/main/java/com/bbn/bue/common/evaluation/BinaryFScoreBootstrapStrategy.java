@@ -171,7 +171,7 @@ public final class BinaryFScoreBootstrapStrategy<T>
                   percentileComputer
                       .calculatePercentilesAdoptingData(Doubles.toArray(accuracies.get(key)))),
               chart);
-          chart.append("\n\n");
+          chart.append("\n");
         }
 
         outputDir.mkdir();
@@ -182,16 +182,18 @@ public final class BinaryFScoreBootstrapStrategy<T>
       private void dumpPercentilesForMetric(String chartTitle,
           ImmutableMap<String, PercentileComputer.Percentiles> percentilesByRow,
           StringBuilder output) {
-        output.append(chartTitle).append("\n\n");
-        output.append(renderLine("Name", PERCENTILES_TO_PRINT));
-        output.append(Strings.repeat("*", 70)).append("\n");
+        output.append(chartTitle).append("\n");
+        final String header = renderLine("Name", PERCENTILES_TO_PRINT);
+        output.append(header);
+        // Offset length by one since it include a newline
+        output.append(Strings.repeat("*", header.length() - 1)).append("\n");
         for (final Map.Entry<String, PercentileComputer.Percentiles> percentileEntry : percentilesByRow
             .entrySet()) {
           output.append(renderLine(percentileEntry.getKey(),
               Lists.transform(percentileEntry.getValue().percentiles(PERCENTILES_TO_PRINT),
                   OptionalUtils.deoptionalizeFunction(Double.NaN))));
         }
-        output.append("\n\n\n");
+        output.append("\n");
       }
 
       private String renderLine(String name, List<Double> values) {
