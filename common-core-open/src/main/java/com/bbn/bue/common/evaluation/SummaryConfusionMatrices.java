@@ -125,8 +125,9 @@ public final class SummaryConfusionMatrices {
      * predictions are on the rows and the gold-standard on the columns, using this method in such
      * cases and make the code clearer and reduce errors.
      */
-    public Builder accumulatePredictedGold(final Symbol row, final Symbol col, final double val) {
-      accumulate(row, col, val);
+    public Builder accumulatePredictedGold(final Symbol prediction, final Symbol gold,
+        final double val) {
+      accumulate(prediction, gold, val);
       return this;
     }
 
