@@ -3,12 +3,12 @@ package com.bbn.nlp.corpora.ere;
 import com.bbn.bue.common.parameters.Parameters;
 import com.bbn.nlp.corpora.apf.EDTOffsetMapper;
 import com.bbn.serif.apf.APFDocument;
-import com.bbn.serif.apf.APFtoSexp;
+import com.bbn.serif.apf.APFToSexpConverter;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.google.common.io.CharSink;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 
@@ -17,8 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
 
 public class EREtoSexp {
   private EREtoSexp() {
@@ -56,7 +54,8 @@ public class EREtoSexp {
 
     final ImmutableList<String> filelist = Files.asCharSource(params.getExistingFile("ere.xmlFilelist"), Charsets.UTF_8).readLines();
 
-    List<String> sexpLines = Lists.newArrayList();
+    final APFToSexpConverter converter = APFToSexpConverter.create();
+    final StringBuilder sb = new StringBuilder();
 
     for(final String infilename : filelist) {
       final EREDocument ereDoc = ereLoader.loadFrom(new File(infilename));
@@ -66,20 +65,13 @@ public class EREtoSexp {
 
       final OffsetInfo docOffset = offsetInfo.get(ereDoc.getDocId());
 
-      sexpLines.addAll(APFtoSexp.docToSexp(apfDoc, docOffset));
-      System.out.println("");
+      sb.append(converter.toSexp(apfDoc, docOffset));
+      sb.append("\n");
     }
 
-    final File outfile = params.getCreatableFile("sexp.filename");
-    PrintWriter writer = new PrintWriter(outfile, "UTF-8");
-    writer.write("(\n");
-    for(final String outline : sexpLines) {
-      writer.write(outline + "\n");
-    }
-    writer.write("\n");
-    writer.write(")\n");
-    writer.close();
-
+    final CharSink sink =
+        Files.asCharSink(params.getCreatableFile("sexp.filename"), Charsets.UTF_8);
+    sink.write(sb.toString());
   }
 
   private static ImmutableMap<String, OffsetInfo> offsetInfoFromSource(final Parameters params) throws IOException {
