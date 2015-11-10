@@ -67,6 +67,38 @@ public class SymbolUtils {
   };
 
   /**
+   * Returns a function that transforms a {@link Symbol} into a {@link String} using
+   * {@link Symbol#asString()}.
+   */
+  public static Function<Symbol,String> desymbolizeFunction() {
+    return DesymbolizeFunction.INSTANCE;
+  }
+
+  private enum DesymbolizeFunction implements Function<Symbol, String> {
+    INSTANCE;
+    @Override
+    public String apply(final Symbol s) {
+      return s.asString();
+    }
+  }
+
+  /**
+   * Returns a function that transforms a {@link String} into a {@link Symbol} using
+   * {@link Symbol#from(String)}.
+   */
+  public static Function<String, Symbol> symbolizeFunction() {
+    return SymbolizeFunction.INSTANCE;
+  }
+
+  private enum SymbolizeFunction implements Function<String, Symbol> {
+    INSTANCE;
+    @Override
+    public Symbol apply(final String s) {
+      return Symbol.from(s);
+    }
+  }
+
+  /**
    * Creates a <code>Set</code> of Symbols from some strings. The returned <code>Set</code> is
    * immutable.
    *
