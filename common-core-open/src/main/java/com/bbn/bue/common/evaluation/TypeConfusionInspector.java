@@ -6,8 +6,6 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharSink;
 
@@ -105,11 +103,11 @@ public final class TypeConfusionInspector<LeftRightT>
           }
         };
 
-    final ImmutableMap<Equivalence.Wrapper<LeftRightT>, ? extends LeftRightT> goldEquiv =
-        Maps.uniqueIndex(goldUnaligned, wrapEquivalenceFunction);
-        ImmutableSet.copyOf(Iterables.transform(goldUnaligned, wrapEquivalenceFunction));
+    // Create map between the equivalence-wrapped observations and the originals
     final ImmutableMap<Equivalence.Wrapper<LeftRightT>, ? extends LeftRightT> predEquiv =
         Maps.uniqueIndex(predUnaligned, wrapEquivalenceFunction);
+    final ImmutableMap<Equivalence.Wrapper<LeftRightT>, ? extends LeftRightT> goldEquiv =
+        Maps.uniqueIndex(goldUnaligned, wrapEquivalenceFunction);
 
     // Raise an error if the size of the unaligned observations has changed
     checkState(goldEquiv.size() == goldUnaligned.size() && predEquiv.size() == predUnaligned.size(),
@@ -118,35 +116,29 @@ public final class TypeConfusionInspector<LeftRightT>
     // Create confusion entries for unaligned gold
     for (final LeftRightT goldItem : goldUnaligned) {
       final Symbol goldLabel = Symbol.from(confusionLabeler.apply(goldItem));
-      // Try to find a matching label on the other side
-      final Equivalence.Wrapper<LeftRightT> goldEquivLabel = confusionEquivalence.wrap(goldItem);
-      final Symbol predLabel;
-      if (predEquiv.containsKey(goldEquivLabel)) {
-        // Enter the confusion entry if there's a match
-        final LeftRightT match = goldEquiv.get(goldEquivLabel);
-        predLabel = Symbol.from(confusionLabeler.apply(match));
-      } else {
-        // Otherwise, match with none
-        predLabel = NONE;
-      }
+      final Equivalence.Wrapper<LeftRightT> wrappedGoldItem = confusionEquivalence.wrap(goldItem);
+      final Symbol predLabel = getConfusedLabel(wrappedGoldItem, predEquiv);
       summaryConfusionMatrixB.accumulatePredictedGold(predLabel, goldLabel, 1);
     }
 
     // Create confusion entries for unaligned predicted
     for (final LeftRightT predItem : predUnaligned) {
       final Symbol predLabel = Symbol.from(confusionLabeler.apply(predItem));
-      // Try to find a matching label on the other side
-      final Equivalence.Wrapper<LeftRightT> predEquivLabel = confusionEquivalence.wrap(predItem);
-      final Symbol goldLabel;
-      if (goldEquiv.containsKey(predEquivLabel)) {
-        // Enter the confusion entry if there's a match
-        final LeftRightT match = goldEquiv.get(predEquivLabel);
-        goldLabel = Symbol.from(confusionLabeler.apply(match));
-      } else {
-        // Otherwise, match with none
-        goldLabel = NONE;
-      }
+      final Equivalence.Wrapper<LeftRightT> wrappedPredItem = confusionEquivalence.wrap(predItem);
+      final Symbol goldLabel = getConfusedLabel(wrappedPredItem, goldEquiv);
       summaryConfusionMatrixB.accumulatePredictedGold(predLabel, goldLabel, 1);
+    }
+  }
+
+  private Symbol getConfusedLabel(final Equivalence.Wrapper<LeftRightT> wrappedObservation,
+      final ImmutableMap<Equivalence.Wrapper<LeftRightT>, ? extends LeftRightT> confusableObservations) {
+    if (confusableObservations.containsKey(wrappedObservation)) {
+      // Returned the label of the confusable instance if there's a match
+      final LeftRightT match = confusableObservations.get(wrappedObservation);
+      return Symbol.from(confusionLabeler.apply(match));
+    } else {
+      // Otherwise just map to NONE
+      return NONE;
     }
   }
 }
