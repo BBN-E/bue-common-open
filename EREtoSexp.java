@@ -1,15 +1,15 @@
 package com.bbn.nlp.corpora.ere;
 
 import com.bbn.bue.common.parameters.Parameters;
-import com.bbn.nlp.corpora.ere.OffsetInfo.OffsetSpan;
+import com.bbn.nlp.corpora.apf.EDTOffsetMapper;
 import com.bbn.serif.apf.APFDocument;
 import com.bbn.serif.apf.APFtoSexp;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 
 import org.slf4j.Logger;
@@ -87,84 +87,23 @@ public class EREtoSexp {
 
     final ImmutableList<String> filelist = Files.asCharSource(params.getExistingFile("ere.sourceFilelist"), Charsets.UTF_8).readLines();
 
-    final int offsetAdjust = params.isPresent("ere.offsetAdjust") ? params.getInteger("ere.offsetAdjust") : 0;
+    final int offsetAdjust = params.getOptionalInteger("ere.offsetAdjust").or(0);
 
+    final EDTOffsetMapper edtOffsetMapper =
+        EDTOffsetMapper.createWithOffsetAdjustment(offsetAdjust);
     for(final String filename : filelist) {
-      OffsetInfo.Builder offsetBuilder = OffsetInfo.builder();
-
-      final ImmutableList<String> lines = Files.asCharSource(new File(filename), Charsets.UTF_8).readLines();
+      final CharSource source = Files.asCharSource(new File(filename), Charsets.UTF_8);
 
       final String docId;
-      if(lines.get(0).indexOf("DOC id=")!=-1 || lines.get(0).indexOf("doc id=")!=-1) {
-        docId = getDocid(lines.get(0));
-      }
-      else {
+      final String firstLine = source.readFirstLine();
+      if (firstLine != null && (firstLine.toLowerCase().indexOf("doc id=") >= 0)) {
+        docId = getDocid(firstLine);
+      } else {
         final String fileId = filename.substring(filename.lastIndexOf("/")+1);
         docId = fileId.substring(0, fileId.indexOf("."));
       }
 
-      List<Integer> chars = Lists.newArrayList();
-      List<Integer> tags = Lists.newArrayList();
-      for(final String line : lines) {
-        chars.add(line.length()+1);
-        tags.add(tagLength(line));
-      }
-
-      int runningCharLen = 0;
-      int runningTagLen = 0;
-      //System.out.println("== " + docId + " ==");
-      for(int index=0; index<lines.size(); index++) {
-        final String line = lines.get(index);
-
-        //int transformedOffset = runningCharLen - runningTagLen;
-
-        if(tags.get(index) < line.length()) {   // there is some xml tags and some text spans in this line
-          //System.out.print("*");
-
-          //OffsetSpan.Builder spanBuilder = OffsetSpan.builder(runningCharLen, runningCharLen+line.length()).
-          //    withOffset(Optional.of(transformedOffset - runningCharLen));
-          //offsetBuilder.withSpan(spanBuilder.build());
-
-          ///////
-          int i1 = 0;
-          int i2 = 0;
-          int l = 0;
-          while(i2<line.length() && line.indexOf("<", i2)!=-1) {
-            i1 = line.indexOf("<", i2);
-
-            if(i2==0 && i1>0) {
-              offsetBuilder.withSpan( OffsetSpan.builder(runningCharLen, runningCharLen + i1-1).
-                  withOffset(Optional.of(-1*(runningTagLen+offsetAdjust))).build() );
-            }
-            else {
-              if(i1 > i2) {
-                offsetBuilder.withSpan( OffsetSpan.builder(runningCharLen+i2, runningCharLen + i1-1).
-                    withOffset(Optional.of(-1*(runningTagLen+l+offsetAdjust))).build() );
-              }
-            }
-
-            if(line.indexOf(">", i1)!=-1) {
-              i2 = line.indexOf(">", i1)+1;
-              if(i1!=-1 && i2!=-1) {
-                l += (i2 - i1);
-              }
-            }
-          }
-          if(i2<line.length()) {
-            offsetBuilder.withSpan( OffsetSpan.builder(runningCharLen+i2, runningCharLen + line.length()-1).
-                withOffset(Optional.of(-1*(runningTagLen+l+offsetAdjust))).build() );
-          }
-
-
-        }
-        //System.out.println((index+1) + ": " + runningCharLen + " " + runningTagLen + " " + transformedOffset);
-
-        runningCharLen += chars.get(index);
-        runningTagLen += tags.get(index);
-
-      }
-
-      ret.put(docId, offsetBuilder.build());
+      ret.put(docId, edtOffsetMapper.getOffsetInfoFrom(source));
     }
 
     return ret.build();
@@ -178,21 +117,6 @@ public class EREtoSexp {
 
   }
 
-  private static int tagLength(final String line) {
-    int l = 0;
-
-    int i1 = 0;
-    int i2 = 0;
-    while(line.indexOf("<", i2)!=-1) {
-      i1 = line.indexOf("<", i2);
-      i2 = line.indexOf(">", i1);
-      if(i1!=-1 && i2!=-1) {
-        l += (i2 - i1 + 1);
-      }
-    }
-
-    return l;
-  }
 }
 
 
