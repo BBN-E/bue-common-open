@@ -5,6 +5,7 @@ import com.bbn.bue.common.strings.offsets.Offset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Equivalence;
 import com.google.common.base.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -70,5 +71,25 @@ public final class ScoringTypedOffsetRange<T extends Offset & Comparable<T>>
   @Override
   public String toString() {
     return docId + "-" + type + "-" + offsetRange;
+  }
+
+  public static DocIdOffsetEquivalence docIdOffsetEquivalence() {
+    return new DocIdOffsetEquivalence();
+  }
+
+  /**
+   * Equivalence that ignores the scoring type.
+   */
+  private static final class DocIdOffsetEquivalence extends Equivalence<ScoringTypedOffsetRange> {
+
+    @Override
+    protected boolean doEquivalent(ScoringTypedOffsetRange a, ScoringTypedOffsetRange b) {
+      return Objects.equal(a.docID(), b.docID()) && Objects.equal(a.offsetRange(), b.offsetRange());
+    }
+
+    @Override
+    protected int doHash(ScoringTypedOffsetRange scoringTypedOffsetRange) {
+      return Objects.hashCode(scoringTypedOffsetRange.docID(), scoringTypedOffsetRange.offsetRange());
+    }
   }
 }
