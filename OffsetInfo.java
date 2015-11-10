@@ -17,7 +17,7 @@ public final class OffsetInfo {
   public Optional<OffsetSpan> findSpan(final int offset) {
     for(final OffsetSpan span : spans) {
       if(span.isInSpan(offset)) {
-        return Optional.fromNullable(span);
+        return Optional.of(span);
       }
     }
     return Optional.<OffsetSpan>absent();
@@ -29,7 +29,7 @@ public final class OffsetInfo {
     if(span.isPresent()) {
       final Optional<Integer> adjustor = span.get().getOffsetAdjustor();
       if(adjustor.isPresent()) {
-        return Optional.of(offset + adjustor.get().intValue());
+        return Optional.of(offset + adjustor.get());
       }
       else {
         return Optional.of(offset);
