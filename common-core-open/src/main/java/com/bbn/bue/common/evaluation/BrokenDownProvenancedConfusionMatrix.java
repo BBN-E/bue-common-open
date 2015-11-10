@@ -17,7 +17,7 @@ public final class BrokenDownProvenancedConfusionMatrix<SignatureType, Provenanc
 
   public static <SignatureType, ProvenanceType> BrokenDownProvenancedConfusionMatrix fromMap(
       Map<SignatureType, ProvenancedConfusionMatrix<ProvenanceType>> data) {
-    return new BrokenDownProvenancedConfusionMatrix(data);
+    return new BrokenDownProvenancedConfusionMatrix<SignatureType, ProvenanceType>(data);
   }
 
 
