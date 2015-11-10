@@ -22,6 +22,18 @@ import static com.google.common.base.Preconditions.checkState;
  * right and creates a confusion matrix between them based on a specified confusion equivalence
  * and labelling.
  *
+ * To create the confusion matrix, the caller must specify:
+ * <ol>
+ *   <li>A confusion labeler, which is a {@link Function} mapping each observation to its row/column
+ *   in the confusion matrix. For example, in part of speech tagging, it would return the part of
+ *   speech tag itself.</li>
+ *   <li>A confusion equivalence, which is an {@link Equivalence} that declares two observations to
+ *   be equal if they are equal in every relevant way except for the value that would be returned by
+ *   the confusion labeler. For example, in part of speech tagging, that equivalence should return
+ *   true if two observations refer to the same token in the same document, regardless of whether
+ *   the tags assigned to that token match.</li>
+ *   </ol>
+ *
  * @param <LeftRightT> the type of both left and right items in the alignment
  */
 @Beta
@@ -47,10 +59,11 @@ public final class TypeConfusionInspector<LeftRightT>
   }
 
   /**
-   * Creates a new inspector.
+   * Creates a new inspector. See class documentation for an explanation of the confusion labeler
+   * and confusion equivalence.
    * 
-   * @param confusionLabeler function for mapping an observation to its label in the confusion matrix
-   * @param confusionEquivalence equivalence between observations that allows them to be confused
+   * @param confusionLabeler a function for mapping an observation to its label in the confusion matrix
+   * @param confusionEquivalence an equivalence between observations that are considered confusable
    * @param outputSink sink for writing output
    * @param <LeftRightT> the type of both left and right items in the alignment
    * @return a new inspector
