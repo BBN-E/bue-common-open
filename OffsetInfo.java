@@ -104,16 +104,14 @@ public final class OffsetInfo {
     }
 
     public String toString() {
-      StringBuffer s = new StringBuffer("");
-      s.append(start);
-      s.append(",");
-      s.append(end);
-      if(offsetAdjustor.isPresent()) {
-        s.append(" " + (start + offsetAdjustor.get()));
-        s.append(",");
-        s.append(end + offsetAdjustor.get());
+      final String baseRet = "(" + start + ", " + end + ")";
+      if (offsetAdjustor.isPresent()) {
+        final int adjustedEnd = end + offsetAdjustor.get();
+        final int adjustedStart = start + offsetAdjustor.get();
+        return baseRet + " ---> " + "(" + adjustedStart + ", " + adjustedEnd + ")";
+      } else {
+        return baseRet;
       }
-      return s.toString();
     }
 
     public static OffsetSpan.Builder builder(final int start, final int end) {
