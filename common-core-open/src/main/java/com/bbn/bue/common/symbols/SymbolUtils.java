@@ -67,6 +67,16 @@ public class SymbolUtils {
   };
 
   /**
+   * For every input {@link Symbol}, returns {@link Symbol#asString()}.
+   */
+  public static final Function<Symbol, String> Desymbolize = new Function<Symbol, String>() {
+    @Override
+    public String apply(final Symbol s) {
+      return s.asString();
+    }
+  };
+
+  /**
    * Creates a <code>Set</code> of Symbols from some strings. The returned <code>Set</code> is
    * immutable.
    *
