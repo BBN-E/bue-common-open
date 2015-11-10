@@ -70,6 +70,7 @@ public final class MakeCrossValidationBatches {
     if (numBatches < 1) {
       errorExit("Bad numBatches value: Need one or more batches to divide data into");
     }
+    final int maxBatch = numBatches - 1;
 
     if (useDocIdMap) {
       // For the document ID map
@@ -102,11 +103,11 @@ public final class MakeCrossValidationBatches {
 
         // Write out file maps
         final File trainingMapOutputFile = new File(outputDirectory, outputName + "." +
-            StringUtils.padWithMax(batchNum, numBatches - 1) + ".training.docIDToFileMap");
+            StringUtils.padWithMax(batchNum, maxBatch) + ".training.docIDToFileMap");
         FileUtils.writeSymbolToFileMap(trainDocIdMap, Files.asCharSink(trainingMapOutputFile,
             Charsets.UTF_8));
         final File testMapOutputFile = new File(outputDirectory, outputName + "." +
-            StringUtils.padWithMax(batchNum, numBatches - 1) + ".test.docIDToFileMap");
+            StringUtils.padWithMax(batchNum, maxBatch) + ".test.docIDToFileMap");
         FileUtils.writeSymbolToFileMap(testDocIdMap, Files.asCharSink(testMapOutputFile,
             Charsets.UTF_8));
 
@@ -114,12 +115,12 @@ public final class MakeCrossValidationBatches {
         final ImmutableList<File> trainingFilesForBatch = ImmutableList.copyOf(trainDocIdMap.values());
         final ImmutableList<File> testFilesForBatch = ImmutableList.copyOf(testDocIdMap.values());
         final File trainingOutputFile = new File(outputDirectory, outputName + "." +
-            StringUtils.padWithMax(batchNum, numBatches - 1) + ".training.list");
+            StringUtils.padWithMax(batchNum, maxBatch) + ".training.list");
         FileUtils.writeFileList(trainingFilesForBatch,
             Files.asCharSink(trainingOutputFile,
                 Charsets.UTF_8));
         final File testOutputFile = new File(outputDirectory, outputName + "." +
-            StringUtils.padWithMax(batchNum, numBatches - 1) + ".test.list");
+            StringUtils.padWithMax(batchNum, maxBatch) + ".test.list");
         FileUtils.writeFileList(testFilesForBatch,
             Files.asCharSink(testOutputFile,
                 Charsets.UTF_8));
@@ -154,12 +155,12 @@ public final class MakeCrossValidationBatches {
                 .immutableCopy();
 
         final File trainingOutputFile = new File(outputDirectory, outputName + "." +
-            StringUtils.padWithMax(batchNum, numBatches - 1) + ".training.list");
+            StringUtils.padWithMax(batchNum, maxBatch) + ".training.list");
         FileUtils.writeFileList(Ordering.natural().sortedCopy(trainingFilesForBatch),
             Files.asCharSink(trainingOutputFile,
                 Charsets.UTF_8));
         final File testOutputFile = new File(outputDirectory, outputName + "." +
-            StringUtils.padWithMax(batchNum, numBatches - 1) + ".test.list");
+            StringUtils.padWithMax(batchNum, maxBatch) + ".test.list");
         FileUtils.writeFileList(Ordering.natural().sortedCopy(testFilesForBatch),
             Files.asCharSink(testOutputFile,
                 Charsets.UTF_8));
