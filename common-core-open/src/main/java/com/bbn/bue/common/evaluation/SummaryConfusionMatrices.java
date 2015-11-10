@@ -64,7 +64,7 @@ public final class SummaryConfusionMatrices {
     // Create header
     final ImmutableList.Builder<String> header = ImmutableList.builder();
     header.add("Predicted");
-    header.addAll(Iterables.transform(columnLabels, SymbolUtils.Desymbolize));
+    header.addAll(Iterables.transform(columnLabels, SymbolUtils.desymbolizeFunction()));
     lines.add(delimJoiner.join(header.build()));
 
     // Output each line
