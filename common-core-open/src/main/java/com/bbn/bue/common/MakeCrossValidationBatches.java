@@ -59,7 +59,7 @@ public final class MakeCrossValidationBatches {
     }
     final Parameters parameters = Parameters.loadSerifStyle(new File(argv[0]));
     final File fileList = parameters.getExistingFile("com.bbn.bue.common.crossValidation.fileList");
-    final File outputDirectory = parameters.getExistingDirectory(
+    final File outputDirectory = parameters.getCreatableDirectory(
         "com.bbn.bue.common.crossValidation.outputDir");
     final String outputName = parameters.getString("com.bbn.bue.common.crossValidation.outputName");
     final int numBatches = parameters.getPositiveInteger(
