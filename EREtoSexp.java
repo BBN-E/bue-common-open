@@ -69,9 +69,12 @@ public class EREtoSexp {
       sb.append("\n");
     }
 
+    converter.finish();
+
     final CharSink sink =
         Files.asCharSink(params.getCreatableFile("sexp.filename"), Charsets.UTF_8);
     sink.write(sb.toString());
+
   }
 
   private static ImmutableMap<String, OffsetInfo> offsetInfoFromSource(final Parameters params) throws IOException {
