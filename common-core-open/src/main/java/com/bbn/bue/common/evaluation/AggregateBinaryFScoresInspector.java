@@ -1,10 +1,9 @@
 package com.bbn.bue.common.evaluation;
 
 import com.bbn.bue.common.Inspector;
+import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.symbols.Symbol;
-
 import com.google.common.annotations.Beta;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharSink;
 
 import java.io.IOException;
@@ -27,14 +26,12 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
 
   private final SummaryConfusionMatrices.Builder summaryConfusionMatrixB =
       SummaryConfusionMatrices.builder();
-  private final ImmutableList.Builder<FMeasureCounts> countsBuilder;
   private final CharSink outSink;
   private static final Symbol PRESENT = Symbol.from("Present");
   private static final Symbol ABSENT = Symbol.from("Absent");
 
   private AggregateBinaryFScoresInspector(final CharSink outSink) {
     this.outSink = checkNotNull(outSink);
-    countsBuilder = ImmutableList.builder();
   }
 
   public static <KeyT, TestT> AggregateBinaryFScoresInspector<KeyT, TestT> createOutputtingTo(
@@ -45,9 +42,9 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
   @Override
   public void finish() throws IOException {
     final SummaryConfusionMatrix summaryConfusionMatrix = summaryConfusionMatrixB.build();
-    final FMeasureCounts summaryCounts = FMeasureCounts.combineToMicroFMeasure(countsBuilder.build());
-    outSink.write(SummaryConfusionMatrices.prettyPrint(summaryConfusionMatrix)
-        + summaryCounts.compactPrettyString());
+    outSink.write(StringUtils.NewlineJoiner.join(
+        SummaryConfusionMatrices.prettyPrint(summaryConfusionMatrix),
+        SummaryConfusionMatrices.FMeasureVsAllOthers(summaryConfusionMatrix, PRESENT).compactPrettyString()));
   }
 
   @Override
@@ -58,10 +55,8 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, PRESENT, truePositives);
     summaryConfusionMatrixB
-        .accumulatePredictedGold(PRESENT, ABSENT, falseNegatives);
+        .accumulatePredictedGold(ABSENT, PRESENT, falseNegatives);
     summaryConfusionMatrixB
-        .accumulatePredictedGold(ABSENT, PRESENT, falsePositives);
-    countsBuilder.add(FMeasureCounts.from(truePositives, falsePositives, falseNegatives));
+        .accumulatePredictedGold(PRESENT, ABSENT, falsePositives);
   }
 }
-
