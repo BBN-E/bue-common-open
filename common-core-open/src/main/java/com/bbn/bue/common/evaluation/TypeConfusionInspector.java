@@ -7,7 +7,6 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -21,6 +20,8 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.equalTo;
+import static com.google.common.base.Predicates.not;
 
 /**
  * Observes an {@link Alignment} between system items on the left and gold standard items on the
@@ -85,7 +86,7 @@ public final class TypeConfusionInspector<LeftRightT>
     // Create an ordering that puts none last
     final Set<Symbol> notNoneSymbols = Sets.filter(
         Sets.union(summaryConfusionMatrix.leftLabels(), summaryConfusionMatrix.rightLabels()),
-        NotNoneSymbolPredicate.INSTANCE);
+        not(equalTo(NONE)));
     final ImmutableList.Builder<Symbol> symbolOrder = ImmutableList.builder();
     symbolOrder.addAll(SymbolUtils.byStringOrdering().sortedCopy(notNoneSymbols));
     symbolOrder.add(NONE);
@@ -156,14 +157,6 @@ public final class TypeConfusionInspector<LeftRightT>
     } else {
       // Otherwise just map to NONE
       return NONE;
-    }
-  }
-
-  private enum NotNoneSymbolPredicate implements Predicate<Symbol> {
-    INSTANCE;
-    @Override
-    public boolean apply(Symbol input) {
-          return !input.equals(NONE);
     }
   }
 }
