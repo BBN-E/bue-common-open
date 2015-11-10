@@ -95,12 +95,7 @@ public final class OffsetInfo {
     }
 
     public boolean isInSpan(final int offset) {
-      if((start <= offset) && (offset <= end)) {
-        return true;
-      }
-      else {
-        return false;
-      }
+      return (start <= offset) && (offset <= end);
     }
 
     public String toString() {
