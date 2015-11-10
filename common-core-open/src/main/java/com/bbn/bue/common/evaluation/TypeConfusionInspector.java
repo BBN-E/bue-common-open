@@ -81,9 +81,6 @@ public final class TypeConfusionInspector<LeftRightT>
 
   @Override
   public void inspect(final Alignment<? extends LeftRightT, ? extends LeftRightT> alignment) {
-    final int falseNegatives = alignment.leftUnaligned().size();
-    final int falsePositives = alignment.rightUnaligned().size();
-
     // Count each aligned item as the diagonal
     for (final LeftRightT correctItem : alignment.rightAligned()) {
       final Symbol label = Symbol.from(confusionLabeler.apply(correctItem));
