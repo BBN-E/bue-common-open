@@ -2,13 +2,20 @@ package com.bbn.bue.common.evaluation;
 
 import com.bbn.bue.common.Inspector;
 import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
 import com.google.common.annotations.Beta;
+import com.google.common.base.Charsets;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.io.CharSink;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -42,18 +49,17 @@ public final class TypeConfusionInspector<LeftRightT>
       SummaryConfusionMatrices.builder();
   private final Function<? super LeftRightT, String> confusionLabeler;
   private final Equivalence<LeftRightT> confusionEquivalence;
-
-  private final CharSink outSink;
+  private final File outputDir;
 
   private static final Symbol NONE = Symbol.from("NONE");
 
   private TypeConfusionInspector(
       final Function<? super LeftRightT, String> confusionLabeler,
       final Equivalence<LeftRightT> confusionEquivalence,
-      final CharSink outSink) {
+      final File outputDir) {
     this.confusionLabeler = checkNotNull(confusionLabeler);
     this.confusionEquivalence = checkNotNull(confusionEquivalence);
-    this.outSink = checkNotNull(outSink);
+    this.outputDir = outputDir;
   }
 
   /**
@@ -62,21 +68,35 @@ public final class TypeConfusionInspector<LeftRightT>
    * 
    * @param confusionLabeler a function for mapping an observation to its label in the confusion matrix
    * @param confusionEquivalence an equivalence between observations that are considered confusable
-   * @param outputSink sink for writing output
+   * @param outputDir directory for writing output
    * @param <LeftRightT> the type of both left and right items in the alignment
    * @return a new inspector
    */
   public static <LeftRightT> TypeConfusionInspector<LeftRightT> createOutputtingTo(
       final Function<? super LeftRightT, String> confusionLabeler,
       final Equivalence<LeftRightT> confusionEquivalence,
-      final CharSink outputSink) {
-    return new TypeConfusionInspector<LeftRightT>(confusionLabeler, confusionEquivalence, outputSink);
+      final File outputDir) {
+    return new TypeConfusionInspector<LeftRightT>(confusionLabeler, confusionEquivalence, outputDir);
   }
 
   @Override
   public void finish() throws IOException {
     final SummaryConfusionMatrix summaryConfusionMatrix = summaryConfusionMatrixB.build();
-    outSink.write(SummaryConfusionMatrices.prettyPrint(summaryConfusionMatrix));
+    // Create an ordering that puts none last
+    final Set<Symbol> notNoneSymbols = Sets.filter(
+        Sets.union(summaryConfusionMatrix.leftLabels(), summaryConfusionMatrix.rightLabels()),
+        NotNoneSymbolPredicate.INSTANCE);
+    final ImmutableList.Builder<Symbol> symbolOrder = ImmutableList.builder();
+    symbolOrder.addAll(SymbolUtils.byStringOrdering().sortedCopy(notNoneSymbols));
+    symbolOrder.add(NONE);
+    final Ordering<Symbol> ordering = Ordering.explicit(symbolOrder.build());
+
+    Files.asCharSink(new File(outputDir, "TypeConfusion.txt"),
+        Charsets.UTF_8).write(SummaryConfusionMatrices.prettyPrint(summaryConfusionMatrix,
+        ordering));
+    Files.asCharSink(new File(outputDir, "TypeConfusion.csv"),
+        Charsets.UTF_8).write(SummaryConfusionMatrices.prettyDelimPrint(summaryConfusionMatrix,
+        ",", ordering));
   }
 
   @Override
@@ -136,6 +156,14 @@ public final class TypeConfusionInspector<LeftRightT>
     } else {
       // Otherwise just map to NONE
       return NONE;
+    }
+  }
+
+  private enum NotNoneSymbolPredicate implements Predicate<Symbol> {
+    INSTANCE;
+    @Override
+    public boolean apply(Symbol input) {
+          return !input.equals(NONE);
     }
   }
 }

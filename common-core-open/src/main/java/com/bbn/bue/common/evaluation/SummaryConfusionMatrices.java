@@ -1,19 +1,23 @@
 package com.bbn.bue.common.evaluation;
 
+import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.primitives.DoubleUtils;
 import com.bbn.bue.common.symbols.Symbol;
 import com.bbn.bue.common.symbols.SymbolUtils;
-
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import static com.bbn.bue.common.primitives.DoubleUtils.IsNonNegative;
@@ -43,6 +47,38 @@ public final class SummaryConfusionMatrices {
     }
 
     return sb.toString();
+  }
+
+  public static String prettyDelimPrint(final SummaryConfusionMatrix m, final String delimiter) {
+    return prettyDelimPrint(m, delimiter, SymbolUtils.byStringOrdering());
+  }
+
+  public static String prettyDelimPrint(final SummaryConfusionMatrix m,
+      final String delimiter, final Ordering<Symbol> labelOrdering) {
+    final Joiner delimJoiner = Joiner.on(delimiter);
+    final ImmutableList.Builder<String> lines = ImmutableList.builder();
+
+    final List<Symbol> rowLabels = labelOrdering.sortedCopy(m.leftLabels());
+    final List<Symbol> columnLabels = labelOrdering.sortedCopy(m.rightLabels());
+
+    // Create header
+    final ImmutableList.Builder<String> header = ImmutableList.builder();
+    header.add("Predicted");
+    header.addAll(Iterables.transform(columnLabels, SymbolUtils.Desymbolize));
+    lines.add(delimJoiner.join(header.build()));
+
+    // Output each line
+    for (final Symbol rowLabel : rowLabels) {
+      final ImmutableList.Builder<String> row = ImmutableList.builder();
+      row.add(rowLabel.asString());
+      for (final Symbol columnLabel : columnLabels) {
+        row.add(String.format("%.2f", m.cell(rowLabel, columnLabel)));
+      }
+      lines.add(delimJoiner.join(row.build()));
+    }
+
+    // Return all lines
+    return StringUtils.NewlineJoiner.join(lines.build());
   }
 
   public static String prettyPrint(SummaryConfusionMatrix m) {
