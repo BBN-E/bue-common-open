@@ -73,6 +73,10 @@ public final class ScoringTypedOffsetRange<T extends Offset & Comparable<T>>
     return docId + "-" + type + "-" + offsetRange;
   }
 
+  /**
+   * Returns an enum-wrapped {@link Equivalence} that uses only the document id and offset range
+   * to compare {@link ScoringTypedOffsetRange}s.
+   */
   public static DocIdOffsetEquivalence docIdOffsetEquivalence() {
     return new DocIdOffsetEquivalence();
   }
