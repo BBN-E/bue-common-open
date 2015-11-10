@@ -41,13 +41,13 @@ public interface Alignment<LeftT, RightT> {
 
   /**
    * Get all items in the left set, if any, which align to the provided right set item.  If x is in
-   * {@code alignedToRightItem(y)}, then y is in {@code alignedToRighItem(x)}.
+   * {@code alignedToRightItem(y)}, then y is in {@code alignedToRightItem(x)}.
    */
   Collection<LeftT> alignedToRightItem(Object rightItem);
 
   /**
    * Get all items in the right set, if any, which align to the provided left set item.  If x is in
-   * {@code alignedToRightItem(y)}, then y is in {@code alignedToRighItem(x)}.
+   * {@code alignedToRightItem(y)}, then y is in {@code alignedToRightItem(x)}.
    */
   Collection<RightT> alignedToLeftItem(Object leftItem);
 
