@@ -166,7 +166,7 @@ public final class FileUtils {
   public static File swapExtension(final File f, final String newExtension) {
     Preconditions.checkNotNull(f);
     Preconditions.checkNotNull(newExtension);
-    Preconditions.checkArgument(f.isFile());
+    Preconditions.checkArgument(!f.isDirectory());
 
     final String absolutePath = f.getAbsolutePath();
     final int dotIndex = absolutePath.lastIndexOf(".");
