@@ -106,6 +106,7 @@ public final class BinaryErrorLogger<KeyT extends HasDocID, TestT extends HasDoc
    */
   public static <ItemT extends HasDocID> BinaryErrorLogger<ItemT, ItemT> forStringifierAndOutputDir(
       Function<? super ItemT, String> stringifier, File outputDirectory) {
+    outputDirectory.mkdirs();
     return new BinaryErrorLogger<ItemT, ItemT>(outputDirectory, stringifier, stringifier);
   }
 }
