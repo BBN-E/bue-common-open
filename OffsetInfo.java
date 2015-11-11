@@ -44,6 +44,11 @@ public final class OffsetInfo {
     return new Builder();
   }
 
+  public static OffsetInfo constantAdjustmentFor(final String sourceText, int constantAdjusment) {
+    return OffsetInfo.builder().withSpan(OffsetSpan.builder(0, sourceText.length())
+        .withOffset(Optional.of(constantAdjusment)).build()).build();
+  }
+
   public static class Builder {
     private final List<OffsetSpan> spans;
 

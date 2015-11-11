@@ -1,7 +1,7 @@
 package com.bbn.nlp.corpora.ere;
 
+import com.bbn.bue.common.files.FileUtils;
 import com.bbn.bue.common.parameters.Parameters;
-import com.bbn.nlp.corpora.apf.EDTOffsetMapper;
 import com.bbn.serif.apf.APFDocument;
 import com.bbn.serif.apf.APFToSexpConverter;
 
@@ -38,34 +38,27 @@ public class EREtoSexp {
   private static void trueMain(final String paramFile) throws IOException {
     final Parameters params = Parameters.loadSerifStyle(new File(paramFile));
 
-
-    final ImmutableMap<String, OffsetInfo> offsetInfo = offsetInfoFromSource(params);
-    //for(final Map.Entry<String, OffsetInfo> entry : offsetInfo.entrySet()) {
-    //  System.out.println("== " + entry.getKey() + " ==");
-    //  System.out.println(entry.getValue().toString());
-    //}
+    final ImmutableMap<String, String> originalTextMap =
+        originalTextMap(params.getExistingFile("ere.sourceFilelist"));
 
 
     final ERELoader ereLoader = ERELoader.from(params);
     final EREtoAPF ereToApf = EREtoAPF.from(params);
 
-    //System.out.println(ereToApf.getEREtoACETypeMapper().toString());    // checks we have loaded resource mappings
+    final ImmutableList<File> filelist =
+        FileUtils.loadFileList(params.getExistingFile("ere.xmlFilelist"));
 
-
-    final ImmutableList<String> filelist = Files.asCharSource(params.getExistingFile("ere.xmlFilelist"), Charsets.UTF_8).readLines();
-
-    final APFToSexpConverter converter = APFToSexpConverter.create();
+    final APFToSexpConverter converter = APFToSexpConverter.createForCharacterOffsets()
+        .withOffsetAdjusment(params.getInteger("ere.offsetAdjust")).build();
     final StringBuilder sb = new StringBuilder();
 
-    for(final String infilename : filelist) {
-      final EREDocument ereDoc = ereLoader.loadFrom(new File(infilename));
+    for (final File inFile : filelist) {
+      final EREDocument ereDoc = ereLoader.loadFrom(inFile);
       System.out.println("Loaded ERE document + " + ereDoc.getDocId());
       final APFDocument apfDoc = ereToApf.toAPFDocument(ereDoc);
       System.out.println("... converted ERE to APF");
 
-      final OffsetInfo docOffset = offsetInfo.get(ereDoc.getDocId());
-
-      sb.append(converter.toSexp(apfDoc, docOffset));
+      sb.append(converter.toSexp(apfDoc, originalTextMap.get(ereDoc.getDocId())));
       sb.append("\n");
     }
 
@@ -77,32 +70,26 @@ public class EREtoSexp {
 
   }
 
-  private static ImmutableMap<String, OffsetInfo> offsetInfoFromSource(final Parameters params) throws IOException {
-    final ImmutableMap.Builder<String, OffsetInfo> ret = ImmutableMap.builder();
+  private static ImmutableMap<String, String> originalTextMap(final File sourceFileList)
+      throws IOException {
+    final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
 
-    final ImmutableList<String> filelist = Files.asCharSource(params.getExistingFile("ere.sourceFilelist"), Charsets.UTF_8).readLines();
-
-    final int offsetAdjust = params.getOptionalInteger("ere.offsetAdjust").or(0);
-
-    final EDTOffsetMapper edtOffsetMapper =
-        EDTOffsetMapper.createWithOffsetAdjustment(offsetAdjust);
-    for(final String filename : filelist) {
-      final CharSource source = Files.asCharSource(new File(filename), Charsets.UTF_8);
+    for (final File f : FileUtils.loadFileList(sourceFileList)) {
+      final CharSource source = Files.asCharSource(f, Charsets.UTF_8);
 
       final String docId;
       final String firstLine = source.readFirstLine();
       if (firstLine != null && (firstLine.toLowerCase().indexOf("doc id=") >= 0)) {
         docId = getDocid(firstLine);
       } else {
-        final String fileId = filename.substring(filename.lastIndexOf("/")+1);
+        final String fileId = f.getName();
         docId = fileId.substring(0, fileId.indexOf("."));
       }
 
-      ret.put(docId, edtOffsetMapper.getOffsetInfoFrom(source));
+      ret.put(docId, source.read());
     }
 
     return ret.build();
-
   }
 
   private static String getDocid(final String line) {
