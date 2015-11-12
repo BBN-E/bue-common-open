@@ -47,7 +47,7 @@ public final class MergeFileLists {
         .loadFileList(Files.asCharSource(listOfLists, Charsets.UTF_8))) {
       final ImmutableList<File> fileFromFileList =
           FileUtils.loadFileList(Files.asCharSource(fileList, Charsets.UTF_8));
-      log.info("Loaded {} files from {}", fileFromFileList, fileList);
+      log.info("Loaded {} files from {}", fileFromFileList.size(), fileList);
       ret.addAll(fileFromFileList);
     }
     outputFile.getParentFile().mkdirs();
