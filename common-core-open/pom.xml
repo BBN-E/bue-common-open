@@ -24,23 +24,23 @@
           <programs>
           <program>
               <mainClass>com.bbn.bue.common.files.DocIDToFileMapContains</mainClass>
-              <name>DocIDToFileMapContains</name>
+              <id>DocIDToFileMapContains</id>
           </program>
               <program>
                   <mainClass>com.bbn.bue.common.parameters.ExpandParameters</mainClass>
-                  <name>ExpandParameters</name>
+                  <id>ExpandParameters</id>
               </program>
               <program>
                   <mainClass>com.bbn.bue.common.MakeCrossValidationBatches</mainClass>
-                  <name>MakeCrossValidationBatches</name>
+                  <id>MakeCrossValidationBatches</id>
               </program>
               <program>
                   <mainClass>com.bbn.bue.common.files.MergeFileLists</mainClass>
-                  <name>MergeFileLists</name>
+                  <id>MergeFileLists</id>
               </program>
               <program>
                   <mainClass>com.bbn.bue.common.files.MergeDocIDToFileMaps</mainClass>
-                  <name>MergeDocIDToFileMaps</name>
+                  <id>MergeDocIDToFileMaps</id>
               </program>
           </programs>
             </configuration>
