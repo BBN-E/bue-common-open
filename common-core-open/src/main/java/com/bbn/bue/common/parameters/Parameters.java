@@ -916,6 +916,38 @@ public final class Parameters {
     }
   }
 
+  /**
+   * Throws a ParameterException unless exactly one parameter is defined.
+   */
+  public void assertExactlyOneDefined(final String param1, final String param2) {
+    // Asserting that exactly one is defined is the same as asserting that they do not have the same
+    // value for definedness.
+    if (isPresent(param1) == isPresent(param2)) {
+      throw new ParameterException(
+          String.format("Exactly one of %s and %s must be defined.", param1, param2));
+    }
+  }
+
+  /**
+   * Throws a ParameterException unless exactly one parameter is defined.
+   */
+  public void assertExactlyOneDefined(final String... params) {
+    int definedCount = 0;
+    for (final String param : params) {
+      if (isPresent(param)) {
+        if (++definedCount == 2) {
+          // No point in going past two
+          break;
+        }
+      }
+    }
+    if (definedCount != 1) {
+      throw new ParameterException(
+          String.format("Exactly one of %s must be defined.",
+              StringUtils.CommaSpaceJoiner.join(params)));
+    }
+  }
+
   public Optional<File> getOptionalExistingFile(final String param) {
     if (isPresent(param)) {
       return Optional.of(getExistingFile(param));
