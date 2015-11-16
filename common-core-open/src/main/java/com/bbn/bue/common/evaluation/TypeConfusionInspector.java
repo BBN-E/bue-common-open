@@ -13,13 +13,15 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.equalTo;
 import static com.google.common.base.Predicates.not;
 
@@ -46,13 +48,14 @@ import static com.google.common.base.Predicates.not;
 public final class TypeConfusionInspector<LeftRightT>
     implements Inspector<Alignment<? extends LeftRightT, ? extends LeftRightT>> {
 
+  private static final Logger log = LoggerFactory.getLogger(TypeConfusionInspector.class);
+  private static final Symbol NONE = Symbol.from("NONE");
+
   private final SummaryConfusionMatrices.Builder summaryConfusionMatrixB =
       SummaryConfusionMatrices.builder();
   private final Function<? super LeftRightT, String> confusionLabeler;
   private final Equivalence<LeftRightT> confusionEquivalence;
   private final File outputDir;
-
-  private static final Symbol NONE = Symbol.from("NONE");
 
   private TypeConfusionInspector(
       final Function<? super LeftRightT, String> confusionLabeler,
@@ -123,13 +126,15 @@ public final class TypeConfusionInspector<LeftRightT>
 
     // Create map between the equivalence-wrapped observations and the originals
     final ImmutableMap<Equivalence.Wrapper<LeftRightT>, ? extends LeftRightT> predEquiv =
-        Maps.uniqueIndex(predUnaligned, wrapEquivalenceFunction);
+        makeEquivalenceWrapperMap(predUnaligned, wrapEquivalenceFunction);
     final ImmutableMap<Equivalence.Wrapper<LeftRightT>, ? extends LeftRightT> goldEquiv =
-        Maps.uniqueIndex(goldUnaligned, wrapEquivalenceFunction);
+        makeEquivalenceWrapperMap(goldUnaligned, wrapEquivalenceFunction);
 
-    // Raise an error if the size of the unaligned observations has changed
-    checkState(goldEquiv.size() == goldUnaligned.size() && predEquiv.size() == predUnaligned.size(),
-        "Confusion equivalence maps multiple observations to the same value");
+    // Log an warning if the size of the unaligned observations has changed. This shouldn't be fatal
+    // because annotation of the same offsets with multiple types often causes issues of this type.
+    if (goldEquiv.size() != goldUnaligned.size() || predEquiv.size() != predUnaligned.size()) {
+        log.warn("Confusion equivalence maps multiple observations to the same value");
+    }
 
     // Create confusion entries for unaligned gold
     for (final LeftRightT goldItem : goldUnaligned) {
@@ -159,5 +164,20 @@ public final class TypeConfusionInspector<LeftRightT>
       return NONE;
     }
   }
-}
 
+  private ImmutableMap<Equivalence.Wrapper<LeftRightT>, LeftRightT> makeEquivalenceWrapperMap(
+      final Iterable<? extends LeftRightT> items,
+      final Function<LeftRightT, Equivalence.Wrapper<LeftRightT>> wrapperFunction) {
+    // This would normally just be Maps.uniqueIndex,but we need defensive behavior for key collisions
+    final Map<Equivalence.Wrapper<LeftRightT>, LeftRightT> equivalenceMap = Maps.newHashMap();
+    for (final LeftRightT item : items) {
+      final Equivalence.Wrapper<LeftRightT> wrapped = wrapperFunction.apply(item);
+      if (equivalenceMap.containsKey(wrapped)) {
+        log.warn("Multiple values with same key: '{}' and '{}'", item, equivalenceMap.get(wrapped));
+      } else {
+        equivalenceMap.put(wrapped, item);
+      }
+    }
+    return ImmutableMap.copyOf(equivalenceMap);
+  }
+}
