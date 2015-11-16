@@ -17,6 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Utility methods for {link Symbol}s
  *
  * @author rgabbard
+ * @author clignos
  */
 @Beta
 public class SymbolUtils {
@@ -25,20 +26,24 @@ public class SymbolUtils {
     throw new UnsupportedOperationException();
   }
 
+  private static final Ordering<Symbol> symbolStringOrdering =
+      Ordering.natural().onResultOf(desymbolizeFunction());
+
   /**
    * An ordering which compares <code>Symbol</code>s by the <code>String</code>s used to create them.
-   *
-   * @author rgabbard
    */
   public static Ordering<Symbol> byStringOrdering() {
-    return Ordering.from(new ByString());
+    return symbolStringOrdering;
   }
 
   /**
-   * Compares <code>Symbol</code>s by the <code>String</code>s used to create them.
+   * Compares {@link Symbol}s by the {@link String}s used to create them. Use
+   * {@link #byStringOrdering()} instead.
    *
+   * @see #byStringOrdering()
    * @author rgabbard
    */
+  @Deprecated
   public static class ByString implements Comparator<Symbol> {
 
     @Override
