@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
@@ -105,7 +104,7 @@ public final class MakeCrossValidationBatches {
       docIdMap = FileUtils.loadSymbolToFileMap(Files.asCharSource(sourceFiles, Charsets.UTF_8));
     } else {
       // We load a file list but coerce it into a map
-      final List<File> inputFiles = Lists.newArrayList(FileUtils.loadFileList(sourceFiles));
+      final ImmutableList<File> inputFiles = FileUtils.loadFileList(sourceFiles);
       docIdMap = Maps.uniqueIndex(inputFiles, FileToSymbolFunction.INSTANCE);
 
       // Check that nothing was lost in the conversion
