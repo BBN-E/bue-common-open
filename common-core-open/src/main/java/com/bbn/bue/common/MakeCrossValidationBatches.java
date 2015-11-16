@@ -4,11 +4,13 @@ import com.bbn.bue.common.collections.CollectionUtils;
 import com.bbn.bue.common.files.FileUtils;
 import com.bbn.bue.common.parameters.Parameters;
 import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -21,9 +23,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedMap;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.in;
@@ -134,9 +136,13 @@ public final class MakeCrossValidationBatches {
       final Set<Symbol> trainDocIds =
           Sets.difference(ImmutableSet.copyOf(docIds), testDocIds).immutableCopy();
 
-      // Create maps for training and test
-      final Map<Symbol, File> trainDocIdMap = Maps.filterKeys(docIdMap, in(trainDocIds));
-      final Map<Symbol, File> testDocIdMap = Maps.filterKeys(docIdMap, in(testDocIds));
+      // Create maps for training and test. These are sorted to avoid arbitrary ordering.
+      final SortedMap<Symbol, File> trainDocIdMap =
+          ImmutableSortedMap.copyOf(Maps.filterKeys(docIdMap, in(trainDocIds)),
+              SymbolUtils.byStringOrdering());
+      final SortedMap<Symbol, File> testDocIdMap =
+          ImmutableSortedMap.copyOf(Maps.filterKeys(docIdMap, in(testDocIds)),
+              SymbolUtils.byStringOrdering());
 
       // Don't write out the maps for file lists as the keys are not actually document IDs
       if (useFileMap) {
