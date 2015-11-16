@@ -70,11 +70,8 @@ public final class MakeCrossValidationBatches {
       errorExit("Usage: MakeCrossValidationBatches params");
     }
     final Parameters parameters = Parameters.loadSerifStyle(new File(argv[0]));
-    // Raise an error if both values are set or neither value is set (XNOR operation)
-    if (parameters.isPresent(PARAM_FILE_LIST) == parameters.isPresent(PARAM_FILE_MAP)) {
-      errorExit(String.format("Must specify exactly one of parameters %s and %s",
-          PARAM_FILE_LIST, PARAM_FILE_MAP));
-    }
+    // Can run on map or list, but only one of the two.
+    parameters.assertExactlyOneDefined(PARAM_FILE_LIST, PARAM_FILE_MAP);
 
     // Configure for map/list
     boolean useFileMap = false;
