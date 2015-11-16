@@ -26,7 +26,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.in;
 
 /**
@@ -79,14 +78,14 @@ public final class MakeCrossValidationBatches {
 
     // Configure for map/list
     boolean useFileMap = false;
-    File sourceFiles = null;
+    final File sourceFiles;
     if (parameters.isPresent(PARAM_FILE_LIST)) {
       sourceFiles = parameters.getExistingFile(PARAM_FILE_LIST);
     } else if (parameters.isPresent(PARAM_FILE_MAP)) {
       useFileMap = true;
       sourceFiles = parameters.getExistingFile(PARAM_FILE_MAP);
     } else {
-      checkState(false, "Impossible state reached");
+      throw new IllegalArgumentException("Impossible state reached");
     }
 
     final File outputDirectory = parameters.getCreatableDirectory(PARAM_OUTPUT_DIR);
