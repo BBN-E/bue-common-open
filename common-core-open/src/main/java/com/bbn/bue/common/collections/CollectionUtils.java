@@ -9,14 +9,17 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
 import com.google.common.math.IntMath;
 
 import java.math.RoundingMode;
+import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -294,5 +297,40 @@ public final class CollectionUtils {
       }
     }
     return ret.build();
+  }
+
+  /**
+   * Returns a view of the concatenation of the two provided collections. Iterating through this
+   * view will provide all the elements of {@code left} according to its own iteration order,
+   * followed by the elements of {@code right} according to its.  The size of this collection view
+   * is the sum of the sizes of {@code left} and {@code right}.
+   *
+   * Equality and hashCode on a concatted view are undefined.
+   */
+  public static <T> Collection<T> concat(Collection<? extends T> left,
+      Collection<? extends T> right) {
+    return new ConcattedCollectionView<T>(left, right);
+  }
+
+  private static final class ConcattedCollectionView<T> extends AbstractCollection<T> {
+
+    private final Collection<? extends T> left;
+    private final Collection<? extends T> right;
+
+    private ConcattedCollectionView(final Collection<? extends T> left,
+        final Collection<? extends T> right) {
+      this.left = checkNotNull(left);
+      this.right = checkNotNull(right);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+      return Iterators.concat(left.iterator(), right.iterator());
+    }
+
+    @Override
+    public int size() {
+      return left.size() + right.size();
+    }
   }
 }
