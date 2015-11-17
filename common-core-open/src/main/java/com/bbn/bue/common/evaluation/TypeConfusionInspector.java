@@ -56,20 +56,24 @@ public final class TypeConfusionInspector<LeftRightT>
   private final Function<? super LeftRightT, String> confusionLabeler;
   private final Equivalence<LeftRightT> confusionEquivalence;
   private final File outputDir;
+  private final String name;
 
   private TypeConfusionInspector(
+      final String name,
       final Function<? super LeftRightT, String> confusionLabeler,
       final Equivalence<LeftRightT> confusionEquivalence,
       final File outputDir) {
     this.confusionLabeler = checkNotNull(confusionLabeler);
     this.confusionEquivalence = checkNotNull(confusionEquivalence);
-    this.outputDir = outputDir;
+    this.outputDir = checkNotNull(outputDir);
+    this.name = checkNotNull(name);
   }
 
   /**
    * Creates a new inspector. See class documentation for an explanation of the confusion labeler
    * and confusion equivalence.
-   * 
+   *
+   * @param name a name to be used as a prefix for file output
    * @param confusionLabeler a function for mapping an observation to its label in the confusion matrix
    * @param confusionEquivalence an equivalence between observations that are considered confusable
    * @param outputDir directory for writing output
@@ -77,10 +81,11 @@ public final class TypeConfusionInspector<LeftRightT>
    * @return a new inspector
    */
   public static <LeftRightT> TypeConfusionInspector<LeftRightT> createOutputtingTo(
+      final String name,
       final Function<? super LeftRightT, String> confusionLabeler,
       final Equivalence<LeftRightT> confusionEquivalence,
       final File outputDir) {
-    return new TypeConfusionInspector<LeftRightT>(confusionLabeler, confusionEquivalence, outputDir);
+    return new TypeConfusionInspector<LeftRightT>(name, confusionLabeler, confusionEquivalence, outputDir);
   }
 
   @Override
@@ -95,10 +100,10 @@ public final class TypeConfusionInspector<LeftRightT>
     symbolOrder.add(NONE);
     final Ordering<Symbol> ordering = Ordering.explicit(symbolOrder.build());
 
-    Files.asCharSink(new File(outputDir, "TypeConfusion.txt"),
+    Files.asCharSink(new File(outputDir, name + "TypeConfusion.txt"),
         Charsets.UTF_8).write(SummaryConfusionMatrices.prettyPrint(summaryConfusionMatrix,
         ordering));
-    Files.asCharSink(new File(outputDir, "TypeConfusion.csv"),
+    Files.asCharSink(new File(outputDir, name + "TypeConfusion.csv"),
         Charsets.UTF_8).write(SummaryConfusionMatrices.prettyDelimPrint(summaryConfusionMatrix,
         ",", ordering));
   }
