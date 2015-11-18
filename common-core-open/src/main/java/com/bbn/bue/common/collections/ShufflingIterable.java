@@ -3,11 +3,14 @@ package com.bbn.bue.common.collections;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -36,3 +39,4 @@ public final class ShufflingIterable<T> implements Iterable<T> {
     return Collections.unmodifiableList(shuffledList).iterator();
   }
 }
+
