@@ -14,6 +14,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
@@ -92,9 +93,9 @@ public final class BinaryFScoreBootstrapStrategy<T>
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, PRESENT, alignment.rightAligned().size());
     summaryConfusionMatrixB
-        .accumulatePredictedGold(PRESENT, ABSENT, alignment.leftUnaligned().size());
+        .accumulatePredictedGold(ABSENT, PRESENT, alignment.leftUnaligned().size());
     summaryConfusionMatrixB
-        .accumulatePredictedGold(ABSENT, PRESENT, alignment.rightUnaligned().size());
+        .accumulatePredictedGold(PRESENT, ABSENT, alignment.rightUnaligned().size());
     return summaryConfusionMatrixB.build();
   }
 
@@ -106,12 +107,12 @@ public final class BinaryFScoreBootstrapStrategy<T>
   private static final double PERCENTILE_MEAN = 0.5;
   private static final ImmutableList<Double> PERCENTILES_TO_PRINT =
       // Do not remove PERCENTILE_MEAN; doing so will cause the outputting of means to break
-      ImmutableList.of(0.01, 0.05, 0.25, PERCENTILE_MEAN, 0.75, 0.95, 0.99);
+      ImmutableList.of(0.005, 0.025, 0.05, 0.25, PERCENTILE_MEAN, 0.75, 0.95, 0.975, 0.995);
   private static final ImmutableList<String> MEASURES = ImmutableList.of(
       "F1",
-      "Prec",
-      "Rec",
-      "Acc"
+      "Precision",
+      "Recall",
+      "Accuracy"
   );
 
   public BootstrapInspector.SummaryAggregator<Map<String, SummaryConfusionMatrix>> prfAggregator() {
@@ -171,27 +172,40 @@ public final class BinaryFScoreBootstrapStrategy<T>
         addDelimPercentileHeader(name, delim);
         addDelimMeansHeader(name, MEASURES, meansDelim);
 
+        // Set up sample storage
+        final ImmutableMap.Builder<String, ImmutableMap<String, ImmutableList<Double>>> samples =
+            ImmutableMap.builder();
+
         // all four multimaps have the same keyset
         for (final String key : f1s.keySet()) {
           final ImmutableMap<String, PercentileComputer.Percentiles> percentileMap =
               ImmutableMap.of(
                   "F1", percentileComputer
                       .calculatePercentilesAdoptingData(Doubles.toArray(f1s.get(key))),
-                  "Prec",
+                  "Precision",
                   percentileComputer
                       .calculatePercentilesAdoptingData(Doubles.toArray(precisions.get(key))),
-                  "Rec",
+                  "Recall",
                   percentileComputer
                       .calculatePercentilesAdoptingData(Doubles.toArray(recalls.get(key))),
-                  "Acc",
+                  "Accuracy",
                   percentileComputer
                       .calculatePercentilesAdoptingData(Doubles.toArray(accuracies.get(key))));
+
+          // Raw samples
+          final ImmutableMap<String, ImmutableList<Double>> keySamples =
+              ImmutableMap.of(
+                  "F1", f1s.get(key),
+                  "Precision", precisions.get(key),
+                  "Recall", recalls.get(key),
+                  "Accuracy", accuracies.get(key));
+          samples.put(key, keySamples);
 
           // Aggregate means
           final ImmutableMap.Builder<String, Double> meansMapBuilder =
               ImmutableMap.builder();
-          for (final Map.Entry<String, PercentileComputer.Percentiles> percentileEntry
-              : percentileMap.entrySet()) {
+          for (final Map.Entry<String, PercentileComputer.Percentiles> percentileEntry :
+              percentileMap.entrySet()) {
             final Optional<Double> optPercentile = percentileEntry.getValue().percentile(PERCENTILE_MEAN);
             meansMapBuilder.put(percentileEntry.getKey(), optPercentile.or(Double.NaN));
           }
@@ -217,6 +231,9 @@ public final class BinaryFScoreBootstrapStrategy<T>
         // Write means-only delimited
         Files.asCharSink(new File(outputDir, name + ".bootstrapped.means.csv"),
             Charsets.UTF_8).write(meansDelim.toString());
+        // Write raw data
+        Files.asCharSink(new File(outputDir, name + ".bootstrapped.raw"),
+            Charsets.UTF_8).write(renderSamples(samples.build()));
       }
 
       private void dumpPercentilesForMetric(String chartTitle,
@@ -303,6 +320,24 @@ public final class BinaryFScoreBootstrapStrategy<T>
       private void renderCells(final List<String> cells, final StringBuilder builder) {
         Joiner.on(",").appendTo(builder, cells);
         builder.append("\n");
+      }
+
+      private String renderSamples(
+          final ImmutableMap<String, ImmutableMap<String, ImmutableList<Double>>> samples) {
+        final StringBuilder ret = new StringBuilder();
+        for (final Map.Entry<String, ImmutableMap<String, ImmutableList<Double>>> entry :
+            samples.entrySet()) {
+          final String key = entry.getKey();
+          final ImmutableMap<String, ImmutableList<Double>> keySamples = entry.getValue();
+          for (final Map.Entry<String, ImmutableList<Double>> innerEntry: keySamples.entrySet()) {
+            final ImmutableList.Builder<String> row = ImmutableList.builder();
+            row.add(key);
+            row.add(innerEntry.getKey());
+            row.addAll(Iterables.transform(innerEntry.getValue(), Functions.toStringFunction()));
+            renderCells(row.build(),ret);
+          }
+        }
+        return ret.toString();
       }
     };
   }
