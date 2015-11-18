@@ -93,9 +93,9 @@ public final class BinaryFScoreBootstrapStrategy<T>
     summaryConfusionMatrixB
         .accumulatePredictedGold(PRESENT, PRESENT, alignment.rightAligned().size());
     summaryConfusionMatrixB
-        .accumulatePredictedGold(PRESENT, ABSENT, alignment.leftUnaligned().size());
+        .accumulatePredictedGold(ABSENT, PRESENT, alignment.leftUnaligned().size());
     summaryConfusionMatrixB
-        .accumulatePredictedGold(ABSENT, PRESENT, alignment.rightUnaligned().size());
+        .accumulatePredictedGold(PRESENT, ABSENT, alignment.rightUnaligned().size());
     return summaryConfusionMatrixB.build();
   }
 
