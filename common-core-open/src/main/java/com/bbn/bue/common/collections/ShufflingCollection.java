@@ -15,8 +15,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <T>
  */
 public final class ShufflingCollection<T> extends AbstractCollection<T> implements Collection<T> {
-  final ShufflingIterable<T> data;
-  final int size;
+
+  private final ShufflingIterable<T> data;
+  private final int size;
 
   private ShufflingCollection(final ShufflingIterable<T> data, final int size) {
     this.data = checkNotNull(data);
