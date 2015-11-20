@@ -979,6 +979,10 @@ public final class Parameters {
     return ret;
   }
 
+  /**
+   * Given a list of strings, returns the first string in the list which exists as a parameter. If
+   * none do, a {@link ParameterException} is thrown.
+   */
   public String getFirstExistingParamName(String[] paramNames) {
     for (final String paramName : paramNames) {
       if (isPresent(paramName)) {
@@ -987,6 +991,23 @@ public final class Parameters {
     }
     throw new ParameterException("One of " + Arrays.toString(paramNames)
         + " must be present");
+  }
+
+  /**
+   * Gets the parameter associated with an annotation. Provided with a parameter class, this will
+   * check first if it has a {@code String} field called {@code param}.  If it does, its value is
+   * returned. If not, it checks for a {@code String} field called {@code params}. If it exists, it
+   * is split on ",", the elements are trimmed, and the return value of {@link
+   * #getFirstExistingParamName(String[])} on the resulting array is returned. If neither is
+   * present, a {@link ParameterException} is thrown.
+   *
+   * The reason this hack-y thing exists is that it is often convenient for Guice annotations to
+   * include on the annotation the parameter typically used to set it when configuring from a param
+   * file. However, we cannot specify array valued fields on annotations, so we need to use a
+   * comma-separated {@code String}.
+   */
+  public String getParamForAnnotation(Class<?> clazz) {
+    throw new UnsupportedOperationException("Not implemented exception");
   }
 
   public String namespace() {
