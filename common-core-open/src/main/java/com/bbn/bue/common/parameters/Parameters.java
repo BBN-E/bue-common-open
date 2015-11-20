@@ -979,6 +979,16 @@ public final class Parameters {
     return ret;
   }
 
+  public String getFirstExistingParamName(String[] paramNames) {
+    for (final String paramName : paramNames) {
+      if (isPresent(paramName)) {
+        return paramName;
+      }
+    }
+    throw new ParameterException("One of " + Arrays.toString(paramNames)
+        + " must be present");
+  }
+
   public String namespace() {
     return StringUtils.DotJoiner.join(namespace);
   }
