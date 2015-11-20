@@ -1007,7 +1007,21 @@ public final class Parameters {
    * comma-separated {@code String}.
    */
   public String getParamForAnnotation(Class<?> clazz) {
-    throw new UnsupportedOperationException("Not implemented exception");
+    try {
+      return (String) clazz.getField("param").get("");
+    } catch (NoSuchFieldException e) {
+      try {
+        return getFirstExistingParamName(
+            StringUtils.OnCommas.splitToList((String)clazz.getField("params").get(""))
+                .toArray(new String[] {}));
+      } catch (NoSuchFieldException e1) {
+        throw new ParameterException("Annotation " + clazz + " must have param or params field");
+      } catch (IllegalAccessException e1) {
+        throw new ParameterException("While fetching parameter from annotation " + clazz, e);
+      }
+    } catch (IllegalAccessException e) {
+      throw new ParameterException("While fetching parameter from annotation " + clazz, e);
+    }
   }
 
   public String namespace() {
