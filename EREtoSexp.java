@@ -48,19 +48,20 @@ public class EREtoSexp {
     final ImmutableList<File> filelist =
         FileUtils.loadFileList(params.getExistingFile("ere.xmlFilelist"));
 
-    final APFToSexpConverter converter = APFToSexpConverter.createForCharacterOffsets()
+    final APFToSexpConverter converter = APFToSexpConverter.createForEDTOffsets()
         .withOffsetAdjusment(params.getInteger("ere.offsetAdjust")).build();
     final StringBuilder sb = new StringBuilder();
 
+    sb.append("(\n" );
     for (final File inFile : filelist) {
       final EREDocument ereDoc = ereLoader.loadFrom(inFile);
       System.out.println("Loaded ERE document + " + ereDoc.getDocId());
       final APFDocument apfDoc = ereToApf.toAPFDocument(ereDoc);
       System.out.println("... converted ERE to APF");
-
       sb.append(converter.toSexp(apfDoc, originalTextMap.get(ereDoc.getDocId())));
       sb.append("\n");
     }
+    sb.append(")\n");
 
     converter.finish();
 
