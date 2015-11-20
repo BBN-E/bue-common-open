@@ -994,7 +994,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets the parameter associated with an annotation. Provided with a parameter class, this will
+   * Gets the parameter associated with an annotation. Provided with an annotation class, this will
    * check first if it has a {@code String} field called {@code param}.  If it does, its value is
    * returned. If not, it checks for a {@code String} field called {@code params}. If it exists, it
    * is split on ",", the elements are trimmed, and the return value of {@link
