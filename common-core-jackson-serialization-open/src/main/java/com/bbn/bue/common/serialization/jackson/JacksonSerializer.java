@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.module.guice.GuiceAnnotationIntrospector;
-import com.fasterxml.jackson.module.guice.GuiceInjectableValues;
 import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
 import com.google.inject.Injector;
@@ -21,6 +21,12 @@ import java.io.OutputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Convenience object to build Jackson serializers the way we usually use them.
+ *
+ * If you want to use Guice-bound values during deserialization,
+ * see {@link AddGuiceBindings#addGuiceBindingsTo(Injector, Builder)}.
+ */
 public final class JacksonSerializer {
 
   private final ObjectMapper mapper;
@@ -30,16 +36,19 @@ public final class JacksonSerializer {
   }
 
   public static JacksonSerializer forNormalJSON() {
-    return json().build();
+    return builder().build();
   }
 
+  /**
+   * @deprecated  Prefer {@link #builder()}.
+   */
+  @Deprecated
   public static Builder json() {
-    return Builder.forJSONFactory(new JsonFactory());
+    return new Builder();
   }
 
   /**
    * @deprecated Prefer calling {@link Builder#prettyOutput()}.
-   * @return
    */
   @Deprecated
   public static JacksonSerializer forPrettyJSON() {
@@ -48,7 +57,6 @@ public final class JacksonSerializer {
 
   /**
    * @deprecated Caching is diabled, so this is no longer necessary
-   * @return
    */
   @Deprecated
   public static JacksonSerializer forNormalJSONUncached() {
@@ -56,11 +64,19 @@ public final class JacksonSerializer {
   }
 
   public static JacksonSerializer forSmile() {
-    return Builder.forJSONFactory(new SmileFactory()).build();
+    return builder().forSmile().build();
   }
 
+  /**
+   * @deprecated Prefer to call {@link Builder#forSmile()} on a builder.
+   */
+  @Deprecated
   public static Builder smile() {
-    return Builder.forJSONFactory(new SmileFactory());
+    return new Builder().forSmile();
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   /**
@@ -100,22 +116,51 @@ public final class JacksonSerializer {
     return mapper.readValue(content, valueType);
   }
 
+  /**
+   * Builder for {@link JacksonSerializer}s.  Every method on this which returns a {@code Builder}
+   * returns a new copy.  This allows use to inject builders which already have Guice bindings done
+   * and which can be further customized by users.
+   *
+   * The Builder defaults to using plain, non-pretty-printed JSON output with no injected values
+   * and with properties for storing type information.
+   */
   public static final class Builder {
-
-    private final ObjectMapper objectMapper;
+    private JsonFactory jsonFactory = new JsonFactory();
     private boolean usePropertyForTypeInformation = true;
+    private boolean usePrettyOutput = false;
+    // paired lists of annotation inspectors and injectable values needed for deserializing
+    // using values provided by a dependency-injection framework
+    private AnnotationIntrospector annotationIntrospector = null;
+    private InjectableValues injectableValues = null;
 
-    private Builder(ObjectMapper objectMapper) {
-      this.objectMapper = checkNotNull(objectMapper);
+    private Builder copy() {
+      final Builder ret = new Builder();
+      ret.jsonFactory = jsonFactory;
+      ret.usePropertyForTypeInformation = usePropertyForTypeInformation;
+      ret.usePrettyOutput = usePrettyOutput;
+      ret.annotationIntrospector = annotationIntrospector;
+      ret.injectableValues = injectableValues;
+      return ret;
     }
 
-    private static Builder forJSONFactory(JsonFactory jsonFactory) {
-      return new Builder(mapperFromJSONFactory(jsonFactory));
+    public Builder withJSONFactory(JsonFactory jsonFactory) {
+      final Builder ret = copy();
+      ret.jsonFactory = checkNotNull(jsonFactory);
+      return ret;
+    }
+
+    public Builder forJson() {
+      return withJSONFactory(new JsonFactory());
+    }
+
+    public Builder forSmile() {
+      return withJSONFactory(new SmileFactory());
     }
 
     public Builder prettyOutput() {
-      objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-      return this;
+      final Builder ret = copy();
+      ret.usePrettyOutput = true;
+      return ret;
     }
 
     /**
@@ -125,33 +170,52 @@ public final class JacksonSerializer {
      * Jackson and generics.
      */
     public Builder useArraysToEncodeTypeInformation() {
-      this.usePropertyForTypeInformation = false;
-      return this;
+      final Builder ret = copy();
+      ret.usePropertyForTypeInformation = false;
+      return ret;
     }
 
-    public Builder registerGuiceBindings(Injector injector) {
-      // this is from jackson-module-guice's ObjectMapperModule.get()
-      // we do this in a separate method because we do not currenly want to inject the ObjectMapper
-      final GuiceAnnotationIntrospector guiceIntrospector = new GuiceAnnotationIntrospector();
-      objectMapper.setInjectableValues(new GuiceInjectableValues(injector));
-      objectMapper.setAnnotationIntrospectors(
-          new AnnotationIntrospectorPair(
-              guiceIntrospector, objectMapper.getSerializationConfig().getAnnotationIntrospector()
-          ),
-          new AnnotationIntrospectorPair(
-              guiceIntrospector, objectMapper.getDeserializationConfig().getAnnotationIntrospector()
-          )
-      );
-      return this;
+    /**
+     * This exists only for use by {@link JacksonSerializationM}
+     */
+    /* package-private */ Builder withInjectionBindings(AnnotationIntrospector annotationIntrospector,
+        InjectableValues injectableValues) {
+      final Builder ret = copy();
+      ret.annotationIntrospector = checkNotNull(annotationIntrospector);
+      ret.injectableValues = checkNotNull(injectableValues);
+      return ret;
     }
 
     public JacksonSerializer build() {
+      final ObjectMapper objectMapper = mapperFromJSONFactory(jsonFactory);
+
       if (usePropertyForTypeInformation) {
         objectMapper.enableDefaultTypingAsProperty(ObjectMapper.DefaultTyping.NON_FINAL, "@class");
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
       } else {
         objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
       }
+
+      if (usePrettyOutput) {
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+      }
+
+      if (injectableValues != null) {
+        // this is from jackson-module-guice's ObjectMapperModule.get()
+        // we do this in a separate method because we do not currently want to inject the ObjectMapper
+        objectMapper.setInjectableValues(injectableValues);
+        objectMapper.setAnnotationIntrospectors(
+            new AnnotationIntrospectorPair(
+                annotationIntrospector,
+                objectMapper.getSerializationConfig().getAnnotationIntrospector()
+            ),
+            new AnnotationIntrospectorPair(
+                annotationIntrospector,
+                objectMapper.getDeserializationConfig().getAnnotationIntrospector()
+            )
+        );
+      }
+
       return new JacksonSerializer(objectMapper);
     }
 
