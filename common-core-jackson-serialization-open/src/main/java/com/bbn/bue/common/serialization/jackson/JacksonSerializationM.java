@@ -25,6 +25,7 @@ public final class JacksonSerializationM extends AbstractModule {
 
   @Override
   public int hashCode() {
+    // some arbitrary prime number
     return 1500450271;
   }
 
