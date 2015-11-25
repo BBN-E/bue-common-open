@@ -48,8 +48,13 @@ public class EREtoSexp {
     final ImmutableList<File> filelist =
         FileUtils.loadFileList(params.getExistingFile("ere.xmlFilelist"));
 
-    final APFToSexpConverter converter = APFToSexpConverter.createForCharacterOffsets()
-        .withOffsetAdjusment(params.getInteger("ere.offsetAdjust")).build();
+    final APFToSexpConverter.Builder converterBuilder =
+        APFToSexpConverter.createForCharacterOffsets()
+            .withOffsetAdjusment(params.getInteger("ere.offsetAdjust"));
+    if (params.getOptionalBoolean("ere.tolerant").or(false)) {
+      converterBuilder.tolerant();
+    }
+    final APFToSexpConverter converter = converterBuilder.build();
     final StringBuilder sb = new StringBuilder();
 
     sb.append("(\n" );
