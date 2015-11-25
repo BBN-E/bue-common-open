@@ -418,6 +418,10 @@ public final class Parameters {
     }
   }
 
+  /**
+   * Turns a parameter whose value is a comma-separated list of class names into a list of the
+   * corresponding {@link Class} objects.
+   */
   public ImmutableList<Class<?>> getClassObjects(final String param) {
     final ImmutableList.Builder<Class<?>> ret = ImmutableList.builder();
     for (final String className : getStringList(param)) {
