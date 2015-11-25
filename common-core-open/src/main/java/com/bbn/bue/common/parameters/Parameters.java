@@ -418,6 +418,18 @@ public final class Parameters {
     }
   }
 
+  public ImmutableList<Class<?>> getClassObjects(final String param) {
+    final ImmutableList.Builder<Class<?>> ret = ImmutableList.builder();
+    for (final String className : getStringList(param)) {
+      try {
+        ret.add(getClassObjectForString(className));
+      } catch (ClassNotFoundException e) {
+        throw new ParameterConversionException(fullString(param), className, e, "class");
+      }
+    }
+    return ret.build();
+  }
+
   @SuppressWarnings("unchecked")
   public <T> T getParameterInitializedObject(final String param, final Class<T> superClass) {
     final Class<?> clazz = getClassObject(param);
