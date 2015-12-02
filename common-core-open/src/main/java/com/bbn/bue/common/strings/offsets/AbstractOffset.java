@@ -13,10 +13,12 @@ public abstract class AbstractOffset implements Offset {
     this.value = value;
   }
 
+  @Override
   public int value() {
     return value;
   }
 
+  @Override
   public int asInt() {
     return value;
   }

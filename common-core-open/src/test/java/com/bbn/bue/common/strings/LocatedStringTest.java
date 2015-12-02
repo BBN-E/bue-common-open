@@ -1,23 +1,20 @@
 package com.bbn.bue.common.strings;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.EDTOffset;
 import com.bbn.bue.common.strings.offsets.OffsetGroup;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
 
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-/**
- * Created by jdeyoung on 7/7/15.
- */
 public final class LocatedStringTest {
 
   private final static String partOne = "This is a very silly";

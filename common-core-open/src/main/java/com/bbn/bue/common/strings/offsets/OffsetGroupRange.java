@@ -1,5 +1,6 @@
 package com.bbn.bue.common.strings.offsets;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,7 +34,7 @@ public final class OffsetGroupRange {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this).add("start", startInclusive).add("end", endInclusive)
+    return MoreObjects.toStringHelper(this).add("start", startInclusive).add("end", endInclusive)
         .toString();
   }
 
