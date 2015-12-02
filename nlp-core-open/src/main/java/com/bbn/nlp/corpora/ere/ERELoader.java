@@ -1,23 +1,13 @@
 package com.bbn.nlp.corpora.ere;
 
 
-import com.bbn.bue.common.parameters.Parameters;
-import com.bbn.bue.common.xml.XMLUtils;
-import com.bbn.nlp.corpora.ere.EREDocument;
-import com.bbn.nlp.corpora.ere.EREEntity;
-import com.bbn.nlp.corpora.ere.EREEntityArgument;
-import com.bbn.nlp.corpora.ere.EREEntityMention;
-import com.bbn.nlp.corpora.ere.EREEvent;
-import com.bbn.nlp.corpora.ere.EREEventMention;
-import com.bbn.nlp.corpora.ere.EREFiller;
-import com.bbn.nlp.corpora.ere.EREFillerArgument;
-import com.bbn.nlp.corpora.ere.ERERelation;
-import com.bbn.nlp.corpora.ere.ERERelationMention;
-import com.bbn.nlp.corpora.ere.ERESpan;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+
+import com.bbn.bue.common.parameters.Parameters;
+import com.bbn.bue.common.xml.XMLUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,104 +197,6 @@ public class ERELoader {
     idMap.put(id, ereFiller);
     return ereFiller;
   }
-  /*
-  private Symbol apfMentionType(final EREFiller ereFiller) {
-    final String type = ereFiller.getType();
-    
-    if( "age".equals(type) || "crime".equals(type) || "money".equals(type) || 
-        "sentence".equals(type) || "title".equals(type) || "url".equals(type)) {
-      return VALUE;
-    }
-    else if("commodity".equals(type) || "vehicle".equals(type) || "weapon".equals(type)) {
-      return ENTITY;
-    }
-    else if("time".equals(type)) {
-      return TIME;
-    }
-    else {
-      return NONE;
-    }
-  }
-  
-  private APFEntity toAPFEntity(final EREFiller ereFiller) {
-    final APFEntityMention entityMention = APFEntityMention.from(ereFiller.getID()+"-1", 
-        NONE.toString(), NONE.toString(), "FALSE", ereFiller.getExtent(), ereFiller.getHead());
-    idMap.put(entityMention.getID(), entityMention);
-    
-    APFEntity.Builder builder = null;
-    if("commodity".equals(ereFiller.getType())) {
-      builder = APFEntity.builder(ereFiller.getID(), "Commodity", NONE.toString(), "SPC");
-    }
-    else if("vehicle".equals(ereFiller.getType())) {
-      builder = APFEntity.builder(ereFiller.getID(), "VEH", NONE.toString(), "SPC");
-    }
-    else if("weapon".equals(ereFiller.getType())) {
-      builder = APFEntity.builder(ereFiller.getID(), "WEA", NONE.toString(), "SPC");
-    }
-    
-    if(builder!=null) {
-      builder.withMention(entityMention);
-      APFEntity entity = builder.build();
-      idMap.put(entity.getID(), entity);
-      mentionToCorefId.put(entityMention.getID(), ereFiller.getID());
-      return entity;
-    }
-    else {
-      return null;
-    }
-  }
-  
-  private APFValue toAPFValue(final EREFiller ereFiller) {
-    final APFValueMention valueMention = APFValueMention.from(ereFiller.getID()+"-1", ereFiller.getExtent());
-    idMap.put(valueMention.getID(), valueMention);
-    
-    APFValue value = null;
-    if("age".equals(ereFiller.getType())) {
-      value = APFValue.from(ereFiller.getID(), "Numeric", "NONE", valueMention);
-    }
-    else if("crime".equals(ereFiller.getType())) {
-      value = APFValue.from(ereFiller.getID(), "Crime", "NONE", valueMention);
-    }
-    else if("money".equals(ereFiller.getType())) {
-      value = APFValue.from(ereFiller.getID(), "Numeric", "Money", valueMention);
-    }
-    else if("sentence".equals(ereFiller.getType())) {
-      value = APFValue.from(ereFiller.getID(), "Sentence", "NONE", valueMention);
-    }
-    else if("title".equals(ereFiller.getType())) {
-      value = APFValue.from(ereFiller.getID(), "Job-Title", "NONE", valueMention);
-    }
-    else if("url".equals(ereFiller.getType())) {
-      value = APFValue.from(ereFiller.getID(), "Contact-Info", "URL", valueMention);
-    }
-    
-    if(value!=null) {
-      idMap.put(value.getID(), value);
-      mentionToCorefId.put(valueMention.getID(), ereFiller.getID());
-    }
-    
-    return value;
-  }
-  
-  private APFTime toAPFTime(final EREFiller ereFiller) {
-    final APFTimeMention timeMention = APFTimeMention.from(ereFiller.getID()+"-1", ereFiller.getExtent());
-    idMap.put(timeMention.getID(), timeMention);
-    
-    APFTime time = null;
-    if("time".equals(ereFiller.getType())) {
-      time = APFTime.from(ereFiller.getID(), "Time", timeMention);
-    }
-    
-    if(time!=null) {
-      idMap.put(time.getID(), time);
-      mentionToCorefId.put(timeMention.getID(), ereFiller.getID());
-    }
-    
-    return time;
-  }
-  // ==== END of Fillers ====
-  */
-  
 
   private static Optional<ERESpan> toSpan(final Element xml, final String name) {
     Optional<Element> element = XMLUtils.directChild(xml, name);
@@ -314,7 +206,7 @@ public class ERELoader {
       final String content = element.get().getTextContent();
       return Optional.of(ERESpan.from(start, end, content));
     }
-    return Optional.<ERESpan>absent();
+    return Optional.absent();
   }
   
   private static Optional<ERESpan> toSpan(final Element xml, final String name, final int start, final int end) {
@@ -323,7 +215,7 @@ public class ERELoader {
       final String content = element.get().getTextContent();
       return Optional.of(ERESpan.from(start, end, content));
     }
-    return Optional.<ERESpan>absent();
+    return Optional.absent();
   }
   
   
@@ -460,9 +352,11 @@ public class ERELoader {
     EREEventMention eventMention = builder.build();
     idMap.put(id, eventMention);
     return eventMention;
-  }  
-    
-    
+  }
+
+
+  // no way around unchecked cast for heterogeneous container
+  @SuppressWarnings("unchecked")
   private <T> T fetch(final String id) {
     checkNotNull(id);
     checkArgument(!id.isEmpty());
@@ -472,26 +366,6 @@ public class ERELoader {
     }
     return ret;
   }
-
-  /*
-  private <T> T fetch(String attribute, Element e) {
-    final String attVal = requiredAttribute(e, attribute);
-
-    Object o = idMap.get(attVal);
-
-    if (o == null) {
-      throw new EREException(
-          String.format("Lookup failed for id %s. Known keys are %s", attVal, idMap.keySet()));
-    }
-
-    try {
-      return (T) o;
-    } catch (ClassCastException f) {
-      throw new EREException(String.format("Didn't expect ID %s to be %s", attVal, o.getClass()));
-    }
-  }
-  */
-  
 }
 
   
