@@ -12,7 +12,7 @@ public final class Offsets {
     return new Function<OffsetType, Integer>() {
       @Override
       public Integer apply(final Offset offset) {
-        return offset.value();
+        return offset.asInt();
       }
     };
   }

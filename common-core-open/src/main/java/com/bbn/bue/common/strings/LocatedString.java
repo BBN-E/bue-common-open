@@ -1,5 +1,10 @@
 package com.bbn.bue.common.strings;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+
 import com.bbn.bue.common.strings.offsets.ASRTime;
 import com.bbn.bue.common.strings.offsets.ByteOffset;
 import com.bbn.bue.common.strings.offsets.CharOffset;
@@ -7,10 +12,6 @@ import com.bbn.bue.common.strings.offsets.EDTOffset;
 import com.bbn.bue.common.strings.offsets.OffsetGroup;
 import com.bbn.bue.common.strings.offsets.OffsetGroupRange;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -235,7 +236,7 @@ public final class LocatedString {
         final int offsetWithinEntry = offset.value() - entry.startOffset.charOffset().value();
 
         return OffsetGroup
-            .from(offset, new EDTOffset(entry.startOffset.edtOffset().value() + offsetWithinEntry));
+            .from(offset, EDTOffset.asEDTOffset(entry.startOffset.edtOffset().value() + offsetWithinEntry));
       }
     }
     throw new NoSuchElementException();
@@ -549,7 +550,7 @@ public final class LocatedString {
           newEDTOffsetValue += (startIndexInclusive - entry.startPos);
         }
         newStartOffset =
-            OffsetGroup.from(new CharOffset(startIndexInclusive), new EDTOffset(newEDTOffsetValue));
+            OffsetGroup.from(new CharOffset(startIndexInclusive), EDTOffset.asEDTOffset(newEDTOffsetValue));
       }
       if (entry.endPos > endIndexExclusive) {
         newEndPos = endIndexExclusive;
@@ -560,7 +561,7 @@ public final class LocatedString {
           newEDTOffsetValue -= (entry.endPos - endIndexExclusive);
         }
         newEndOffset = OffsetGroup
-            .from(new CharOffset(endIndexExclusive - 1), new EDTOffset(newEDTOffsetValue));
+            .from(new CharOffset(endIndexExclusive - 1), EDTOffset.asEDTOffset(newEDTOffsetValue));
       }
       newStartPos -= startIndexInclusive;
       newEndPos -= startIndexInclusive;
@@ -585,7 +586,7 @@ public final class LocatedString {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this).add("bounds", bounds).add("content", content).toString();
+    return MoreObjects.toStringHelper(this).add("bounds", bounds).add("content", content).toString();
   }
 
 

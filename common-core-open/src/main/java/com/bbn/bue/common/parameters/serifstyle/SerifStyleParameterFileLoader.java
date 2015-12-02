@@ -1,14 +1,14 @@
 package com.bbn.bue.common.parameters.serifstyle;
 
+import com.google.common.annotations.Beta;
+import com.google.common.base.Charsets;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Maps;
+import com.google.common.io.Files;
+
 import com.bbn.bue.common.parameters.ParameterFileLoader;
 import com.bbn.bue.common.parameters.exceptions.ErrorInIncludedParameterFileException;
 import com.bbn.bue.common.parameters.exceptions.ParseFailureException;
-
-import com.google.common.annotations.Beta;
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,7 +176,7 @@ public class SerifStyleParameterFileLoader implements ParameterFileLoader {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("crashOnUndeclareOverrides", crashOnUndeclaredOverrides)
         .toString();
   }

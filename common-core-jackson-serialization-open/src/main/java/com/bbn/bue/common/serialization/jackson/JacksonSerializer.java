@@ -1,5 +1,8 @@
 package com.bbn.bue.common.serialization.jackson;
 
+import com.google.common.io.ByteSink;
+import com.google.common.io.ByteSource;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -11,9 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.google.common.io.ByteSink;
-import com.google.common.io.ByteSource;
-import com.google.inject.Injector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Convenience object to build Jackson serializers the way we usually use them.
  *
  * If you want to use Guice-bound values during deserialization,
- * see {@link AddGuiceBindings#addGuiceBindingsTo(Injector, Builder)}.
+ * see {@code JacksonSerializationM}.
  */
 public final class JacksonSerializer {
 

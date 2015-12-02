@@ -1,13 +1,13 @@
 package com.bbn.bue.common.scoring;
 
-import com.bbn.bue.common.primitives.DoubleUtils;
-
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
+
+import com.bbn.bue.common.primitives.DoubleUtils;
 
 import java.util.Map;
 
@@ -93,7 +93,7 @@ public final class Scoreds {
 
     @Override
     public Scored<T> apply(final Map.Entry<T, Integer> entry) {
-      return new Scored<T>(entry.getKey(), entry.getValue());
+      return Scored.from(entry.getKey(), entry.getValue());
     }
   }
 
@@ -106,7 +106,7 @@ public final class Scoreds {
 
     @Override
     public Scored<T> apply(final Map.Entry<T, Double> entry) {
-      return new Scored<T>(entry.getKey(), entry.getValue());
+      return Scored.from(entry.getKey(), entry.getValue());
     }
   }
 
