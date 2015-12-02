@@ -28,7 +28,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class ERELoader {
+public final class ERELoader {
   
   private static Logger log = LoggerFactory.getLogger(ERELoader.class);
   
