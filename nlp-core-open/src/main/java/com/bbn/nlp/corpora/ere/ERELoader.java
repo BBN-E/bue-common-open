@@ -39,7 +39,8 @@ public final class ERELoader {
     this.idMap = Maps.newHashMap();
     this.mentionToCorefId = Maps.newHashMap();
   }
-  
+
+  // why does this exist?
   public static ERELoader from(final Parameters params) {
     return new ERELoader();
   }
@@ -47,8 +48,6 @@ public final class ERELoader {
   public EREDocument loadFrom(final File f) throws IOException {
     try {
       return loadFrom(Files.toString(f, Charsets.UTF_8));
-    } catch (IOException e) {
-      throw e;
     } catch (Exception e) {
       throw new IOException(String.format("Error loading ERE document %s", f.getAbsolutePath()), e);
     }
