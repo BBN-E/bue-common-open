@@ -29,22 +29,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class ERELoader {
-  
+
   private static Logger log = LoggerFactory.getLogger(ERELoader.class);
-  
-  private final Map<String, Object> idMap;
-  private final Map<String, String> mentionToCorefId;
 
   private ERELoader() {
-    this.idMap = Maps.newHashMap();
-    this.mentionToCorefId = Maps.newHashMap();
   }
 
   // why does this exist?
   public static ERELoader from(final Parameters params) {
     return new ERELoader();
   }
-  
+
   public EREDocument loadFrom(final File f) throws IOException {
     try {
       return loadFrom(Files.toString(f, Charsets.UTF_8));
@@ -83,17 +78,20 @@ public final class ERELoader {
       final String docId = XMLUtils.requiredAttribute(root, "doc_id");
       final String sourceType = XMLUtils.requiredAttribute(root, "source_type");
 
-      return toDocument(root, docId, sourceType);
+      return (new ERELoading()).toDocument(root, docId, sourceType);
     } else {
       throw new EREException("Rich ERE should have a root of deft_ere");
     }
   }
-  
-  private EREDocument toDocument(final Element xml, final String docid, final String sourceType) {
-    idMap.clear();
-    mentionToCorefId.clear();
-    
-    EREDocument.Builder builder = EREDocument.builder(docid, sourceType);
+
+}
+
+final class ERELoading {
+  private final Map<String, Object> idMap = Maps.newHashMap();
+  private final Map<String, String> mentionToCorefId = Maps.newHashMap();
+
+  EREDocument toDocument(final Element xml, final String docid, final String sourceType) {
+    final EREDocument.Builder builder = EREDocument.builder(docid, sourceType);
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
