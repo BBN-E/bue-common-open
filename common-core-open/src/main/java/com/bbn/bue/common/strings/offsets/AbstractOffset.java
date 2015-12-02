@@ -13,6 +13,7 @@ public abstract class AbstractOffset implements Offset {
     this.value = value;
   }
 
+  @Deprecated
   @Override
   public int value() {
     return value;
@@ -32,7 +33,7 @@ public abstract class AbstractOffset implements Offset {
       return false;
     }
 
-    return value == ((Offset) o).value();
+    return value == ((Offset) o).asInt();
   }
 
   @Override
