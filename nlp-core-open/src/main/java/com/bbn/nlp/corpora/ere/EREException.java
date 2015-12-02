@@ -16,11 +16,15 @@ public class EREException extends RuntimeException {
     super(msg, t);
   }
 
-  public EREException(Element e, Throwable t) {
-    super(String.format("While processing element %s", XMLUtils.dumpXMLElement(e)), t);
+  public static EREException forElement(Element e, Throwable t) {
+    return new EREException("While processing element " + XMLUtils.dumpXMLElement(e), t);
   }
 
-  public EREException(String msg, Element e, Throwable t) {
-    super(String.format("While processing element %s, %s", XMLUtils.dumpXMLElement(e), msg), t);
+  public static EREException forElement(String msg, Element e, Throwable t) {
+    return new EREException("While processing element " + XMLUtils.dumpXMLElement(e) +", " + msg, t);
+  }
+
+  public static EREException forElement(String msg, Element e) {
+    return new EREException("While processing element " + XMLUtils.dumpXMLElement(e) +", " + msg);
   }
 }

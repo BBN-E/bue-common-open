@@ -251,27 +251,7 @@ public final class ERELoader {
       if (child instanceof Element) {
         if (((Element) child).getTagName().equals("rel_arg1") || ((Element) child).getTagName().equals("rel_arg2")) {
           final Element e = (Element) child;
-          final String tagName = e.getTagName();
-          
-          final String role = XMLUtils.requiredAttribute(e, "role");
-          final Optional<String> entityMentionId = XMLUtils.optionalStringAttribute(e, "entity_mention_id");
-          final Optional<String> fillerId = XMLUtils.optionalStringAttribute(e, "filler_id");
-
-          String mentionId = docid + "-";
-          if(entityMentionId.isPresent()) {
-            mentionId += entityMentionId.get();
-          } else if(fillerId.isPresent()) {
-            mentionId += fillerId.get();
-          }
-            
-          Object obj = fetch(mentionId);
-          if(obj instanceof EREEntityMention) {
-            final EREEntityMention m = (EREEntityMention) obj;
-            builder.withArgument(tagName, EREEntityArgument.from(role, m));
-          } else if(obj instanceof EREFiller) {
-            final EREFiller m = (EREFiller) obj;
-            builder.withArgument(tagName, EREFillerArgument.from(role, m));
-          }  
+          builder.withArgument(e.getTagName(), getArgument(docid, e));
         }
       }
     }
@@ -279,6 +259,38 @@ public final class ERELoader {
     final ERERelationMention relationMention = builder.build();
     idMap.put(id, relationMention);
     return relationMention;
+  }
+
+  private EREArgument getArgument(String docid, Element e) {
+    final EREArgument arg;
+
+    final String role = XMLUtils.requiredAttribute(e, "role");
+    final Optional<String>
+        entityMentionId = XMLUtils.optionalStringAttribute(e, "entity_mention_id");
+    final Optional<String> fillerId = XMLUtils.optionalStringAttribute(e, "filler_id");
+
+    String mentionId = docid + "-";
+    if(entityMentionId.isPresent()) {
+      mentionId += entityMentionId.get();
+    } else if(fillerId.isPresent()) {
+      mentionId += fillerId.get();
+    } else {
+      throw EREException
+          .forElement("Element must have either entity_mention_id or filler_id attribute", e);
+    }
+
+    Object obj = fetch(mentionId);
+    if(obj instanceof EREEntityMention) {
+      final EREEntityMention m = (EREEntityMention) obj;
+      arg = EREEntityArgument.from(role, m);
+    } else if(obj instanceof EREFiller) {
+      final EREFiller m = (EREFiller) obj;
+      arg = EREFillerArgument.from(role, m);
+    } else {
+      throw EREException.forElement("Expected either an EREEntityMention or an EREFiller "
+                                    + "but got " + obj.getClass(), e);
+    }
+    return arg;
   }
 
   private EREEvent toEvent(final Element xml, final String docid) {
@@ -316,28 +328,7 @@ public final class ERELoader {
       if (child instanceof Element) {
         if (((Element) child).getTagName().equals("em_arg")) {
           Element e = (Element) child;
-            
-          final String role = XMLUtils.requiredAttribute(e, "role");
-          final Optional<String> entityMentionId = XMLUtils.optionalStringAttribute(e, "entity_mention_id");
-          final Optional<String> fillerId = XMLUtils.optionalStringAttribute(e, "filler_id");
-
-          String mentionId = docid + "-";
-          if(entityMentionId.isPresent()) {
-            mentionId += entityMentionId.get();
-          }
-          else if(fillerId.isPresent()) {
-            mentionId += fillerId.get();
-          }
-            
-          Object obj = fetch(mentionId);
-          if(obj instanceof EREEntityMention) {
-            final EREEntityMention m = (EREEntityMention) obj;
-            builder.withArgument(EREEntityArgument.from(role, m));
-          }
-          else if(obj instanceof EREFiller) {
-            final EREFiller m = (EREFiller) obj;
-            builder.withArgument(EREFillerArgument.from(role, m));
-          }
+          builder.withArgument(getArgument(docid, e));
         }
       }
     }
