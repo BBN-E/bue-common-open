@@ -80,12 +80,10 @@ public final class ERELoader {
     final Element root = xml.getDocumentElement();
     final String rootTag = root.getTagName();
     if (rootTag.equalsIgnoreCase("deft_ere")) {
-
       final String docId = XMLUtils.requiredAttribute(root, "doc_id");
       final String sourceType = XMLUtils.requiredAttribute(root, "source_type");
 
-      final EREDocument doc = toDocument(root, docId, sourceType);  
-      return doc;
+      return toDocument(root, docId, sourceType);
     } else {
       throw new EREException("Rich ERE should have a root of deft_ere");
     }
@@ -99,7 +97,7 @@ public final class ERELoader {
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
-        Element e = (Element) child;
+        final Element e = (Element) child;
         
         if (e.getTagName().equals("entities")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -139,7 +137,7 @@ public final class ERELoader {
       }
     }
 
-    EREDocument result = builder.build();
+    final EREDocument result = builder.build();
     idMap.put(docid, result);
     return result;
   }
@@ -150,7 +148,7 @@ public final class ERELoader {
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String specificity = XMLUtils.requiredAttribute(xml, "specificity");  // specific -> SPC , nonspecific -> GEN
     
-    EREEntity.Builder builder = EREEntity.builder(id, type, specificity);
+    final EREEntity.Builder builder = EREEntity.builder(id, type, specificity);
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
@@ -247,12 +245,12 @@ public final class ERELoader {
     
     final Optional<ERESpan> trigger = toSpan(xml, "trigger");
     
-    ERERelationMention.Builder builder = ERERelationMention.builder(id, realis, trigger);
+    final ERERelationMention.Builder builder = ERERelationMention.builder(id, realis, trigger);
     
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
         if (((Element) child).getTagName().equals("rel_arg1") || ((Element) child).getTagName().equals("rel_arg2")) {
-          Element e = (Element) child;
+          final Element e = (Element) child;
           final String tagName = e.getTagName();
           
           final String role = XMLUtils.requiredAttribute(e, "role");
@@ -262,8 +260,7 @@ public final class ERELoader {
           String mentionId = docid + "-";
           if(entityMentionId.isPresent()) {
             mentionId += entityMentionId.get();
-          }
-          else if(fillerId.isPresent()) {
+          } else if(fillerId.isPresent()) {
             mentionId += fillerId.get();
           }
             
@@ -271,8 +268,7 @@ public final class ERELoader {
           if(obj instanceof EREEntityMention) {
             final EREEntityMention m = (EREEntityMention) obj;
             builder.withArgument(tagName, EREEntityArgument.from(role, m));
-          }
-          else if(obj instanceof EREFiller) {
+          } else if(obj instanceof EREFiller) {
             final EREFiller m = (EREFiller) obj;
             builder.withArgument(tagName, EREFillerArgument.from(role, m));
           }  
@@ -280,17 +276,15 @@ public final class ERELoader {
       }
     }
     
-    ERERelationMention relationMention = builder.build();
+    final ERERelationMention relationMention = builder.build();
     idMap.put(id, relationMention);
     return relationMention;
   }
-  // ==== END Relation ====
-  
-  
+
   private EREEvent toEvent(final Element xml, final String docid) {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
     
-    EREEvent.Builder builder = EREEvent.builder(id);
+    final EREEvent.Builder builder = EREEvent.builder(id);
     
     // read in event mentions
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
@@ -302,7 +296,7 @@ public final class ERELoader {
       }
     }
     
-    EREEvent event = builder.build();
+    final EREEvent event = builder.build();
     idMap.put(id, event);
     return event;
   }
@@ -316,7 +310,7 @@ public final class ERELoader {
       
     final ERESpan trigger = toSpan(xml, "trigger").get();
 
-    EREEventMention.Builder builder = EREEventMention.builder(id, type, subtype, realis, trigger);
+    final EREEventMention.Builder builder = EREEventMention.builder(id, type, subtype, realis, trigger);
     
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
@@ -348,7 +342,7 @@ public final class ERELoader {
       }
     }
 
-    EREEventMention eventMention = builder.build();
+    final EREEventMention eventMention = builder.build();
     idMap.put(id, eventMention);
     return eventMention;
   }
