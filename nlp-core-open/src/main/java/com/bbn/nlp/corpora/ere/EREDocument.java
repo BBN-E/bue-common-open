@@ -97,8 +97,4 @@ public final class EREDocument {
 
   }
 
-  public static String formatText(String text) {
-    return text.replaceAll("\\n+", "").replace("&", " &amp; ");
-  }
-
 }
