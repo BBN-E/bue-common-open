@@ -52,8 +52,8 @@
     <maven.site.plugin.version>3.1</maven.site.plugin.version>
     <maven.project.info.reports.plugin.version>2.4</maven.project.info.reports.plugin.version>
     <maven.dependency.plugin.version>2.4</maven.dependency.plugin.version>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+      <maven.compiler.source>1.7</maven.compiler.source>
+      <maven.compiler.target>1.7</maven.compiler.target>
       <appassembler.maven.plugin.version>1.10</appassembler.maven.plugin.version>
     <maven.surefire.plugin.version>2.12.2</maven.surefire.plugin.version>
     <maven.surefire.report.plugin.version>2.12.2</maven.surefire.report.plugin.version>
