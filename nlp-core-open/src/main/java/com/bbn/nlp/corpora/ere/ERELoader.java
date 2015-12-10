@@ -1,13 +1,13 @@
 package com.bbn.nlp.corpora.ere;
 
 
+import com.bbn.bue.common.parameters.Parameters;
+import com.bbn.bue.common.xml.XMLUtils;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
-
-import com.bbn.bue.common.parameters.Parameters;
-import com.bbn.bue.common.xml.XMLUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,14 @@ public final class ERELoader {
   private ERELoader() {
   }
 
-  // why does this exist?
+  public static ERELoader create() {
+    return new ERELoader();
+  }
+
+  /**
+   * @deprecated Prefer {@link #create()}.
+   */
+  @Deprecated
   public static ERELoader from(final Parameters params) {
     return new ERELoader();
   }
@@ -96,7 +103,7 @@ final class ERELoading {
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
         final Element e = (Element) child;
-        
+
         if (e.getTagName().equals("entities")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
             if(n instanceof Element) {
@@ -142,10 +149,10 @@ final class ERELoading {
 
   private EREEntity toEntity(final Element xml, final String docid) {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");    // ERE ids are not globally unique, so prefix with docid
-    
+
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String specificity = XMLUtils.requiredAttribute(xml, "specificity");  // specific -> SPC , nonspecific -> GEN
-    
+
     final EREEntity.Builder builder = EREEntity.builder(id, type, specificity);
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
@@ -166,13 +173,13 @@ final class ERELoading {
   private EREEntityMention toEntityMention(final Element xml, final String docid) {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
     final String type = XMLUtils.requiredAttribute(xml, "noun_type");
-    
+
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
     final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length")-1;
-    
+
     final ERESpan extent = toSpan(xml, "mention_text", extentStart, extentEnd).get();
     final Optional<ERESpan> head = toSpan(xml, "nom_head");
-    
+
     final EREEntityMention mention = EREEntityMention.from(id, type, extent, head);
     idMap.put(id, mention);
     return mention;
@@ -185,9 +192,9 @@ final class ERELoading {
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
     final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length")-1;
     final String text = xml.getTextContent();
-    
+
     final ERESpan span = ERESpan.from(extentStart, extentEnd, text);
-    
+
     final EREFiller ereFiller = EREFiller.from(id, type, span);
     idMap.put(id, ereFiller);
     return ereFiller;
@@ -203,7 +210,7 @@ final class ERELoading {
     }
     return Optional.absent();
   }
-  
+
   private static Optional<ERESpan> toSpan(final Element xml, final String name, final int start, final int end) {
     Optional<Element> element = XMLUtils.directChild(xml, name);
     if (element.isPresent()) {
@@ -212,39 +219,39 @@ final class ERELoading {
     }
     return Optional.absent();
   }
-  
-  
+
+
   // ==== START Relation ====
   private ERERelation toRelation(final Element xml, final String docid) {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String subtype = XMLUtils.requiredAttribute(xml, "subtype");
-    
+
     ERERelation.Builder builder = ERERelation.builder(id, type, subtype);
-    
+
     // read in relation mentions
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
         Element e = (Element) child;
         if (e.getTagName().equals("relation_mention")) {
-          builder.withRelationMention(toRelationMention(e, docid)); 
+          builder.withRelationMention(toRelationMention(e, docid));
         }
       }
     }
-    
+
     ERERelation relation = builder.build();
     idMap.put(id, relation);
     return relation;
   }
-  
+
   private ERERelationMention toRelationMention(final Element xml, final String docid) {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
     final String realis = XMLUtils.requiredAttribute(xml, "realis");
-    
+
     final Optional<ERESpan> trigger = toSpan(xml, "trigger");
-    
+
     final ERERelationMention.Builder builder = ERERelationMention.builder(id, realis, trigger);
-    
+
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
         if (((Element) child).getTagName().equals("rel_arg1") || ((Element) child).getTagName().equals("rel_arg2")) {
@@ -253,7 +260,7 @@ final class ERELoading {
         }
       }
     }
-    
+
     final ERERelationMention relationMention = builder.build();
     idMap.put(id, relationMention);
     return relationMention;
@@ -293,35 +300,35 @@ final class ERELoading {
 
   private EREEvent toEvent(final Element xml, final String docid) {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
-    
+
     final EREEvent.Builder builder = EREEvent.builder(id);
-    
+
     // read in event mentions
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
         Element e = (Element) child;
         if (e.getTagName().equals("event_mention")) {
-          builder.withEventMention(toEventMention(e, docid)); 
+          builder.withEventMention(toEventMention(e, docid));
         }
       }
     }
-    
+
     final EREEvent event = builder.build();
     idMap.put(id, event);
     return event;
   }
-  
+
   private EREEventMention toEventMention(final Element xml, final String docid) {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
-      
+
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String subtype = XMLUtils.requiredAttribute(xml, "subtype");
     final String realis = XMLUtils.requiredAttribute(xml, "realis");
-      
+
     final ERESpan trigger = toSpan(xml, "trigger").get();
 
     final EREEventMention.Builder builder = EREEventMention.builder(id, type, subtype, realis, trigger);
-    
+
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
         if (((Element) child).getTagName().equals("em_arg")) {
@@ -350,4 +357,3 @@ final class ERELoading {
   }
 }
 
-  
