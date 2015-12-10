@@ -1,6 +1,8 @@
 package com.bbn.nlp.corpora.ere;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -14,6 +16,7 @@ public final class EREDocument {
   private final ImmutableList<EREFiller> fillers;
   private final ImmutableList<ERERelation> relations;
   private final ImmutableList<EREEvent> events;
+  private final ImmutableMap<EREEntityMention, EREEntity> mentionToEntityMap;
 
   private EREDocument(final String docid, final String sourceType,
       final List<EREEntity> entities, final List<EREFiller> fillers,
@@ -24,6 +27,7 @@ public final class EREDocument {
     this.fillers = ImmutableList.copyOf(fillers);
     this.relations = ImmutableList.copyOf(relations);
     this.events = ImmutableList.copyOf(events);
+    this.mentionToEntityMap = buildMentionToEntityMap();
   }
 
   public String getDocId() {
@@ -48,6 +52,10 @@ public final class EREDocument {
 
   public List<EREEvent> getEvents() {
     return events;
+  }
+
+  public Optional<EREEntity> getEntityContaining(EREEntityMention entityMention) {
+    return Optional.fromNullable(mentionToEntityMap.get(entityMention));
   }
 
   public static Builder builder(final String docid, final String sourceType) {
@@ -97,4 +105,15 @@ public final class EREDocument {
 
   }
 
+  private ImmutableMap<EREEntityMention, EREEntity> buildMentionToEntityMap() {
+    final ImmutableMap.Builder<EREEntityMention, EREEntity> ret = ImmutableMap.builder();
+
+    for (final EREEntity entity : entities) {
+      for (final EREEntityMention ereEntityMention : entity.getMentions()) {
+        ret.put(ereEntityMention, entity);
+      }
+    }
+
+    return ret.build();
+  }
 }
