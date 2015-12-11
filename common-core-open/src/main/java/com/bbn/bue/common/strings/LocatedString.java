@@ -1,10 +1,5 @@
 package com.bbn.bue.common.strings;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-
 import com.bbn.bue.common.strings.offsets.ASRTime;
 import com.bbn.bue.common.strings.offsets.ByteOffset;
 import com.bbn.bue.common.strings.offsets.CharOffset;
@@ -12,6 +7,11 @@ import com.bbn.bue.common.strings.offsets.EDTOffset;
 import com.bbn.bue.common.strings.offsets.OffsetGroup;
 import com.bbn.bue.common.strings.offsets.OffsetGroupRange;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -324,6 +324,9 @@ public final class LocatedString {
 
   private LocatedString(final String content, final List<OffsetEntry> offsets,
       final OffsetGroupRange bounds) {
+    // we need at least one offset entry for potential future substring calculation
+    checkArgument(!offsets.isEmpty());
+
     this.content = content;
     this.bounds = bounds;
     // since this is a private constructor, no need to defensively copy to preserve immutability
