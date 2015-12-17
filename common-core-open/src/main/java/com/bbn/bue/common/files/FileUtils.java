@@ -541,6 +541,21 @@ public final class FileUtils {
     return ret.build();
   }
 
+  /**
+   * Loads a file in the format {@code key value1} (tab-separated) into a {@link
+   * com.google.common.collect.ImmutableMap} of {@link String}s. Each key should only appear on one
+   * line, and there should be no duplicate values. Each key and value has whitespace trimmed off.
+   * Skips empty lines and allows comment-lines with {@code #} in the first position.
+   */
+  public static ImmutableMap<Symbol, Symbol> loadSymbolMap(CharSource source) throws IOException {
+    final ImmutableMap.Builder<Symbol, Symbol> ret = ImmutableMap.builder();
+
+    for (ImmutableMap.Entry<String, String> row : loadStringMap(source).entrySet()) {
+      ret.put(Symbol.from(row.getKey()), Symbol.from(row.getValue()));
+    }
+
+    return ret.build();
+  }
 
   public static void writeSymbolMultimap(Multimap<Symbol, Symbol> mm, CharSink charSink)
       throws IOException {
