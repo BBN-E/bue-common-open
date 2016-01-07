@@ -60,7 +60,7 @@ public final class EDLLoader {
     final String confidenceString = parts.get(CONFIDENCE);
     try {
       confidence = Double.parseDouble(confidenceString);
-    } catch (IllegalFormatException ife) {
+    } catch (NumberFormatException ife) {
       throw new IOException("Illegal confidence " + confidenceString);
     }
 
@@ -79,7 +79,7 @@ public final class EDLLoader {
     try {
       startOffset = Integer.parseInt(docIdAndOffsets.substring(colonIndex+1, dashIdx));
       endOffset = Integer.parseInt(docIdAndOffsets.substring(dashIdx+1));
-    } catch (IllegalFormatException ife) {
+    } catch (NumberFormatException ife) {
       throw new IOException("Illegal doc ID and offsets element " + docIdAndOffsets);
     }
 
