@@ -6,6 +6,10 @@ import com.google.common.io.CharSink;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Writes files in the submission format for the TAC KBP Entity Detection and Linking eval. This is
+ * focused on Lorelei NER, so it ignores the KB IDs.
+ */
 public final class EDLWriter {
 
   private EDLWriter() {

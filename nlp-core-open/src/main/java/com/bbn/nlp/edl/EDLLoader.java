@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Loads files in the submission format for the TAC KBP Entity Detection and Linking eval. This is
+ * focused on Lorelei NER, so it ignores the KB IDs.
+ */
 public final class EDLLoader {
   private static final Logger log = LoggerFactory.getLogger(EDLLoader.class);
 
