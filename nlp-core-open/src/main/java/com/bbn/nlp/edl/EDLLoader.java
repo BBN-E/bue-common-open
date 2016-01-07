@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.IllegalFormatException;
 import java.util.List;
 
 public final class EDLLoader {
@@ -48,7 +47,7 @@ public final class EDLLoader {
   private static final int KB_ID = 4;
   private static final int ENTITY_TYPE = 5;
   private static final int MENTION_TYPE = 6;
-  private static final int CONFIDENCE = 6;
+  private static final int CONFIDENCE = 7;
 
   private EDLMention parseMention(final String line) throws IOException {
     final List<String> parts = StringUtils.OnTabs.splitToList(line);
