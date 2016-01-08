@@ -4,9 +4,13 @@ import com.bbn.bue.common.HasDocID;
 import com.bbn.bue.common.strings.offsets.Offset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
+
 import com.google.common.annotations.Beta;
 import com.google.common.base.Equivalence;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -79,6 +83,40 @@ public final class ScoringTypedOffsetRange<T extends Offset & Comparable<T>>
    */
   public static DocIdOffsetEquivalence docIdOffsetEquivalence() {
     return new DocIdOffsetEquivalence();
+  }
+
+  public static Function<ScoringTypedOffsetRange<?>, Symbol> typeFunction() {
+    return TypeFunction.INSTANCE;
+  }
+
+  /**
+   * Provides an ordering of {@code ScoringTypedOffsetRange} by their degree of overlap with a
+   * reference {@code ScoringTypedOffsetRange}, from least overlap to most.
+   */
+  public static <OffsetType extends Offset & Comparable<OffsetType>> Ordering<ScoringTypedOffsetRange<OffsetType>>
+    orderByOverlapWith(final ScoringTypedOffsetRange<OffsetType> reference) {
+    return new Ordering<ScoringTypedOffsetRange<OffsetType>>() {
+      @Override
+      public int compare(final ScoringTypedOffsetRange<OffsetType> left, final
+      ScoringTypedOffsetRange<OffsetType> right) {
+        final int leftIntersectionSize =
+            left.offsetRange().intersection(reference.offsetRange())
+                .transform(OffsetRange.lengthFunction()).or(0);
+        final int rightIntersectionSize = right.offsetRange().intersection(reference.offsetRange())
+            .transform(OffsetRange.lengthFunction()).or(0);
+
+        return Ints.compare(leftIntersectionSize, rightIntersectionSize);
+      }
+    };
+  }
+
+  private enum TypeFunction implements Function<ScoringTypedOffsetRange<?>, Symbol> {
+    INSTANCE {
+      @Override
+      public Symbol apply(final ScoringTypedOffsetRange<?> input) {
+        return input.scoringType();
+      }
+    }
   }
 
   /**
