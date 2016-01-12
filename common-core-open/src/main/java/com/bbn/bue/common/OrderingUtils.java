@@ -36,4 +36,16 @@ public final class OrderingUtils {
       }
     };
   }
+
+  /**
+   * Orders Ts in some domain by their image under F using the onFunctionResultOrdering
+   */
+  public static <T,V> Ordering<T> onResultOf(final Function<T, V> F, final Ordering<V> onFunctionResult) {
+    return new Ordering<T>() {
+      @Override
+      public int compare(final T t, final T t1) {
+        return onFunctionResult.compare(F.apply(t), F.apply(t1));
+      }
+    };
+  }
 }
