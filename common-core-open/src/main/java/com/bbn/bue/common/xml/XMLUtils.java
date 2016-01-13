@@ -1,20 +1,22 @@
 package com.bbn.bue.common.xml;
 
+import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
+
 import com.google.common.annotations.Beta;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
-
-import com.bbn.bue.common.symbols.Symbol;
-import com.bbn.bue.common.symbols.SymbolUtils;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ls.DOMImplementationLS;
 
 import java.io.StringWriter;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.transform.OutputKeys;
@@ -27,6 +29,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Some utilities for working with XML files.
@@ -424,4 +427,50 @@ public final class XMLUtils {
     return out.toString();
   }
 
+  /**
+   * Returns an {@link Iterable} over all children of {@code e} with tag {@code tag}
+   */
+  public static Iterable<Element> childrenWithTag(Element e, String tag) {
+    return new ElementChildrenIterable(e, tag);
+  }
+
+  private static final class ElementChildrenIterable implements Iterable<Element> {
+
+    private final Element e;
+    private final String tagName;
+
+    public ElementChildrenIterable(final Element e, final String tagName) {
+      this.e = checkNotNull(e);
+      this.tagName = checkNotNull(tagName);
+    }
+
+    @Override
+    public Iterator<Element> iterator() {
+      return new ElementChildrenIterator();
+    }
+
+    private final class ElementChildrenIterator extends AbstractIterator<Element> {
+
+      Node curNode = e.getFirstChild();
+
+      @Override
+      protected Element computeNext() {
+        if (curNode == null) {
+          return endOfData();
+        }
+        while (curNode != null) {
+          if (curNode instanceof Element) {
+            final Element curElement = ((Element) curNode);
+            curNode = curNode.getNextSibling();
+            if (curElement.getTagName().equals(tagName)) {
+              return curElement;
+            }
+          } else {
+            curNode = curNode.getNextSibling();
+          }
+        }
+        return endOfData();
+      }
+    }
+  }
 }
