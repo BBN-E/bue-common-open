@@ -122,6 +122,18 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
     return asRange().isConnected(other.asRange());
   }
 
+  public Optional<OffsetRange<OffsetType>> intersection(OffsetRange<OffsetType> other) {
+    final Range<OffsetType> meAsRange = asRange();
+    final Range<OffsetType> otherAsRange = other.asRange();
+
+    if (meAsRange.isConnected(otherAsRange)) {
+      final Range<OffsetType> intersectionRange = meAsRange.intersection(otherAsRange);
+      return Optional.of(fromInclusiveEndpoints(intersectionRange.lowerEndpoint(), intersectionRange.upperEndpoint()));
+    } else {
+      return Optional.absent();
+    }
+  }
+
   public boolean contains(OffsetRange<OffsetType> other) {
     return asRange().encloses(other.asRange());
   }
@@ -161,6 +173,19 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
       newUpperBound = endInclusive();
     }
     return Optional.of(OffsetRange.fromInclusiveEndpoints(newLowerBound, newUpperBound));
+  }
+
+  public static Function<OffsetRange<?>, Integer> lengthFunction() {
+    return LengthFunction.INSTANCE;
+  }
+
+  private enum LengthFunction implements Function<OffsetRange<?>, Integer> {
+    INSTANCE {
+      @Override
+      public Integer apply(final OffsetRange<?> input) {
+        return input.length();
+      }
+    };
   }
 
   public String toString() {
