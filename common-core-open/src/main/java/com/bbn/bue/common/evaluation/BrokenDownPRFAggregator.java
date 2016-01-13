@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.bbn.bue.common.evaluation.EvaluationConstants.PRESENT;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -57,6 +58,8 @@ public final class BrokenDownPRFAggregator
 
   private BrokenDownPRFAggregator(String name, File outputDir) {
     this.name = checkNotNull(name);
+    checkArgument(!name.endsWith(Character.toString(File.separatorChar)),
+        "Aggregation name cannot end with %s, but got %s", File.separatorChar, name);
     this.outputDir = checkNotNull(outputDir);
   }
 
