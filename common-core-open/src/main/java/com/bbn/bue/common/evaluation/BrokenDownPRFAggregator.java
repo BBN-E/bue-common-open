@@ -31,6 +31,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * If we have some metric broken down by categories which results in confusion matrices, these
  * will print bootstrapped precision/recall/F-measure scores.
+ *
+ * Each of these is provided with an output directory (<tt>outputDir</tt>) and a name. The
+ * following outputs will be written:
+ * <ul>
+ *   <li>{@code outputDir/name.bootstrapped.txt}: A human readable chart with the botostrapped
+ *   percentiles for precision, recall, F1, and accuracy.</li>
+ *   <li>{@code outputDir/name.bootstrapped.csv}: the same information in a machine-friendly
+ *   CSV form.</li>
+ *   <li>{@code outputDir/name.bootstrapped.medians.csv}: CSV for the median bootstrapped
+ *   values only.</li>
+ *   <li>{@code outputDir/name.bootstrapped.raw}: Machine-consumable list of all the
+ *   bootstrap samples for all four metrics.  This is useful for passing to gnuplot to
+ *   make box and whisker graphs.</li>
+ * </ul>
  */
 public final class BrokenDownPRFAggregator
     implements BootstrapInspector.SummaryAggregator<Map<String, SummaryConfusionMatrix>> {
