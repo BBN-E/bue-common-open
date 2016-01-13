@@ -23,4 +23,24 @@ public final class OptionalUtils {
       }
     };
   }
+
+  /**
+   * Throws an {@link IllegalStateException} if both passed {@link Optional}s are present.
+   */
+  public static void exactlyOnePresentOrIllegalState(final Optional<?> x,
+      final Optional<?> y, final String msg) {
+    if (x.isPresent() && y.isPresent()) {
+      throw new IllegalStateException(msg);
+    }
+  }
+
+  /**
+   * Throws an {@link IllegalArgumentException} if both passed {@link Optional}s are present.
+   */
+  public static void exactlyOnePresentOrIllegalArgument(final Optional<?> x,
+      final Optional<?> y, final String msg) {
+    if (x.isPresent() && y.isPresent()) {
+      throw new IllegalArgumentException(msg);
+    }
+  }
 }
