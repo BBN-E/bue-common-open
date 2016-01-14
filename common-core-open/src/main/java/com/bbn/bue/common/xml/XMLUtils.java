@@ -6,6 +6,8 @@ import com.bbn.bue.common.symbols.SymbolUtils;
 import com.google.common.annotations.Beta;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.FluentIterable;
@@ -427,21 +429,34 @@ public final class XMLUtils {
     return out.toString();
   }
 
+  private static Predicate<Element> tagNameIsPredicate(final String tagName) {
+    return new Predicate<Element>() {
+      @Override
+      public boolean apply(final Element input) {
+        return tagName.equals(input.getTagName());
+      }
+    };
+  }
+
   /**
    * Returns an {@link Iterable} over all children of {@code e} with tag {@code tag}
    */
   public static Iterable<Element> childrenWithTag(Element e, String tag) {
-    return new ElementChildrenIterable(e, tag);
+    return new ElementChildrenIterable(e, tagNameIsPredicate(tag));
+  }
+
+  public static Iterable<Element> elementChildren(Element e) {
+    return new ElementChildrenIterable(e, Predicates.<Element>alwaysTrue());
   }
 
   private static final class ElementChildrenIterable implements Iterable<Element> {
 
     private final Element e;
-    private final String tagName;
+    private final Predicate<Element> predicate;
 
-    public ElementChildrenIterable(final Element e, final String tagName) {
+    public ElementChildrenIterable(final Element e, final Predicate<Element> predicate) {
       this.e = checkNotNull(e);
-      this.tagName = checkNotNull(tagName);
+      this.predicate = checkNotNull(predicate);
     }
 
     @Override
@@ -462,7 +477,7 @@ public final class XMLUtils {
           if (curNode instanceof Element) {
             final Element curElement = ((Element) curNode);
             curNode = curNode.getNextSibling();
-            if (curElement.getTagName().equals(tagName)) {
+            if (predicate.apply(curElement)) {
               return curElement;
             }
           } else {
