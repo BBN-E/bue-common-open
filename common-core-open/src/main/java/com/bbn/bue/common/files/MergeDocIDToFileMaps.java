@@ -63,7 +63,7 @@ public class MergeDocIDToFileMaps {
         final File curMapping = mergedMap.get(mapEntry.getKey());
         if (curMapping == null) {
           mergedMap.put(mapEntry.getKey(), mapEntry.getValue());
-        } else if (!curMapping.equals(mapEntry.getValue()) || allowDuplicatesAndPreferEarlierEntries) {
+        } else if (!curMapping.equals(mapEntry.getValue()) && !allowDuplicatesAndPreferEarlierEntries) {
           throw new RuntimeException(mapEntry.getKey() + " is mapped to " + mapEntry.getValue()
               + " in " + mapFile + " but has been mapped to " + curMapping + " in a previously "
               + "processed file");
