@@ -1,6 +1,7 @@
 package com.bbn.bue.common.files;
 
 import com.bbn.bue.common.collections.MapUtils;
+import com.bbn.bue.common.parameters.Parameters;
 import com.bbn.bue.common.symbols.Symbol;
 import com.bbn.bue.common.symbols.SymbolUtils;
 
@@ -39,14 +40,18 @@ public class MergeDocIDToFileMaps {
   }
 
   private static void trueMain(String[] argv) throws IOException {
-    if (argv.length != 2) {
-      System.err.println("usage: MergeDocIdToFileMaps inputListOfMaps outputMap:\n"
-          + "\tinputListOfMaps: a file with one filename per line of file maps to merge\n"
-          + "\toutputMap: a file to write the merged map to\n");
+    if (argv.length != 1) {
+      System.err.println("usage: MergeDocIdToFileMaps paramsFile"
+          + "outputMap\n"
+          + "inputListOfMaps: a file with one filename per line of file maps to merge\n"
+          + "allowDuplicatesAndPreferEarlierEntries: boolean controlling our behavior when we find two docIDs\n");
       System.exit(1);
     }
-    final File listOfMaps = new File(argv[0]);
-    final File outputMap = new File(argv[1]);
+
+    final Parameters params = Parameters.loadSerifStyle(new File(argv[0]));
+    final File listOfMaps = params.getExistingFile("inputListOfMaps");
+    final File outputMap = params.getExistingFile("outputMap");
+    final boolean allowDuplicatesAndPreferEarlierEntries = params.getOptionalBoolean("allowDuplicatesAndPreferEarlierEntries").or(false);
 
     final Map<Symbol, File> mergedMap = Maps.newHashMap();
     for (final File mapFile : FileUtils
@@ -58,7 +63,7 @@ public class MergeDocIDToFileMaps {
         final File curMapping = mergedMap.get(mapEntry.getKey());
         if (curMapping == null) {
           mergedMap.put(mapEntry.getKey(), mapEntry.getValue());
-        } else if (!curMapping.equals(mapEntry.getValue())) {
+        } else if (!curMapping.equals(mapEntry.getValue()) || allowDuplicatesAndPreferEarlierEntries) {
           throw new RuntimeException(mapEntry.getKey() + " is mapped to " + mapEntry.getValue()
               + " in " + mapFile + " but has been mapped to " + curMapping + " in a previously "
               + "processed file");
