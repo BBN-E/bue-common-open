@@ -50,7 +50,7 @@ public class MergeDocIDToFileMaps {
 
     final Parameters params = Parameters.loadSerifStyle(new File(argv[0]));
     final File listOfMaps = params.getExistingFile("inputListOfMaps");
-    final File outputMap = params.getExistingFile("outputMap");
+    final File outputMap = params.getCreatableFile("outputMap");
     final boolean allowDuplicatesAndPreferEarlierEntries = params.getOptionalBoolean("allowDuplicatesAndPreferEarlierEntries").or(false);
 
     final Map<Symbol, File> mergedMap = Maps.newHashMap();
