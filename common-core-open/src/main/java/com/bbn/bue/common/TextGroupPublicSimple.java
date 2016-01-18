@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
     typeImmutable = "*",
     // the template class can be prefixed with Abstract or with _
     // _ is preferred
-    typeAbstract = {"Abstract*", "_*"},
+    typeAbstract = {"_*"},
     // make the class annotated with this package private,
     // so API users only see the generated implementation, not
     // the template
