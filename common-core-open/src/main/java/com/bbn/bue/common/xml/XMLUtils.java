@@ -260,6 +260,22 @@ public final class XMLUtils {
     }
   }
 
+  public static Optional<Boolean> optionalBooleanAttribute(final Element e, final String attribute) {
+    final String val = e.getAttribute(attribute);
+
+    if(!val.isEmpty()) {
+    try {
+      return Optional.of(Boolean.parseBoolean(val));
+    } catch (final NumberFormatException ex) {
+      throw new XMLUnexpectedInputException(String
+          .format("%s has required boolean attribute %s, but it doesn't parse as a boolean: %s",
+              e.getTagName(), attribute, e));
+    }} else {
+      return Optional.absent();
+    }
+  }
+
+
   public static Optional<Double> optionalDoubleAttribute(final Element e, final String attribute) {
     final String val = e.getAttribute(attribute);
 
