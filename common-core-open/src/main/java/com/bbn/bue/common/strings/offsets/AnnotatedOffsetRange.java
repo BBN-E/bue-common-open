@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class AnnotatedOffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
+public final class AnnotatedOffsetRange<OffsetType extends Offset<OffsetType>> {
 
   private final OffsetRange<OffsetType> range;
   private final Symbol type;
@@ -27,14 +27,14 @@ public final class AnnotatedOffsetRange<OffsetType extends Offset & Comparable<O
     return attributes;
   }
 
-  public static <OffsetType extends Offset & Comparable<OffsetType>>
+  public static <OffsetType extends Offset<OffsetType>>
   AnnotatedOffsetRange<OffsetType> create(final Symbol spanType,
       final OffsetRange<OffsetType> range,
       final Map<String, String> otherAttributes) {
     return new AnnotatedOffsetRange<OffsetType>(spanType, range, otherAttributes);
   }
 
-  public static <OffsetType extends Offset & Comparable<OffsetType>>
+  public static <OffsetType extends Offset<OffsetType>>
   AnnotatedOffsetRange<OffsetType> create(final Symbol spanType,
       final OffsetRange<OffsetType> range) {
     return create(spanType, range, ImmutableMap.<String, String>of());
@@ -47,7 +47,7 @@ public final class AnnotatedOffsetRange<OffsetType extends Offset & Comparable<O
     this.attributes = ImmutableMap.copyOf(otherAttributes);
   }
 
-  public static <OffsetType extends Offset & Comparable<OffsetType>>
+  public static <OffsetType extends Offset<OffsetType>>
   Function<AnnotatedOffsetRange<OffsetType>, OffsetRange<OffsetType>> toOffsetRangeFunction() {
     return new Function<AnnotatedOffsetRange<OffsetType>, OffsetRange<OffsetType>>() {
       @Override

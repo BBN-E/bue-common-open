@@ -1,10 +1,13 @@
 package com.bbn.bue.common.strings.offsets;
 
 import com.google.common.base.Objects;
+import com.google.common.primitives.Ints;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public abstract class AbstractOffset implements Offset {
+public abstract class AbstractOffset<SelfType extends Offset<SelfType>>
+    implements Offset<SelfType> {
 
   private final int value;
 
@@ -15,17 +18,17 @@ public abstract class AbstractOffset implements Offset {
 
   @Deprecated
   @Override
-  public int value() {
+  public final int value() {
     return value;
   }
 
   @Override
-  public int asInt() {
+  public final int asInt() {
     return value;
   }
 
   @Override
-  public boolean equals(final Object o) {
+  public final boolean equals(final Object o) {
     if (o == null) {
       return false;
     }
@@ -37,9 +40,14 @@ public abstract class AbstractOffset implements Offset {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return Objects.hashCode(value);
   }
 
 
+  @Override
+  public final int compareTo(final SelfType o) {
+    checkNotNull(o);
+    return Ints.compare(asInt(), o.asInt());
+  }
 }
