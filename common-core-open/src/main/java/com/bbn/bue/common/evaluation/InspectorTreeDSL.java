@@ -5,7 +5,10 @@ import com.bbn.bue.common.Inspector;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.collect.FluentIterable;
 import com.google.common.reflect.TypeToken;
+
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -91,6 +94,14 @@ public final class InspectorTreeDSL {
     return ret;
   }
 
+  public static <KeyT extends F, ValT extends F, F, T> InspectorTreeNode<EvalPair<Set<T>, Set<T>>> transformBothSets(
+      InspectorTreeNode<EvalPair<Set<KeyT>, Set<ValT>>> inputNode,
+      Function<F, T> func) {
+    final SetTransformNode<F, T, KeyT, ValT> ret = new SetTransformNode<>(func);
+    inputNode.registerConsumer(ret);
+    return ret;
+  }
+
   public static <KeyT extends F, ValT, F, T> InspectorTreeNode<EvalPair<T, ValT>> transformLeft(
       InspectorTreeNode<EvalPair<KeyT, ValT>> inputNode,
       Function<F, T> func) {
@@ -135,6 +146,32 @@ public final class InspectorTreeDSL {
         ret.registerConsumer(inspector);
       }
       return ret;
+    }
+  }
+
+  /**
+   * This isn't implemented as a normal transform node because the generics are a mess. At some
+   * point I will translate this to Scala with declaration-site covariance and everything will be
+   * pretty.
+   */
+  private static final class SetTransformNode<F, T, KeyT extends F, ValT extends F>
+      extends InspectorTreeNode<EvalPair<Set<T>, Set<T>>>
+      implements Inspector<EvalPair<Set<KeyT>, Set<ValT>>> {
+
+    private Function<F, T> func;
+
+    private SetTransformNode(final Function<F, T> func) {
+      this.func = checkNotNull(func);
+    }
+
+    @Override
+    public void inspect(final EvalPair<Set<KeyT>, Set<ValT>> item) {
+      final EvalPair<Set<T>, Set<T>> out =
+          EvalPair.<Set<T>, Set<T>>of(FluentIterable.from(item.key()).transform(func).toSet(),
+              FluentIterable.from(item.test()).transform(func).toSet());
+      for (final Inspector<EvalPair<Set<T>, Set<T>>> consumer : consumers()) {
+        consumer.inspect(out);
+      }
     }
   }
 }
