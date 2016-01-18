@@ -23,9 +23,8 @@ import java.lang.annotation.Target;
     // the generated implementation is FlexibleEventMention, not
     // ImmutableFlexibleEventMention
     typeImmutable = "*",
-    // the template class can be prefixed with Abstract or with _
-    // _ is preferred
-    typeAbstract = {"Abstract*", "_*"},
+    // the template class must be prefixed with _
+    typeAbstract = {"_*"},
     // make the class annotated with this package private,
     // so API users only see the generated implementation, not
     // the template
