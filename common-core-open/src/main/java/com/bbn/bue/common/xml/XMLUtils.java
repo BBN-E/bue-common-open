@@ -98,13 +98,16 @@ public final class XMLUtils {
   public static boolean requiredBooleanAttribute(final Node e, final String attribute) {
     final String val = requiredAttribute(e, attribute);
 
-    try {
-      return Boolean.parseBoolean(val);
-    } catch (final NumberFormatException ex) {
-      throw new XMLUnexpectedInputException(String
-          .format("%s has required boolean attribute %s, but it doesn't parse as a boolean: %s",
-              ((Element) e).getTagName(), attribute, e));
+    if (val.equalsIgnoreCase("true")) {
+      return true;
     }
+    if (val.equalsIgnoreCase("false")) {
+      return false;
+    }
+    throw new XMLUnexpectedInputException(String
+        .format(
+            "%s has required boolean attribute %s, but it doesn't parse as a boolean: %s; true or false required",
+            ((Element) e).getTagName(), attribute, e));
   }
 
   public static float requiredFloatAttribute(final Node e, final String attribute) {
@@ -260,17 +263,22 @@ public final class XMLUtils {
     }
   }
 
-  public static Optional<Boolean> optionalBooleanAttribute(final Element e, final String attribute) {
+  public static Optional<Boolean> optionalBooleanAttribute(final Element e,
+      final String attribute) {
     final String val = e.getAttribute(attribute);
 
-    if(!val.isEmpty()) {
-    try {
-      return Optional.of(Boolean.parseBoolean(val));
-    } catch (final NumberFormatException ex) {
-      throw new XMLUnexpectedInputException(String
-          .format("%s has required boolean attribute %s, but it doesn't parse as a boolean: %s",
-              e.getTagName(), attribute, e));
-    }} else {
+    if (!val.isEmpty()) {
+      if (val.equalsIgnoreCase("true")) {
+        return Optional.of(true);
+      } else if (val.equalsIgnoreCase("false")) {
+        return Optional.of(false);
+      } else {
+        throw new XMLUnexpectedInputException(String
+            .format(
+                "%s has required boolean attribute %s, but it doesn't parse as a boolean: %s; specify true or false",
+                e.getTagName(), attribute, e));
+      }
+    } else {
       return Optional.absent();
     }
   }
