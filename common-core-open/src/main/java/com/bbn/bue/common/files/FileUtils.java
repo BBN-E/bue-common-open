@@ -271,7 +271,7 @@ public final class FileUtils {
       }
 
       if (!good || parts.hasNext()) {
-        throw new RuntimeException(String.format("Corrupt line: %s", line));
+        throw new RuntimeException(String.format("Corrupt line #%d: %s", lineNo, line));
       }
 
       try {
