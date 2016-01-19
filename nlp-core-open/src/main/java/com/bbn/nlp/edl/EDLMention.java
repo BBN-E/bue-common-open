@@ -2,6 +2,7 @@ package com.bbn.nlp.edl;
 
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
+import com.bbn.bue.common.symbols.Symbol;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Range;
@@ -14,19 +15,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * necessary for the Lorelei NER evaluations.  Does not yet address KB linking.
  */
 public final class EDLMention {
-  private final String runId;
+
+  private final Symbol runId;
   private final String mentionId;
-  private final String documentID;
+  private final Symbol documentID;
   private final String headString;
   private final OffsetRange<CharOffset> headOffsets;
-  private final String mentionType;
-  private final String entityType;
+  private final Symbol mentionType;
+  private final Symbol entityType;
   private final double confidence;
 
-  private EDLMention(final String runId, final String mentionId,
-      final String documentID, final String headString,
+  private EDLMention(final Symbol runId, final String mentionId,
+      final Symbol documentID, final String headString,
       final OffsetRange<CharOffset> headOffsets,
-      final String mentionType, final String entityType, final double confidence) {
+      final Symbol mentionType, final Symbol entityType, final double confidence) {
     this.runId = checkNotNull(runId);
     this.mentionId = checkNotNull(mentionId);
     this.documentID = checkNotNull(documentID);
@@ -39,16 +41,16 @@ public final class EDLMention {
         "Confidence must be in (0,1.0] but got %s", confidence);
   }
 
-  public static EDLMention create(final String runId, final String mentionId,
-      final String documentID, final String headString,
+  public static EDLMention create(final Symbol runId, final String mentionId,
+      final Symbol documentID, final String headString,
       final OffsetRange<CharOffset> headOffsets,
-      final String mentionType, final String entityType, final double confidence)
+      final Symbol mentionType, final Symbol entityType, final double confidence)
   {
     return new EDLMention(runId, mentionId, documentID, headString, headOffsets,
         mentionType, entityType, confidence);
   }
 
-  public String runId() {
+  public Symbol runId() {
     return runId;
   }
 
@@ -56,7 +58,7 @@ public final class EDLMention {
     return mentionId;
   }
 
-  public String documentID() {
+  public Symbol documentID() {
     return documentID;
   }
 
@@ -68,11 +70,11 @@ public final class EDLMention {
     return headOffsets;
   }
 
-  public String mentionType() {
+  public Symbol mentionType() {
     return mentionType;
   }
 
-  public String entityType() {
+  public Symbol entityType() {
     return entityType;
   }
 

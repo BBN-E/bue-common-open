@@ -2,6 +2,7 @@ package com.bbn.nlp.edl;
 
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
+import com.bbn.bue.common.symbols.Symbol;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharSource;
@@ -86,9 +87,10 @@ public final class EDLLoader {
       throw new IOException("Illegal doc ID and offsets element " + docIdAndOffsets);
     }
 
-    return EDLMention.create(parts.get(RUN_ID), parts.get(MENTION_ID),
-        documentId, parts.get(HEAD_STRING), OffsetRange.charOffsetRange(startOffset, endOffset),
-        parts.get(MENTION_TYPE), parts.get(ENTITY_TYPE),
+    return EDLMention.create(Symbol.from(parts.get(RUN_ID)), parts.get(MENTION_ID),
+        Symbol.from(documentId), parts.get(HEAD_STRING),
+        OffsetRange.charOffsetRange(startOffset, endOffset),
+        Symbol.from(parts.get(MENTION_TYPE)), Symbol.from(parts.get(ENTITY_TYPE)),
         confidence);
   }
 }

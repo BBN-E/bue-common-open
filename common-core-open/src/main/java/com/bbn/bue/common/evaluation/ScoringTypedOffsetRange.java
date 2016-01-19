@@ -85,8 +85,8 @@ public final class ScoringTypedOffsetRange<T extends Offset<T>>
     return new DocIdOffsetEquivalence();
   }
 
-  public static Function<ScoringTypedOffsetRange<?>, Symbol> typeFunction() {
-    return TypeFunction.INSTANCE;
+  public static <T extends Offset<T>> Function<ScoringTypedOffsetRange<T>, Symbol> typeFunction() {
+    return new TypeFunction<>();
   }
 
   /**
@@ -110,12 +110,12 @@ public final class ScoringTypedOffsetRange<T extends Offset<T>>
     };
   }
 
-  private enum TypeFunction implements Function<ScoringTypedOffsetRange<?>, Symbol> {
-    INSTANCE {
-      @Override
-      public Symbol apply(final ScoringTypedOffsetRange<?> input) {
-        return input.scoringType();
-      }
+  private static final class TypeFunction<T extends Offset<T>>
+      implements Function<ScoringTypedOffsetRange<T>, Symbol> {
+
+    @Override
+    public Symbol apply(final ScoringTypedOffsetRange<T> input) {
+      return input.scoringType();
     }
   }
 
