@@ -5,6 +5,7 @@ import com.bbn.bue.common.Inspector;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.reflect.TypeToken;
 
@@ -102,6 +103,14 @@ public final class InspectorTreeDSL {
     return ret;
   }
 
+  public static <KeyT extends F, ValT extends F, F> InspectorTreeNode<EvalPair<Set<F>, Set<F>>> filterBothSets(
+      InspectorTreeNode<EvalPair<Set<KeyT>, Set<ValT>>> inputNode,
+      Predicate<F> pred) {
+    final SetFilterNode<F, KeyT, ValT> ret = new SetFilterNode<>(pred);
+    inputNode.registerConsumer(ret);
+    return ret;
+  }
+
   public static <KeyT extends F, ValT, F, T> InspectorTreeNode<EvalPair<T, ValT>> transformLeft(
       InspectorTreeNode<EvalPair<KeyT, ValT>> inputNode,
       Function<F, T> func) {
@@ -170,6 +179,28 @@ public final class InspectorTreeDSL {
           EvalPair.<Set<T>, Set<T>>of(FluentIterable.from(item.key()).transform(func).toSet(),
               FluentIterable.from(item.test()).transform(func).toSet());
       for (final Inspector<EvalPair<Set<T>, Set<T>>> consumer : consumers()) {
+        consumer.inspect(out);
+      }
+    }
+  }
+
+  private static final class SetFilterNode<F, KeyT extends F, ValT extends F>
+      extends InspectorTreeNode<EvalPair<Set<F>, Set<F>>>
+      implements Inspector<EvalPair<Set<KeyT>, Set<ValT>>> {
+
+    private Predicate<F> pred;
+
+    private SetFilterNode(final Predicate<F> pred) {
+      this.pred = checkNotNull(pred);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void inspect(final EvalPair<Set<KeyT>, Set<ValT>> item) {
+      final EvalPair<Set<F>, Set<F>> out =
+          EvalPair.of((Set<F>) FluentIterable.from(item.key()).filter(pred).toSet(),
+              (Set<F>) FluentIterable.from(item.test()).filter(pred).toSet());
+      for (final Inspector<EvalPair<Set<F>, Set<F>>> consumer : consumers()) {
         consumer.inspect(out);
       }
     }
