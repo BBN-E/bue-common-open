@@ -11,12 +11,12 @@ import com.google.common.primitives.Ints;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
+public class OffsetRange<OffsetType extends Offset<OffsetType>> {
 
   private final OffsetType startInclusive;
   private final OffsetType endInclusive;
 
-  public static <OffsetType extends Offset & Comparable<OffsetType>> OffsetRange<OffsetType> fromInclusiveEndpoints(
+  public static <OffsetType extends Offset<OffsetType>> OffsetRange<OffsetType> fromInclusiveEndpoints(
       OffsetType startInclusive, OffsetType endInclusive) {
     checkArgument(startInclusive.asInt() <= endInclusive.asInt());
     return new OffsetRange<OffsetType>(startInclusive, endInclusive);
@@ -61,7 +61,7 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
         .equal(this.endInclusive, other.endInclusive);
   }
 
-  public static final <T extends Offset & Comparable<T>> Ordering<OffsetRange<T>> byLengthOrdering() {
+  public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byLengthOrdering() {
     return new Ordering<OffsetRange<T>>() {
       @Override
       public int compare(final OffsetRange<T> left, final OffsetRange<T> right) {
@@ -70,7 +70,7 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
     };
   }
 
-  private static final <T extends Offset & Comparable<T>> Function<OffsetRange<T>, T> toStartInclusiveFunction() {
+  private static final <T extends Offset<T>> Function<OffsetRange<T>, T> toStartInclusiveFunction() {
     return new Function<OffsetRange<T>, T>() {
       @Override
       public T apply(OffsetRange<T> x) {
@@ -79,7 +79,7 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
     };
   }
 
-  private static final <T extends Offset & Comparable<T>> Function<OffsetRange<T>, T> toEndInclusiveFunction() {
+  private static final <T extends Offset<T>> Function<OffsetRange<T>, T> toEndInclusiveFunction() {
     return new Function<OffsetRange<T>, T>() {
       @Override
       public T apply(OffsetRange<T> x) {
@@ -88,11 +88,11 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
     };
   }
 
-  public static final <T extends Offset & Comparable<T>> Ordering<OffsetRange<T>> byStartOrdering() {
+  public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byStartOrdering() {
     return Ordering.<T>natural().onResultOf(OffsetRange.<T>toStartInclusiveFunction());
   }
 
-  public static final <T extends Offset & Comparable<T>> Ordering<OffsetRange<T>> byEndOrdering() {
+  public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byEndOrdering() {
     return Ordering.<T>natural().onResultOf(OffsetRange.<T>toEndInclusiveFunction());
   }
 
@@ -138,7 +138,7 @@ public class OffsetRange<OffsetType extends Offset & Comparable<OffsetType>> {
     return asRange().encloses(other.asRange());
   }
 
-  public static <OffsetType extends Offset & Comparable<OffsetType>>
+  public static <OffsetType extends Offset<OffsetType>>
   Predicate<OffsetRange<OffsetType>> containedInPredicate(final OffsetRange<OffsetType> container) {
     return new Predicate<OffsetRange<OffsetType>>() {
       @Override

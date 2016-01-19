@@ -24,10 +24,10 @@ public class EDLTest {
             Resources.getResource(EDLTest.class, "edl-sample.txt"), Charsets.UTF_8));
     assertEquals(2, edlMentions.size());
     final EDLMention secondMention = edlMentions.get(1);
-    assertEquals("BBN1", secondMention.runId());
+    assertEquals("BBN1", secondMention.runId().asString());
     assertEquals("ment-2", secondMention.mentionId());
     assertEquals("BBN Technologies", secondMention.headString());
-    assertEquals("NYT20081231002", secondMention.documentID());
+    assertEquals("NYT20081231002", secondMention.documentID().asString());
     assertEquals(OffsetRange.charOffsetRange(0, 15), secondMention.headOffsets());
     assertEquals(0.765, secondMention.confidence(), .0001);
   }

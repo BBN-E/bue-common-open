@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * such as a named entity type or a part of speech.
  */
 @Beta
-public final class ScoringTypedOffsetRange<T extends Offset & Comparable<T>>
+public final class ScoringTypedOffsetRange<T extends Offset<T>>
     implements HasDocID, HasScoringType, HasOffsetRange {
 
   private final Symbol docId;
@@ -33,7 +33,7 @@ public final class ScoringTypedOffsetRange<T extends Offset & Comparable<T>>
     this.offsetRange = checkNotNull(offsetRange);
   }
 
-  public static <T extends Offset & Comparable<T>> ScoringTypedOffsetRange<T> create(final Symbol docId,
+  public static <T extends Offset<T>> ScoringTypedOffsetRange<T> create(final Symbol docId,
       final Symbol type, final OffsetRange<T> offsetRange) {
     return new ScoringTypedOffsetRange<T>(docId, type, offsetRange);
   }
@@ -85,15 +85,15 @@ public final class ScoringTypedOffsetRange<T extends Offset & Comparable<T>>
     return new DocIdOffsetEquivalence();
   }
 
-  public static Function<ScoringTypedOffsetRange<?>, Symbol> typeFunction() {
-    return TypeFunction.INSTANCE;
+  public static <T extends Offset<T>> Function<ScoringTypedOffsetRange<T>, Symbol> typeFunction() {
+    return new TypeFunction<>();
   }
 
   /**
    * Provides an ordering of {@code ScoringTypedOffsetRange} by their degree of overlap with a
    * reference {@code ScoringTypedOffsetRange}, from least overlap to most.
    */
-  public static <OffsetType extends Offset & Comparable<OffsetType>> Ordering<ScoringTypedOffsetRange<OffsetType>>
+  public static <OffsetType extends Offset<OffsetType>> Ordering<ScoringTypedOffsetRange<OffsetType>>
     orderByOverlapWith(final ScoringTypedOffsetRange<OffsetType> reference) {
     return new Ordering<ScoringTypedOffsetRange<OffsetType>>() {
       @Override
@@ -110,12 +110,12 @@ public final class ScoringTypedOffsetRange<T extends Offset & Comparable<T>>
     };
   }
 
-  private enum TypeFunction implements Function<ScoringTypedOffsetRange<?>, Symbol> {
-    INSTANCE {
-      @Override
-      public Symbol apply(final ScoringTypedOffsetRange<?> input) {
-        return input.scoringType();
-      }
+  private static final class TypeFunction<T extends Offset<T>>
+      implements Function<ScoringTypedOffsetRange<T>, Symbol> {
+
+    @Override
+    public Symbol apply(final ScoringTypedOffsetRange<T> input) {
+      return input.scoringType();
     }
   }
 

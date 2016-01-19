@@ -1,12 +1,12 @@
 package com.bbn.bue.common.strings.offsets;
 
-public interface Offset {
+public interface Offset<SelfType extends Offset<SelfType>> extends Comparable<SelfType> {
 
   /**
    * Prefer {@link #asInt()}
    */
   @Deprecated
-  public int value();
+  int value();
 
-  public int asInt();
+  int asInt();
 }
