@@ -73,8 +73,9 @@ public final class EDLLoader {
 
   private EDLMention parseMention(final String line) throws IOException {
     final List<String> parts = StringUtils.OnTabs.splitToList(line);
-    if (parts.size() != 8) {
-      throw new IOException("Expected 8 fields but got " + parts.size());
+    if (parts.size() != 8 && parts.size() != 11) {
+      throw new IOException(
+          "Expected 8 fields (or 11 for assessment file) but got " + parts.size());
     }
 
     final double confidence;
