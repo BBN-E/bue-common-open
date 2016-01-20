@@ -3,9 +3,13 @@ package com.bbn.nlp.edl;
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.io.CharSource;
+import com.google.common.io.Files;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +46,21 @@ public final class EDLLoader {
     }
 
     return ret.build();
+  }
+
+  /**
+   * Loads EDL mentions, grouped by document. Multimap keys are in alphabetical order
+   * by document ID.
+   */
+  public ImmutableListMultimap<Symbol, EDLMention> loadEDLMentionsByDocFrom(CharSource source) throws IOException {
+    final ImmutableList<EDLMention> edlMentions = loadEDLMentionsFrom(source));
+    final ImmutableListMultimap.Builder<Symbol, EDLMention> byDocs =
+        ImmutableListMultimap.<Symbol, EDLMention>builder()
+            .orderKeysBy(SymbolUtils.byStringOrdering());
+    for (final EDLMention edlMention : edlMentions) {
+      byDocs.put(edlMention.documentID(), edlMention);
+    }
+    return byDocs.build();
   }
 
   private static final int RUN_ID = 0;
