@@ -4,6 +4,7 @@ import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Range;
 
@@ -106,5 +107,31 @@ public final class EDLMention {
         && Objects.equal(this.mentionType, other.mentionType)
         && Objects.equal(this.entityType, other.entityType)
         && Objects.equal(this.confidence, other.confidence);
+  }
+
+  public static Function<EDLMention, Symbol> entityTypeFunction() {
+    return EntityTypeFunction.INSTANCE;
+  }
+
+  public static Function<EDLMention, Symbol> mentionTypeFunction() {
+    return MentionTypeFunction.INSTANCE;
+  }
+
+  private enum EntityTypeFunction implements Function<EDLMention, Symbol> {
+    INSTANCE {
+      @Override
+      public Symbol apply(final EDLMention input) {
+        return input.entityType();
+      }
+    };
+  }
+
+  private enum MentionTypeFunction implements Function<EDLMention, Symbol> {
+    INSTANCE {
+      @Override
+      public Symbol apply(final EDLMention input) {
+        return input.mentionType();
+      }
+    };
   }
 }
