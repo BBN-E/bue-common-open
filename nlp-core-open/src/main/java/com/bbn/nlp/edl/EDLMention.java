@@ -1,5 +1,6 @@
 package com.bbn.nlp.edl;
 
+import com.bbn.bue.common.evaluation.ScoringTypedOffsetRange;
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
@@ -117,13 +118,17 @@ public final class EDLMention {
     return MentionTypeFunction.INSTANCE;
   }
 
+  public static Function<EDLMention, ScoringTypedOffsetRange<CharOffset>> asTypedOffsetRangeFunction() {
+    return AsTypedOffsetRangeFunction.INSTANCE;
+  }
+
   private enum EntityTypeFunction implements Function<EDLMention, Symbol> {
     INSTANCE {
       @Override
       public Symbol apply(final EDLMention input) {
         return input.entityType();
       }
-    };
+    }
   }
 
   private enum MentionTypeFunction implements Function<EDLMention, Symbol> {
@@ -132,6 +137,17 @@ public final class EDLMention {
       public Symbol apply(final EDLMention input) {
         return input.mentionType();
       }
-    };
+    }
+  }
+
+  private enum AsTypedOffsetRangeFunction
+      implements Function<EDLMention, ScoringTypedOffsetRange<CharOffset>> {
+    INSTANCE {
+      @Override
+      public ScoringTypedOffsetRange<CharOffset> apply(final EDLMention input) {
+        return ScoringTypedOffsetRange
+            .create(input.documentID(), input.entityType(), input.headOffsets());
+      }
+    }
   }
 }
