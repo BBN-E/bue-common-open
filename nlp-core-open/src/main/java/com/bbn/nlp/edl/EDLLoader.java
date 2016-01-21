@@ -3,8 +3,10 @@ package com.bbn.nlp.edl;
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.io.CharSource;
 
 import org.slf4j.Logger;
@@ -44,6 +46,21 @@ public final class EDLLoader {
     return ret.build();
   }
 
+  /**
+   * Loads EDL mentions, grouped by document. Multimap keys are in alphabetical order
+   * by document ID.
+   */
+  public ImmutableListMultimap<Symbol, EDLMention> loadEDLMentionsByDocFrom(CharSource source) throws IOException {
+    final ImmutableList<EDLMention> edlMentions = loadEDLMentionsFrom(source);
+    final ImmutableListMultimap.Builder<Symbol, EDLMention> byDocs =
+        ImmutableListMultimap.<Symbol, EDLMention>builder()
+            .orderKeysBy(SymbolUtils.byStringOrdering());
+    for (final EDLMention edlMention : edlMentions) {
+      byDocs.put(edlMention.documentID(), edlMention);
+    }
+    return byDocs.build();
+  }
+
   private static final int RUN_ID = 0;
   private static final int MENTION_ID = 1;
   private static final int HEAD_STRING = 2;
@@ -56,8 +73,9 @@ public final class EDLLoader {
 
   private EDLMention parseMention(final String line) throws IOException {
     final List<String> parts = StringUtils.OnTabs.splitToList(line);
-    if (parts.size() != 8) {
-      throw new IOException("Expected 8 fields but got " + parts.size());
+    if (parts.size() != 8 && parts.size() != 11) {
+      throw new IOException(
+          "Expected 8 fields (or 11 for assessment file) but got " + parts.size());
     }
 
     final double confidence;
