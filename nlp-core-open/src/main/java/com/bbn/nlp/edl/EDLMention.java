@@ -110,14 +110,26 @@ public final class EDLMention {
         && Objects.equal(this.confidence, other.confidence);
   }
 
+  /**
+   * Guava {@link Function} mapping from {@code EDLMention}s to their entity types.
+   */
   public static Function<EDLMention, Symbol> entityTypeFunction() {
     return EntityTypeFunction.INSTANCE;
   }
 
+  /**
+   * Guava {@link Function} mapping from {@code EDLMention}s to their
+   * mention types.
+   */
   public static Function<EDLMention, Symbol> mentionTypeFunction() {
     return MentionTypeFunction.INSTANCE;
   }
 
+  /**
+   * Guava {@link Function} to transform an {@code EDLMention}s to
+   * a {@link ScoringTypedOffsetRange} with offsets corresponding to
+   * {@link #headOffsets()} and type corresponding to {@link #entityType()}.
+   */
   public static Function<EDLMention, ScoringTypedOffsetRange<CharOffset>> asTypedOffsetRangeFunction() {
     return AsTypedOffsetRangeFunction.INSTANCE;
   }
