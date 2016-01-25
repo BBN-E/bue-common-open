@@ -38,6 +38,11 @@ public final class DoubleAccumulator implements ScalableAccumulator<Double> {
 
 
   @Override
+  public void reset() {
+    val = 0.0;
+  }
+
+  @Override
   public Double value() {
     return val;
   }

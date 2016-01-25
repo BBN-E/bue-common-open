@@ -25,5 +25,7 @@ public interface Accumulator<T> {
    * @return
    */
   T value();
+
+  void reset();
 }
 
