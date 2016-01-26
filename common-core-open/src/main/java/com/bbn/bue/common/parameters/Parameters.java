@@ -594,6 +594,15 @@ public final class Parameters {
     }
   }
 
+  public Optional<Integer> getOptionalPositiveInteger(final String param) {
+    if (isPresent(param)) {
+      return Optional.of(get(param, new StringToInteger(),
+          new IsPositive<Integer>(), "positive integer"));
+    } else {
+      return Optional.absent();
+    }
+  }
+
   /**
    * Gets an positive integer parameter.
    */
