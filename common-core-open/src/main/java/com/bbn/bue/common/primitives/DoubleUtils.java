@@ -276,4 +276,35 @@ public final class DoubleUtils {
     }
   }
 
+  /**
+   * Clips the given value within the given bounds.  If {@code -bounds <=  val <= bounds}, {@code
+   * val} is returned unchanged. Otherwise, {@code -bounds} is returned if {@code val<bounds} and
+   * {@code bounds} is returned if {@code val>bounds}. If {@code bounds} is negative, an {@link
+   * IllegalArgumentException} will be thrown.  In inner loops, consider using {@link
+   * #clipRecklessly(double, double)}.
+   *
+   * {@code NaN} values will be left unchanged, but positive and negative infinity will be clipped.
+   */
+  public static double clip(double val, double bounds) {
+    checkArgument(bounds >= 0.0);
+    return clipRecklessly(val, bounds);
+  }
+
+  /**
+   * Clips the given value within the given bounds.  If {@code -bounds <=  val <= bounds}, {@code
+   * val} is returned unchanged. Otherwise, {@code -bounds} is returned if {@code val<bounds} and
+   * {@code bounds} is returned if {@code val>bounds}. {@code bounds} must be non-negative, but this
+   * is not enforced, so prefer using {@link #clip(double, double)} except in inner-loops.
+   *
+   * {@code NaN} values will be left unchanged, but positive and negative infinity will be clipped.
+   */
+  public static double clipRecklessly(double val, double bounds) {
+    if (val > bounds) {
+      return bounds;
+    } else if (val < -bounds) {
+      return -bounds;
+    } else {
+      return val;
+    }
+  }
 }
