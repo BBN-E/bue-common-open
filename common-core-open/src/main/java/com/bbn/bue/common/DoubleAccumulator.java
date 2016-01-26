@@ -1,7 +1,7 @@
 package com.bbn.bue.common;
 
 /**
- * An {@link Accumulator} for {@code double}s.
+ * An {@link Accumulator} for {@code double}s.  This class is not thread-safe!
  *
  * Based on FACTORIE's {@code DoubleAccumulator}.
  */
