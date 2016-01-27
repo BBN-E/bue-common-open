@@ -1,5 +1,6 @@
 package com.bbn.bue.common.collections;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
@@ -43,5 +44,23 @@ public final class RangeUtils {
     } else {
       return Optional.absent();
     }
+  }
+
+  public static <T extends Comparable<T>> Function<Range<T>, T> lowerEndPointFunction() {
+    return new Function<Range<T>, T>() {
+      @Override
+      public T apply(final Range<T> input) {
+        return input.lowerEndpoint();
+      }
+    };
+  }
+
+  public static <T extends Comparable<T>> Function<Range<T>, T> upperEndPointFunction() {
+    return new Function<Range<T>, T>() {
+      @Override
+      public T apply(final Range<T> input) {
+        return input.upperEndpoint();
+      }
+    };
   }
 }
