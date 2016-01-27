@@ -269,6 +269,16 @@ public final class StringUtils {
     };
   }
 
+  public static final Predicate<String> isEmpty() {
+    return new Predicate<String>() {
+      @Override
+      public boolean apply(final String input) {
+        checkArgument(input != null);
+        return input.isEmpty();
+      }
+    };
+  }
+
   /**
    * Just like {@link java.lang.String#indexOf(String, int)}, except it searches for all strings in
    * {@code probes}.  If none are found, returns -1. If any are found, returns the earliest index of
