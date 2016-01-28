@@ -26,8 +26,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.all;
 
 /**
- * A confusion matrix which tracks only the number of entries in each cell.  Row and column labels
- * may not be null.
+ * Utilities for working with {@link SummaryConfusionMatrix}es.  In particular, to build a
+ * {@link SummaryConfusionMatrix}, use {@link  #builder()}.
+ *
+ * Other useful things: computing F-measures ({@link #FMeasureVsAllOthers(SummaryConfusionMatrix, Symbol)})
+ * and pretty-printing ({@link #prettyPrint(SummaryConfusionMatrix)}.
  *
  * @author rgabbard
  */
@@ -135,6 +138,14 @@ public final class SummaryConfusionMatrices {
     return new Builder();
   }
 
+  /**
+   * To build a {@link SummaryConfusionMatrix}, call {@link SummaryConfusionMatrices#builder()}. On
+   * the returned object, call {@link #accumulatePredictedGold(Symbol, Symbol, double)} to record
+   * the number of times a system response corresponds to a gold standard responses for some item.
+   * Typically the double value will be 1.0 unless you are using fractional counts for some reason.
+   *
+   * When done, call {@link #build()} to get a {@link SummaryConfusionMatrix}.
+   */
   public static class Builder {
 
     private final Table<Symbol, Symbol, Double> table = HashBasedTable.create();
@@ -190,6 +201,8 @@ public final class SummaryConfusionMatrices {
     }
   }
 }
+
+// here be implementation details users don't need to be concerned with
 
 class TableBasedSummaryConfusionMatrix implements SummaryConfusionMatrix {
 
