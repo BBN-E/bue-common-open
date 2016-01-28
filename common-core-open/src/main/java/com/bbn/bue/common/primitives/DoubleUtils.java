@@ -67,6 +67,18 @@ public final class DoubleUtils {
     return ret;
   }
 
+
+  /**
+   * Avoid division by zero.
+   */
+  public static double XOverYOrZero(final double x, final double y) {
+    if (y != 0.0) {
+      return x / y;
+    } else {
+      return 0.0;
+    }
+  }
+
   /**
    * Returns the index of the first minimal element of the array. That is, if there is a unique
    * minimum, its index is returned. If there are multiple values tied for smallest, the index of

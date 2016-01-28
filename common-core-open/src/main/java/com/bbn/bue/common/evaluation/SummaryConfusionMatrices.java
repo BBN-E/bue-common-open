@@ -127,12 +127,30 @@ public final class SummaryConfusionMatrices {
     for (final Symbol key : Sets.intersection(m.leftLabels(), m.rightLabels())) {
       matching += m.cell(key, key);
     }
-    if (total != 0.0) {
-      return matching / total;
-    } else {
-      return 0.0;
-    }
+    return DoubleUtils.XOverYOrZero(matching, total);
   }
+
+  /**
+   * Returns the maximum accuracy that would be achieved if a single classification were
+   *   selected for all instances.
+   */
+  public static final double chooseMostCommonRightHandClassAccuracy(SummaryConfusionMatrix m) {
+    final double total = m.sumOfallCells();
+    double max = 0.0;
+    for (final Symbol right : m.rightLabels()) {
+      max = Math.max(max, m.columnSum(right));
+    }
+    return DoubleUtils.XOverYOrZero(max, total);
+  }
+  public static final double chooseMostCommonLeftHandClassAccuracy(SummaryConfusionMatrix m) {
+    final double total = m.sumOfallCells();
+    double max = 0.0;
+    for (final Symbol left : m.leftLabels()) {
+      max = Math.max(max, m.rowSum(left));
+    }
+    return DoubleUtils.XOverYOrZero(max, total);
+  }
+
 
   public static Builder builder() {
     return new Builder();
