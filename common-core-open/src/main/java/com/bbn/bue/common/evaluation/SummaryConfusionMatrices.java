@@ -115,16 +115,6 @@ public final class SummaryConfusionMatrices {
         (float) falseNegatives);
   }
 
-  /**
-   * Helper function to avoid division by zero.
-   */
-  private static double safeXoverY(final double x, final double y) {
-    if (y != 0.0) {
-      return x / y;
-    } else {
-      return 0.0;
-    }
-  }
 
   /**
    * Returns accuracy, which is defined as the sum of the cells of the form (X,X) over the sum of
@@ -137,7 +127,7 @@ public final class SummaryConfusionMatrices {
     for (final Symbol key : Sets.intersection(m.leftLabels(), m.rightLabels())) {
       matching += m.cell(key, key);
     }
-    return safeXoverY(matching, total);
+    return DoubleUtils.XOverYOrZero(matching, total);
   }
 
   /**
@@ -150,7 +140,7 @@ public final class SummaryConfusionMatrices {
     for (final Symbol right : m.rightLabels()) {
       max = Math.max(max, m.columnSum(right));
     }
-    return safeXoverY(max, total);
+    return DoubleUtils.XOverYOrZero(max, total);
   }
   public static final double chooseMostCommonLeftHandClassAccuracy(SummaryConfusionMatrix m) {
     final double total = m.sumOfallCells();
@@ -158,7 +148,7 @@ public final class SummaryConfusionMatrices {
     for (final Symbol left : m.leftLabels()) {
       max = Math.max(max, m.rowSum(left));
     }
-    return safeXoverY(max, total);
+    return DoubleUtils.XOverYOrZero(max, total);
   }
 
 
