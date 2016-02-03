@@ -35,7 +35,7 @@ public final class ShufflingIterable<T> implements Iterable<T> {
   @Override
   public Iterator<T> iterator() {
     final List<T> shuffledList = Lists.newArrayList(data);
-    Collections.shuffle(shuffledList);
+    Collections.shuffle(shuffledList, rng);
     return Collections.unmodifiableList(shuffledList).iterator();
   }
 }
