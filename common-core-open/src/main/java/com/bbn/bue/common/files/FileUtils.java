@@ -250,6 +250,10 @@ public final class FileUtils {
     final ImmutableMap.Builder<String, File> ret = ImmutableMap.builder();
     int lineNo = 0;
     for (final String line : source.readLines()) {
+      if (line.isEmpty()) {
+        continue;
+      }
+
       final Iterator<String> parts = onTab.split(line).iterator();
 
       final String key;
