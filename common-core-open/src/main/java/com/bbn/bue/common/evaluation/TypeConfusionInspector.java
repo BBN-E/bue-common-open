@@ -178,7 +178,8 @@ public final class TypeConfusionInspector<LeftRightT>
     for (final LeftRightT item : items) {
       final Equivalence.Wrapper<LeftRightT> wrapped = wrapperFunction.apply(item);
       if (equivalenceMap.containsKey(wrapped)) {
-        log.warn("Multiple values with same key: '{}' and '{}'", item, equivalenceMap.get(wrapped));
+        log.warn("Multiple values with same key: '{}'(new) and '{}'(existing). Skipping new value.", item,
+            equivalenceMap.get(wrapped));
       } else {
         equivalenceMap.put(wrapped, item);
       }
