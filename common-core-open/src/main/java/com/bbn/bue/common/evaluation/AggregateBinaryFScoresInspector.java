@@ -35,25 +35,25 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
       SummaryConfusionMatrices.builder();
   private final String outputName;
   private final File outputDir;
-  private final ImmutableList<ScoringEventObserver<KeyT, TestT>> scoringEventObservers;
+  private final ImmutableList<? extends ScoringEventObserver<? super KeyT, ? super TestT>> scoringEventObservers;
 
   private AggregateBinaryFScoresInspector(final String outputName, final File outputDir,
-      final ImmutableList<ScoringEventObserver<KeyT, TestT>> scoringEventObservers) {
+      final Iterable<? extends ScoringEventObserver<? super KeyT, ? super TestT>> scoringEventObservers) {
     this.outputName = checkNotNull(outputName);
     this.outputDir = checkNotNull(outputDir);
-    this.scoringEventObservers = checkNotNull(scoringEventObservers);
+    this.scoringEventObservers = ImmutableList.copyOf(scoringEventObservers);
   }
 
   public static <KeyT, TestT> AggregateBinaryFScoresInspector<KeyT, TestT> createOutputtingTo(final String outputName,
       final File outputDir) {
-    return new AggregateBinaryFScoresInspector<KeyT, TestT>(outputName, outputDir,
-        ImmutableList.<ScoringEventObserver<KeyT,TestT>>of());
+    return new AggregateBinaryFScoresInspector<>(outputName, outputDir,
+        ImmutableList.<ScoringEventObserver<KeyT, TestT>>of());
   }
 
   public static <KeyT, TestT> AggregateBinaryFScoresInspector<KeyT, TestT> createWithScoringObservers(
       final String outputName, final File outputDir,
-      final Iterable<? extends ScoringEventObserver<KeyT, TestT>> scoringObservers) {
-    return new AggregateBinaryFScoresInspector<>(outputName, outputDir, ImmutableList.copyOf(scoringObservers));
+      final Iterable<? extends ScoringEventObserver<? super KeyT, ? super TestT>> scoringObservers) {
+    return new AggregateBinaryFScoresInspector<>(outputName, outputDir, scoringObservers);
   }
 
   @Override
@@ -82,7 +82,7 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
         // We take the first aligned item as the alignment. Since this predicted item is aligned, we are guaranteed that
         // an aligned item exists.
         final KeyT gold = alignment.alignedToRightItem(predicted).iterator().next();
-        for (final ScoringEventObserver<KeyT, TestT> observer : scoringEventObservers) {
+        for (final ScoringEventObserver<? super KeyT, ? super TestT> observer : scoringEventObservers) {
           observer.observeTruePositive(gold, predicted, 1.0);
         }
       }
@@ -92,7 +92,7 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
       final Set<? extends TestT> falsePositives = alignment.rightUnaligned();
       summaryConfusionMatrixB.accumulatePredictedGold(PRESENT, ABSENT, falsePositives.size());
       for (final TestT predicted : falsePositives) {
-        for (final ScoringEventObserver<KeyT, TestT> observer : scoringEventObservers) {
+        for (final ScoringEventObserver<? super KeyT, ? super TestT> observer : scoringEventObservers) {
           observer.observeFalsePositive(predicted, 1.0);
         }
       }
@@ -102,7 +102,7 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
       final Set<? extends KeyT> falseNegatives = alignment.leftUnaligned();
       summaryConfusionMatrixB.accumulatePredictedGold(ABSENT, PRESENT, falseNegatives.size());
       for (final KeyT gold : falseNegatives) {
-        for (final ScoringEventObserver<KeyT, TestT> observer : scoringEventObservers) {
+        for (final ScoringEventObserver<? super KeyT, ? super TestT> observer : scoringEventObservers) {
           observer.observeFalseNegative(gold, 1.0);
         }
       }
