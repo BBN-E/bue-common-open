@@ -35,7 +35,7 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
       SummaryConfusionMatrices.builder();
   private final String outputName;
   private final File outputDir;
-  private final ImmutableList<? extends ScoringEventObserver<? super KeyT, ? super TestT>> scoringEventObservers;
+  private final ImmutableList<ScoringEventObserver<? super KeyT, ? super TestT>> scoringEventObservers;
 
   private AggregateBinaryFScoresInspector(final String outputName, final File outputDir,
       final Iterable<? extends ScoringEventObserver<? super KeyT, ? super TestT>> scoringEventObservers) {
