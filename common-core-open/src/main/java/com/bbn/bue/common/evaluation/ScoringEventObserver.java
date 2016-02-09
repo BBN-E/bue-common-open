@@ -10,9 +10,9 @@ import java.io.IOException;
  * {@link #finish(File)} is expected to be called when there are no more items to inspect. What happens if more items
  * are observed after finishing is not defined by the interface contract.
  *
- * An implementation is not required to take action upon every observation; for example, an F-score related observer
- * would take no action upon observation of a true negative. The author of an implementation may choose to raise an
- * exception if the implementation is asked to observe an event they cannot meaningfully observe.
+ * Implementations may silently take no action for some types of observations. For example, an F-score related observer
+ * would take no action upon observation of a true negative. However, an implementation should raise an exception simply
+ * because it is asked to observe an event for which it will take no action.
  *
  * @author Constantine Lignos
  */
