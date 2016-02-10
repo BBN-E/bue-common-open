@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Guava's {@link com.google.common.collect.ImmutableMap.Builder} disallows adding the same key
  * twice, even with the same value. In many situations this is inconvenient, so this interface
- * i sthe parent of builders which relax this constraint in various ways.
+ * is the parent of builders which relax this constraint in various ways.
  * See
  * {@link MapUtils#immutableMapBuilderAllowingSameEntryTwice()},
  * {@link MapUtils#immutableMapBuilderIgnoringDuplicates()}, and
