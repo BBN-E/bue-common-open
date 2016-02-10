@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public final class PrecisionRecallPair extends FMeasureInfo {
 
-  public PrecisionRecallPair(float precision, float recall) {
+  public PrecisionRecallPair(double precision, double recall) {
     checkArgument(precision >= 0.0);
     checkArgument(recall >= 0.0);
 
@@ -12,14 +12,14 @@ public final class PrecisionRecallPair extends FMeasureInfo {
     this.recall = recall;
   }
 
-  public float precision() {
+  public double precision() {
     return precision;
   }
 
-  public float recall() {
+  public double recall() {
     return recall;
   }
 
-  private final float precision;
-  private final float recall;
+  private final double precision;
+  private final double recall;
 }
