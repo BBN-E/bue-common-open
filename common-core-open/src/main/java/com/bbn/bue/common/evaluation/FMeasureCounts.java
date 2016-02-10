@@ -40,7 +40,7 @@ public final class FMeasureCounts extends FMeasureInfo {
   public static FMeasureCounts fromTPFPFN(final double truePositives,
       final double falsePositives, final double falseNegatives) {
     return fromFPFNKeyCountSysCount(falsePositives, falseNegatives,
-        truePositives + falseNegatives, truePositives + falseNegatives);
+        truePositives + falseNegatives, truePositives + falsePositives);
   }
 
   /**

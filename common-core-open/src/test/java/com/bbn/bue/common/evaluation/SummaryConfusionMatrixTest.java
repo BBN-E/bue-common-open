@@ -46,16 +46,16 @@ public class SummaryConfusionMatrixTest {
         confusionMatrix));
 
     // F-measure for PER: 2 true positives, 2 false positives, 1 false negative
-    final float perPrec = 2.0F / 4.0F;
-    final float perRecall = 2.0F / 3.0F;
-    final float perF = (2 * perPrec * perRecall) / (perPrec + perRecall);
+    final double perPrec = 2.0 / 4.0;
+    final double perRecall = 2.0 / 3.0;
+    final double perF = (2 * perPrec * perRecall) / (perPrec + perRecall);
     assertEquals(perF,
         SummaryConfusionMatrices.FMeasureVsAllOthers(confusionMatrix, PER).F1());
 
     // F-measure for ORG: 1 true positive, 1 false positive, 2 false negatives
-    final float orgPrec = 1.0F / 2.0F;
-    final float orgRecall = 1.0F / 3.0F;
-    final float orgF = (2 * orgPrec * orgRecall) / (orgPrec + orgRecall);
+    final double orgPrec = 1.0 / 2.0;
+    final double orgRecall = 1.0 / 3.0;
+    final double orgF = (2 * orgPrec * orgRecall) / (orgPrec + orgRecall);
     assertEquals(orgF,
         SummaryConfusionMatrices.FMeasureVsAllOthers(confusionMatrix, ORG).F1());
 
