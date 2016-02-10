@@ -8,18 +8,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class FMeasureCountsMixin {
 
   @JsonCreator
-  public static FMeasureCounts from(@JsonProperty("truePositives") final float truePositives,
-      @JsonProperty("falsePositives") final float falsePositives,
-      @JsonProperty("falseNegatives") final float falseNegatives) {
+  public static FMeasureCounts fromFPFNKeyCountSysCount
+      (@JsonProperty("falsePositives") final double falsePositives,
+          @JsonProperty("falseNegatives") final double falseNegatives,
+          @JsonProperty("keyCount") double keyCount,
+          @JsonProperty("sysCount") double sysCount) {
     return null;
   }
-
-  @JsonProperty("truePositives")
-  public abstract float truePositives();
 
   @JsonProperty("falsePositives")
   public abstract float falsePositives();
 
   @JsonProperty("falseNegatives")
   public abstract float falseNegatives();
+
+  @JsonProperty("keyCount")
+  public abstract double numItemsInKey();
+
+  @JsonProperty("sysCount")
+  public abstract double numPredicted();
 }

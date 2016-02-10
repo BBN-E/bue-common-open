@@ -4,27 +4,30 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * The information needed to calculate precision, recall, and F-measure.
+ */
 public abstract class FMeasureInfo {
 
-  public abstract float precision();
+  public abstract double precision();
 
-  public abstract float recall();
+  public abstract double recall();
 
-  public final float F1() {
+  public final double F1() {
     return F(1.0f);
   }
 
-  public final float F(float beta) {
+  public final double F(float beta) {
     checkArgument(beta > 0.0);
-    final float recall = recall();
-    final float precision = precision();
+    final double recall = recall();
+    final double precision = precision();
 
     if (precision + recall > 0.0) {
-      return (1.0f + beta * beta)
+      return (1.0 + beta * beta)
           * precision * recall
           / (beta * beta * precision + recall);
     } else {
-      return 0.0f;
+      return 0.0;
     }
   }
 

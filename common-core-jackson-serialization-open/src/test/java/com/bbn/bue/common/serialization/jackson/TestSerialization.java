@@ -19,7 +19,7 @@ public class TestSerialization extends TestCase {
   @Test
   public void testFMeasureCounts() throws IOException {
     final Map<String, FMeasureCounts> foo = ImmutableMap.of("Hello",
-        FMeasureCounts.from(1, 2, 3));
+        FMeasureCounts.fromTPFPFN(1, 2, 3));
     final File tmp = File.createTempFile("foo", "bar");
     tmp.deleteOnExit();
 
@@ -29,7 +29,7 @@ public class TestSerialization extends TestCase {
   @Test
   public void testSerializingFromString() throws IOException {
     final Map<String, FMeasureCounts> foo = ImmutableMap.of("Hello",
-        FMeasureCounts.from(1, 2, 3));
+        FMeasureCounts.fromTPFPFN(1, 2, 3));
     final String serialized = serializer.writeValueAsString(foo);
     assertEquals(foo, serializer.deserializeFromString(serialized, foo.getClass()));
   }
