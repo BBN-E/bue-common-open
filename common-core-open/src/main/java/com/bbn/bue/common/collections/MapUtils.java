@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -331,4 +332,38 @@ public final class MapUtils {
       }
     }
   }
+
+  /**
+   * Creates a {@code LaxImmutableMapBuilder} which will behave exactly like a
+   * {@link com.google.common.collect.ImmutableMap.Builder} except it will allow adding the
+   * same key-value pair more than once. "Same" is determined by the value's equality method.
+   * The behavior of this builder and the resulting {@link ImmutableMap} is deterministic.
+   */
+  public static <K,V> LaxImmutableMapBuilder<K,V> immutableMapBuilderAllowingSameEntryTwice() {
+    return new MonotonicLaxImmutableMapBuilder<>(false);
+  }
+
+  /**
+   * Creates a {@code LaxImmutableMapBuilder} which will behave exactly like a
+   * {@link com.google.common.collect.ImmutableMap.Builder} except it will silently ignore
+   * any attempt to add a new entry with a previously seen key.
+   * The behavior of this builder and the resulting {@link ImmutableMap} is deterministic.
+   */
+  public static <K,V> LaxImmutableMapBuilder<K,V> immutableMapBuilderIgnoringDuplicates() {
+    return new MonotonicLaxImmutableMapBuilder<>(true);
+  }
+
+  /**
+   * Creates a {@code LaxImmutableMapBuilder} which will behave exactly like a
+   * {@link com.google.common.collect.ImmutableMap.Builder} except that when attempting to add
+   * a value for a previously seen key, the greater of the older value and the new value according
+   * to the provided comparator will be used.  In case of a tie, the incumbent stays.
+   *
+   * The behavior of this builder and the resulting {@link ImmutableMap} will be deterministic if
+   * the supplied comparator is.
+   */
+  public static <K,V> LaxImmutableMapBuilder<K,V> immutableMapBuilderResolvingDuplicatesBy(Comparator<? super V> conflictComparator) {
+    return new NonMonotonicLaxImmutableMapBuilder<>(Ordering.from(conflictComparator));
+  }
 }
+
