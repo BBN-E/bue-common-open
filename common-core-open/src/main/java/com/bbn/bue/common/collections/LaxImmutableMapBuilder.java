@@ -102,8 +102,6 @@ final class MonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBuild
 
 /**
  * Implementation for {@link LaxImmutableMapBuilder}s which do need to change their mind.
- * @param <K>
- * @param <V>
  */
 final class NonMonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBuilder<K,V> {
   private final ImmutableSet.Builder<K> orderKeysSeenIn = ImmutableSet.builder();
