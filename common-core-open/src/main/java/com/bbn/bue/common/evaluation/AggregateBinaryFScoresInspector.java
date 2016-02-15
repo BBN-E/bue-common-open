@@ -60,9 +60,11 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
   public void finish() throws IOException {
     final CharSink outSink = Files.asCharSink(new File(outputDir, outputName + FILE_SUFFIX), Charsets.UTF_8);
     final SummaryConfusionMatrix summaryConfusionMatrix = summaryConfusionMatrixB.build();
+    // Output the summaries and add a final newline
     outSink.write(StringUtils.NewlineJoiner.join(
         SummaryConfusionMatrices.prettyPrint(summaryConfusionMatrix),
-        SummaryConfusionMatrices.FMeasureVsAllOthers(summaryConfusionMatrix, PRESENT).compactPrettyString()));
+        SummaryConfusionMatrices.FMeasureVsAllOthers(summaryConfusionMatrix, PRESENT).compactPrettyString(),
+        ""));  // Empty string creates a bare newline at the end
 
     // Call finish on the observers
     for (final ScoringEventObserver observer : scoringEventObservers) {
