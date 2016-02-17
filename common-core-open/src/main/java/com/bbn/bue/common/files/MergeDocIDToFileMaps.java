@@ -71,7 +71,6 @@ public class MergeDocIDToFileMaps {
           // do nothing - it's fine to repeat the same mapping in multiple files
         }
       }
-      mergedMap.putAll(mapFromFile);
     }
     outputMap.getParentFile().mkdirs();
 
