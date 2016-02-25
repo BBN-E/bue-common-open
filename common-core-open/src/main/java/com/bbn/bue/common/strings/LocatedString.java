@@ -92,27 +92,58 @@ public final class LocatedString {
     return offsets;
   }
 
+  /**
+   * This method computes EDT offsets and is therefore deprecated. At some point it may be removed.
+   *
+   * @deprecated Prefer {@link #fromStringStartingAtZero(String)}
+   */
+  @Deprecated
   public static LocatedString forString(final String text) {
     final OffsetGroup initialOffsets = OffsetGroup.from(new ByteOffset(0), new CharOffset(0),
         EDTOffset.asEDTOffset(0));
     return forString(text, initialOffsets);
   }
 
+
   public static LocatedString forString(final String text, final OffsetGroupRange bounds,
       final List<OffsetEntry> spanOffsets) {
     return new LocatedString(text, spanOffsets, bounds);
   }
 
+  /**
+   * This method computes EDT offsets and is therefore deprecated. At some point it may be removed.
+   *
+   * @deprecated Prefer {@link #fromStringStartingAt(String, OffsetGroup)}
+   */
+  @Deprecated
   public static LocatedString forString(final String text, final OffsetGroup initialOffsets) {
     return forString(text, initialOffsets, false);
   }
 
+  /**
+   * This method may compute EDT offsets and is therefore deprecated. At some point it may be
+   * removed.
+   *
+   * @deprecated Prefer {@link #fromStringStartingAt(String, OffsetGroup)}
+   */
+  @Deprecated
   public static LocatedString forString(final String text, final OffsetGroup initialOffsets,
       final boolean EDTOffsetsAreCharOffsets) {
     final List<OffsetEntry> offsets =
         calculateOffsets(text, initialOffsets, EDTOffsetsAreCharOffsets);
     final OffsetGroupRange bounds = boundsFromOffsets(offsets);
     return new LocatedString(text, offsets, bounds);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static LocatedString fromStringStartingAtZero(final String text) {
+    return forString(text, OffsetGroup.fromMatchingCharAndEDT(0), true);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static LocatedString fromStringStartingAt(final String text,
+      final OffsetGroup initialOffsets) {
+    return forString(text, initialOffsets, true);
   }
 
   /**
