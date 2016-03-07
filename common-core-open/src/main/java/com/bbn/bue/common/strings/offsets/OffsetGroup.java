@@ -98,19 +98,21 @@ public final class OffsetGroup {
   public String toString() {
     final StringBuilder ret = new StringBuilder();
 
-    ret.append("OffGrp[");
-    ret.append("c=").append(charOffset.value())
-        .append(";e=").append(edtOffset.value());
+    if (charOffset.asInt() == edtOffset.asInt()) {
+      ret.append("ce").append(charOffset.asInt());
+    } else {
+      ret.append("c").append(charOffset.value())
+          .append(";e").append(edtOffset.value());
+    }
 
     if (byteOffset != null) {
-      ret.append(";b=").append(byteOffset.value());
+      ret.append(";b").append(byteOffset.value());
     }
 
     if (asrTime != null) {
-      ret.append(";asr=").append(asrTime.value());
+      ret.append(";asr").append(asrTime.value());
     }
 
-    ret.append("]");
     return ret.toString();
   }
 }
