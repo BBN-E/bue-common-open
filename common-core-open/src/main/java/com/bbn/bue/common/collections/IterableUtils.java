@@ -288,9 +288,19 @@ public final class IterableUtils {
    * be thrown.
    */
   public static <T> ImmutableMap<T, Integer> itemToIndexMap(final Iterable<T> sequence) {
+    return itemToIndexMapStartingFrom(sequence, 0);
+  }
+
+  /**
+   * Transforms an Iterable<T> to a Map<T, Integer> where each item is mapped to its position in the
+   * Iterable's sequence, where the first position is given index {@code startFrom}. If an item
+   * occurs twice, an IllegalArgumentException will be thrown.
+   */
+  public static <T> ImmutableMap<T, Integer> itemToIndexMapStartingFrom(final Iterable<T> sequence,
+      int startFrom) {
     final ImmutableMap.Builder<T, Integer> ret = ImmutableMap.builder();
 
-    int idx = 0;
+    int idx = startFrom;
     for (final T item : sequence) {
       ret.put(item, idx);
       ++idx;
@@ -298,6 +308,7 @@ public final class IterableUtils {
 
     return ret.build();
   }
+
 
   /**
    * Transforms an Iterable<T> to a Map<T, Integer> where each item is mapped to its zero-indexed
