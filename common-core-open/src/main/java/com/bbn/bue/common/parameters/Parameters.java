@@ -1049,8 +1049,19 @@ public final class Parameters {
     }
   }
 
+  /**
+   * Returns the dot-separated namespace.
+   */
   public String namespace() {
     return StringUtils.DotJoiner.join(namespace);
+  }
+
+  /**
+   * Returns the map of string parameter names to their string values. The namespace is not included in the keys; use
+   * {@link #namespace()} to get it.
+   */
+  public ImmutableMap<String, String> asMap() {
+    return params;
   }
 
   private final ImmutableMap<String, String> params;
