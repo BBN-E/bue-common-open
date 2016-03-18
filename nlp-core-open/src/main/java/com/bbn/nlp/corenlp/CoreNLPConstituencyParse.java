@@ -49,8 +49,8 @@ public final class CoreNLPConstituencyParse {
   /**
    * @return StanfordParseNodes in a pre-order Depth First Search.
    */
-  public Iterable<CoreNLPParseNode> preorderTraversal() {
-    return root.preorderTraversal();
+  public Iterable<CoreNLPParseNode> preorderDFSTraversal() {
+    return root.preorderDFSTraversal();
   }
 
   public String coreNLPString() {
@@ -87,7 +87,7 @@ public final class CoreNLPConstituencyParse {
       final ImmutableMultimap<Range<Integer>, Range<Integer>> parentToChildren,
       final ImmutableMap<Range<Integer>, CoreNLPParseNode> terminalNodes, final String parse,
       final boolean stripFunctionTags) {
-    final CoreNLPParseNode.StanfordParseNodeBuilder
+    final CoreNLPParseNode.CoreNLPParseNodeBuilder
         builder = CoreNLPParseNode.builderForNonTerminal(headFinder);
     builder.withTag(extractTag(subtreeRoot, parse, stripFunctionTags));
     for (final Range<Integer> child : parentToChildren.get(subtreeRoot)) {
@@ -128,7 +128,7 @@ public final class CoreNLPConstituencyParse {
 
     final ImmutableMap.Builder<Range<Integer>, CoreNLPParseNode> ret = ImmutableMap.builder();
     for (final Range<Integer> r : orderedTerminals) {
-      final CoreNLPParseNode.StanfordParseNodeBuilder builder =
+      final CoreNLPParseNode.CoreNLPParseNodeBuilder builder =
           CoreNLPParseNode.buildForTerminal();
       builder.withTag(extractTag(r, parse, stripFunctionTags));
       final String text = rangeToText(parse).apply(r);

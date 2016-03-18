@@ -71,7 +71,7 @@ public final class TestStanfordXML {
       for (final CoreNLPSentence sent : doc.sentences()) {
         assertTrue("the example input has a parse", sent.parse().isPresent());
         final ImmutableSet<CoreNLPParseNode> nodes =
-            ImmutableSet.copyOf(sent.parse().get().preorderTraversal());
+            ImmutableSet.copyOf(sent.parse().get().preorderDFSTraversal());
         final Set<CoreNLPParseNode> noParents = Sets.newHashSet();
         for (final CoreNLPParseNode n : nodes) {
           if (n.parent().isPresent()) {
@@ -92,7 +92,7 @@ public final class TestStanfordXML {
       assertTrue("no sentences!", doc.sentences().size() > 0);
       for (final CoreNLPSentence sent : doc.sentences()) {
         assertTrue("Expected a parse!", sent.parse().isPresent());
-        for (final CoreNLPParseNode node : sent.parse().get().preorderTraversal()) {
+        for (final CoreNLPParseNode node : sent.parse().get().preorderDFSTraversal()) {
           if (!node.terminal()) {
             assertTrue(
                 "Every non-terminal node constructed here is expected to have a head! " + node,
@@ -107,7 +107,7 @@ public final class TestStanfordXML {
 
   private void iterableParseNodesAreLoopLess(final CoreNLPConstituencyParse parse) {
     final Set<CoreNLPParseNode> visitedNodes = Sets.newHashSet();
-    for (CoreNLPParseNode n : parse.preorderTraversal()) {
+    for (CoreNLPParseNode n : parse.preorderDFSTraversal()) {
       assertFalse("found a loop when iterating over the nodes in our parse!",
           visitedNodes.contains(n));
       visitedNodes.add(n);
@@ -116,7 +116,7 @@ public final class TestStanfordXML {
 
   private static void parseIsConsistent(final CoreNLPSentence sent) {
     final ImmutableList<CoreNLPParseNode>
-        nodes = FluentIterable.from(ImmutableList.copyOf(sent.parse().get().preorderTraversal()))
+        nodes = FluentIterable.from(ImmutableList.copyOf(sent.parse().get().preorderDFSTraversal()))
         .filter(CoreNLPParseNode.isTerminal()).toList();
     final ImmutableList<CoreNLPToken> tokens = sent.tokens();
     assertEquals("have unequal numbers of terminal nodes and tokens!", nodes.size(), tokens.size());

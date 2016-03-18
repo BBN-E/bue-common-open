@@ -32,7 +32,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * This class and its consumers assume that you ran the Stanford pipeline with: {@code -annotators
  * tokenize,cleanxml,ssplit,parse -tokenize.options invertible  -outputFormat xml}
  *
- * It might accidentally work with other options; the import ones are tokenize, cleanxml,
+ * It might accidentally work with other options; the important ones are tokenize, cleanxml,
  * invertible, and xml
  */
 @Beta
@@ -43,7 +43,7 @@ public final class CoreNLPXMLLoader {
 
   private CoreNLPXMLLoader(final HeadFinder<CoreNLPParseNode> headFinder,
       final boolean stripFunctionTags) {
-    this.headFinder = headFinder;
+    this.headFinder = checkNotNull(headFinder);
     this.stripFunctionTags = stripFunctionTags;
   }
 
@@ -104,7 +104,7 @@ public final class CoreNLPXMLLoader {
 
   private CoreNLPDocument toDocument(final Element e) {
     checkArgument(e.getTagName().equalsIgnoreCase("Document"));
-    final CoreNLPDocument.StanfordDocumentBuilder documentBuilder =
+    final CoreNLPDocument.CoreNLPDocumentBuilder documentBuilder =
         CoreNLPDocument.builder();
     for (Node child = e.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {

@@ -136,16 +136,16 @@ public final class CoreNLPParseNode
     return span;
   }
 
-  public static StanfordParseNodeBuilder buildForTerminal() {
-    return new StanfordParseNodeBuilder(null);
+  public static CoreNLPParseNodeBuilder buildForTerminal() {
+    return new CoreNLPParseNodeBuilder(null);
   }
 
-  public static StanfordParseNodeBuilder builderForNonTerminal(
+  public static CoreNLPParseNodeBuilder builderForNonTerminal(
       final HeadFinder<CoreNLPParseNode> headFinder) {
-    return new StanfordParseNodeBuilder(headFinder);
+    return new CoreNLPParseNodeBuilder(headFinder);
   }
 
-  public static class StanfordParseNodeBuilder {
+  public static class CoreNLPParseNodeBuilder {
 
     private final HeadFinder<CoreNLPParseNode> headFinder;
 
@@ -154,33 +154,33 @@ public final class CoreNLPParseNode
     private Optional<String> text = Optional.absent();
     private Optional<CoreNLPToken> token = Optional.absent();
 
-    private StanfordParseNodeBuilder(final HeadFinder<CoreNLPParseNode> headFinder) {
+    private CoreNLPParseNodeBuilder(final HeadFinder<CoreNLPParseNode> headFinder) {
       this.headFinder = headFinder;
     }
 
-    public StanfordParseNodeBuilder withTag(Symbol tag) {
+    public CoreNLPParseNodeBuilder withTag(Symbol tag) {
       this.tag = tag;
       return this;
     }
 
-    public StanfordParseNodeBuilder addChildren(final List<CoreNLPParseNode> children) {
+    public CoreNLPParseNodeBuilder addChildren(final List<CoreNLPParseNode> children) {
       this.children.addAll(checkNotNull(children));
       return this;
     }
 
-    public StanfordParseNodeBuilder addChildren(final CoreNLPParseNode... children) {
+    public CoreNLPParseNodeBuilder addChildren(final CoreNLPParseNode... children) {
       for (final CoreNLPParseNode child : children) {
         this.children.add(checkNotNull(child));
       }
       return this;
     }
 
-    public StanfordParseNodeBuilder withText(Optional<String> text) {
+    public CoreNLPParseNodeBuilder withText(Optional<String> text) {
       this.text = text;
       return this;
     }
 
-    public StanfordParseNodeBuilder withToken(Optional<CoreNLPToken> token) {
+    public CoreNLPParseNodeBuilder withToken(Optional<CoreNLPToken> token) {
       this.token = token;
       return this;
     }
@@ -216,20 +216,20 @@ public final class CoreNLPParseNode
     };
   }
 
-  public Iterable<CoreNLPParseNode> preorderTraversal() {
+  public Iterable<CoreNLPParseNode> preorderDFSTraversal() {
     return new Iterable<CoreNLPParseNode>() {
       @Override
       public Iterator<CoreNLPParseNode> iterator() {
-        return new preorderTraversal();
+        return new PreorderTraversal();
       }
     };
   }
 
-  private class preorderTraversal implements Iterator<CoreNLPParseNode> {
+  private class PreorderTraversal implements Iterator<CoreNLPParseNode> {
 
     private final Stack<CoreNLPParseNode> nodes = new Stack<>();
 
-    public preorderTraversal() {
+    public PreorderTraversal() {
       nodes.push(CoreNLPParseNode.this);
     }
 
@@ -252,14 +252,5 @@ public final class CoreNLPParseNode
     public void remove() {
       throw new UnsupportedOperationException("Parses are immutable once created");
     }
-  }
-
-  public Iterable<CoreNLPParseNode> postorderTraversal() {
-    return new Iterable<CoreNLPParseNode>() {
-      @Override
-      public Iterator<CoreNLPParseNode> iterator() {
-        return ImmutableList.copyOf(preorderTraversal()).reverse().iterator();
-      }
-    };
   }
 }

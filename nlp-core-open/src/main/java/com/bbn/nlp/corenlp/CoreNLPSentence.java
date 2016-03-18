@@ -31,7 +31,6 @@ public final class CoreNLPSentence {
 
   /**
    * Span from the start of the first token to the end of the last.
-   * @return
    */
   public OffsetRange<CharOffset> offsets() {
     final CharOffset start = tokens.get(0).offsets().startInclusive();
@@ -45,8 +44,10 @@ public final class CoreNLPSentence {
    */
   public Optional<CoreNLPParseNode> nodeForOffsets(
       final OffsetRange<CharOffset> offsets) {
-    for (final CoreNLPParseNode n : parse.get().root()
-        .postorderTraversal()) {
+    // we use the reverse of the preorder traversal because it will iterate over smaller nodes
+    // before any of their parents, preferring the smallest node that contains these offsets.
+    for (final CoreNLPParseNode n : ImmutableList.copyOf(parse.get().root().preorderDFSTraversal())
+        .reverse()) {
       if (n.span().contains(offsets)) {
         return Optional.of(n);
       }

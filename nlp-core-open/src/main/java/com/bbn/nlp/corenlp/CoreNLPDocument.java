@@ -27,7 +27,7 @@ public final class CoreNLPDocument {
    * @param offsets
    * @return
    */
-  public Optional<CoreNLPSentence> sentenceForCharOffsets(final OffsetRange<CharOffset> offsets) {
+  public Optional<CoreNLPSentence> firstSentenceContaining(final OffsetRange<CharOffset> offsets) {
     for(final CoreNLPSentence sentence: sentences) {
       if(sentence.offsets().contains(offsets)) {
         return Optional.of(sentence);
@@ -36,18 +36,18 @@ public final class CoreNLPDocument {
     return Optional.absent();
   }
 
-  public static StanfordDocumentBuilder builder() {
-    return new StanfordDocumentBuilder();
+  public static CoreNLPDocumentBuilder builder() {
+    return new CoreNLPDocumentBuilder();
   }
 
-  public static class StanfordDocumentBuilder {
+  public static class CoreNLPDocumentBuilder {
 
     private ImmutableList<CoreNLPSentence> sentences;
 
-    private StanfordDocumentBuilder() {
+    private CoreNLPDocumentBuilder() {
     }
 
-    public StanfordDocumentBuilder withSentences(Iterable<CoreNLPSentence> sentences) {
+    public CoreNLPDocumentBuilder withSentences(Iterable<CoreNLPSentence> sentences) {
       this.sentences = ImmutableList.copyOf(sentences);
       return this;
     }
