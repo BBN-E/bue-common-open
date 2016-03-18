@@ -25,6 +25,19 @@ public final class OptionalUtils {
   }
 
   /**
+   * Guava {@link Function} to call {@link Optional#get()}; this will throw an {@link
+   * IllegalStateException} if the input is {@link Optional#absent()}.
+   */
+  public static <T> Function<Optional<T>, T> getFunction() {
+    return new Function<Optional<T>, T>() {
+      @Override
+      public T apply(final Optional<T> input) {
+        return input.get();
+      }
+    };
+  }
+
+  /**
    * Throws an {@link IllegalStateException} if both passed {@link Optional}s are present or neither is.
    */
   public static void exactlyOnePresentOrIllegalState(final Optional<?> x,

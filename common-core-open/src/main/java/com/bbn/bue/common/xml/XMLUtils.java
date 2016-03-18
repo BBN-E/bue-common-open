@@ -352,6 +352,24 @@ public final class XMLUtils {
         .writeToString(e);
   }
 
+  public static Optional<Symbol> optionalSymbolFromTextContent(Element e, String tagName) {
+    final Optional<Element> child = directChild(e, tagName);
+    if (child.isPresent()) {
+      return Optional.of(Symbol.from(child.get().getTextContent()));
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  public static Optional<String> optionalStringFromTextContent(Element e, String tagName) {
+    final Optional<Element> child = directChild(e, tagName);
+    if (child.isPresent()) {
+      return Optional.of(child.get().getTextContent());
+    } else {
+      return Optional.absent();
+    }
+  }
+
   public static abstract class FromXMLLoader<T> {
 
     public abstract T from(Element e);

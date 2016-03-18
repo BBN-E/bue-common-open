@@ -401,6 +401,15 @@ public final class Parameters {
     return this.<T>get(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration");
   }
 
+  public <T extends Enum<T>> Optional<T> getOptionalEnum(final String param, final Class<T> clazz) {
+    if (isPresent(param)) {
+      return Optional
+          .of(this.<T>get(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration"));
+    } else {
+      return Optional.absent();
+    }
+  }
+
   public <T extends Enum<T>> List<T> getEnumList(final String param, final Class<T> clazz) {
     return this.<T>getList(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration");
   }

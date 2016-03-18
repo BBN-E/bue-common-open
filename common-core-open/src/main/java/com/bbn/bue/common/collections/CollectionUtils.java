@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.math.IntMath;
 
@@ -331,6 +332,45 @@ public final class CollectionUtils {
     @Override
     public int size() {
       return left.size() + right.size();
+    }
+  }
+
+  /**
+   * Checks if two {@link Iterable}s contain the same elements regardless of order or number of
+   * occurrences. If they do, nothing happens. If they don't an {@link IllegalStateException} is
+   * raised describing the difference. The exception's message will be prefixed by {@code
+   * msgIntroduction} and {@code leftNamePlural} and {@code rightNamePlural} will be used to
+   * describe the left and right element types.
+   *
+   * Example: <pre>
+   *  assertSameElementsOrIllegalState(mySet1, mySet2, "Document IDs do not match: " ,
+   *       "gold docIDs", "test docIDs");
+   * </pre>
+   */
+  public static void assertSameElementsOrIllegalState(Iterable<?> left, Iterable<?> right,
+      String msgIntroduction,
+      String leftName, String rightName) {
+    final ImmutableSet<?> leftSet = ImmutableSet.copyOf(left);
+    final ImmutableSet<?> rightSet = ImmutableSet.copyOf(right);
+
+    if (!leftSet.equals(rightSet)) {
+      final StringBuilder exceptionMsg = new StringBuilder();
+      final ImmutableSet<?> leftOnly = Sets.difference(leftSet, rightSet).immutableCopy();
+      final ImmutableSet<?> rightOnly = Sets.difference(rightSet, leftSet).immutableCopy();
+
+      exceptionMsg.append(msgIntroduction);
+
+      if (!leftOnly.isEmpty()) {
+        exceptionMsg.append(" ").append(leftOnly.size()).append("  left only: ")
+            .append(leftOnly).append(". ");
+      }
+
+      if (!rightOnly.isEmpty()) {
+        exceptionMsg.append(" ").append(rightOnly.size()).append(" right only: ").append(rightOnly)
+            .append(". ");
+      }
+
+      throw new IllegalStateException(exceptionMsg.toString());
     }
   }
 }
