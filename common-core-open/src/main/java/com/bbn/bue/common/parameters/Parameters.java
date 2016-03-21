@@ -192,11 +192,11 @@ public final class Parameters {
 
   public static Parameters loadSerifStyle(final File f) throws IOException {
     final SerifStyleParameterFileLoader loader = new SerifStyleParameterFileLoader();
-    return new Parameters(loader.load(f));
+    return new Parameters(loader.load(f), ImmutableList.<String>of());
   }
 
   public static Parameters fromMap(Map<String, String> map) {
-    return new Parameters(map);
+    return new Parameters(map, ImmutableList.<String>of());
   }
 
   public static Parameters fromMap(Map<String, String> map, List<String> namespace) {
