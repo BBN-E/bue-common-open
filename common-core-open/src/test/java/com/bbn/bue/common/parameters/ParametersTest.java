@@ -17,6 +17,21 @@ public final class ParametersTest {
   public final ExpectedException exception = ExpectedException.none();
 
   @Test
+  public void testFromMap() {
+    final ImmutableMap<String, String> map = ImmutableMap.of("a", "1", "b", "", "c.d", "2");
+    // Basic parameter
+    assertEquals("1", Parameters.fromMap(map).getString("a"));
+    // Empty parameter
+    assertEquals("", Parameters.fromMap(map).getString("b"));
+    // Namespace specified by list
+    assertEquals("foo", Parameters.fromMap(map, ImmutableList.of("foo")).namespace());
+    assertEquals("foo.bar", Parameters.fromMap(map, ImmutableList.of("foo", "bar")).namespace());
+    // Namespace specified by string
+    assertEquals("foo", Parameters.fromMap(map, "foo").namespace());
+    assertEquals("foo.bar", Parameters.fromMap(map, "foo.bar").namespace());
+  }
+
+  @Test
   public void testStringList() {
     assertEquals(
         ImmutableList.of(),

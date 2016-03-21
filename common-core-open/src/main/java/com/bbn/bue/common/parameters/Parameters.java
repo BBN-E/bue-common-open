@@ -199,6 +199,14 @@ public final class Parameters {
     return new Parameters(map);
   }
 
+  public static Parameters fromMap(Map<String, String> map, List<String> namespace) {
+    return new Parameters(map, namespace);
+  }
+
+  public static Parameters fromMap(Map<String, String> map, String namespace) {
+    return new Parameters(map, StringUtils.OnDots.splitToList(namespace));
+  }
+
   /**
    * Creates a {@code Parameters} from a {@link java.util.Properties} by turning each key and value
    * in the {@code Properties} into a string. If multiple keys in the properties object have the
@@ -1064,6 +1072,13 @@ public final class Parameters {
    */
   public String namespace() {
     return StringUtils.DotJoiner.join(namespace);
+  }
+
+  /**
+   * Returns the namespace as a list.
+   */
+  public ImmutableList<String> namespaceAsList() {
+    return namespace;
   }
 
   /**

@@ -182,6 +182,11 @@ public final class StringUtils {
    */
   public static final Splitter OnCommas = Splitter.on(",").trimResults().omitEmptyStrings();
 
+  /**
+   * Splits on periods, omitting empty strings and trimming results.
+   */
+  public static final Splitter OnDots = Splitter.on(".").trimResults().omitEmptyStrings();
+
   /********************** Wrapping functions ********************/
 
   /**
