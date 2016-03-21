@@ -164,28 +164,67 @@ public final class StringUtils {
       JoinFunction(DotJoiner);
 
   /************* Splitters ********************/
+
+  /**
+   * @deprecated Use {@link #onTabs()}
+   */
+  @Deprecated
+  public static final Splitter OnTabs = Splitter.on("\t").trimResults().omitEmptyStrings();
+
   /**
    * Splits on tab, omitting empty strings and trimming results.
    */
-  public static final Splitter OnTabs = Splitter.on("\t").trimResults().omitEmptyStrings();
+  public static Splitter onTabs() {
+    return OnTabs;
+  }
+
+  /**
+   * @deprecated Use {@link #onSpaces()}
+   */
+  @Deprecated
+  public static final Splitter OnSpaces = Splitter.on(" ").trimResults().omitEmptyStrings();
+
   /**
    * Splits on spaces, omitting empty strings and trimming results.
    */
-  public static final Splitter OnSpaces = Splitter.on(" ").trimResults().omitEmptyStrings();
+  public static Splitter onSpaces() {
+    return OnSpaces;
+  }
+
+  /**
+   * @deprecated Use {@link #onUnixNewlines()}
+   */
+  @Deprecated
+  public static final Splitter OnUnixNewlines = Splitter.on("\n").trimResults().omitEmptyStrings();
+
   /**
    * Splits on Unix newlines, omitting empty strings and trimming results.
    */
-  public static final Splitter OnUnixNewlines = Splitter.on("\n").trimResults().omitEmptyStrings();
+  public static Splitter onUnixNewlines() {
+    return OnUnixNewlines;
+  }
+
+  /**
+   * @deprecated Use {@link #onCommas()}
+   */
+  @Deprecated
+  public static final Splitter OnCommas = Splitter.on(",").trimResults().omitEmptyStrings();
 
   /**
    * Splits on commas, omitting empty strings and trimming results.
    */
-  public static final Splitter OnCommas = Splitter.on(",").trimResults().omitEmptyStrings();
+  public static Splitter onCommas() {
+    return OnCommas;
+  }
+
+  private static final Splitter onDots = Splitter.on(".").trimResults().omitEmptyStrings();
 
   /**
    * Splits on periods, omitting empty strings and trimming results.
    */
-  public static final Splitter OnDots = Splitter.on(".").trimResults().omitEmptyStrings();
+  public static Splitter onDots() {
+    return onDots;
+  }
 
   /********************** Wrapping functions ********************/
 

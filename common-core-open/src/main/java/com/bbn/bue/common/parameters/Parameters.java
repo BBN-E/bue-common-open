@@ -1140,7 +1140,7 @@ public final class Parameters {
    * Returns the specified namespace split into a list, for example {@code ["foo", "bar"]} for {@code "foo.bar"}.
    */
   public static List<String> splitNamespace(final String namespace) {
-    return StringUtils.OnDots.splitToList(namespace);
+    return StringUtils.onDots().splitToList(namespace);
   }
 
   /**
