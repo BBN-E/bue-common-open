@@ -546,19 +546,12 @@ public final class Parameters {
     return ret.build();
   }
 
+  /**
+   * Gets a parameter whose value is a list of integers.
+   */
   public List<Integer> getIntegerList(final String param) {
-    final List<String> intStrings = getStringList(param);
-    final ImmutableList.Builder<Integer> ret = ImmutableList.builder();
-
-    for (final String intString : intStrings) {
-      try {
-        ret.add(Integer.parseInt(intString));
-      } catch (final NumberFormatException nfe) {
-        throw new ParameterValidationException(fullString(param), intString, nfe);
-      }
-    }
-
-    return ret.build();
+    return getList(param, new StringToInteger(),
+        new AlwaysValid<Integer>(), "integer");
   }
 
   /**
