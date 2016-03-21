@@ -409,6 +409,9 @@ public final class Parameters {
     }
   }
 
+  /**
+   * Gets a parameter whose value is a (possibly empty) list of enums.
+   */
   public <T extends Enum<T>> List<T> getEnumList(final String param, final Class<T> clazz) {
     return this.<T>getList(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration");
   }
@@ -547,7 +550,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a parameter whose value is a list of integers.
+   * Gets a parameter whose value is a (possibly empty) list of integers.
    */
   public List<Integer> getIntegerList(final String param) {
     return getList(param, new StringToInteger(),
@@ -571,7 +574,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a parameter whose value is a list of booleans.
+   * Gets a parameter whose value is a (possibly empty) list of booleans.
    */
   public List<Boolean> getBooleanList(final String param) {
     return getList(param, new StrictStringToBoolean(),
@@ -620,15 +623,13 @@ public final class Parameters {
         new IsPositive<Integer>(), "positive integer");
   }
 
-
   /**
-   * Gets an positive integer list parameter.
+   * Gets a parameter whose value is a (possibly empty) list of positive integers.
    */
   public List<Integer> getPositiveIntegerList(final String param) {
     return getList(param, new StringToInteger(),
         new IsPositive<Integer>(), "positive integer");
   }
-
 
   /**
    * Gets a positive double parameter.
@@ -646,7 +647,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a parameter whose value is a list of positive doubles.
+   * Gets a parameter whose value is a (possibly empty) list of positive doubles.
    */
   public List<Double> getPositiveDoubleList(final String param) {
     return getList(param, new StringToDouble(),
@@ -662,7 +663,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a parameter whose value is a list of non-negative doubles.
+   * Gets a parameter whose value is a (possibly empty) list of non-negative doubles.
    */
   public List<Double> getNonNegativeDoubleList(final String param) {
     return getList(param, new StringToDouble(),
@@ -828,7 +829,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a ,-separated list of Strings
+   * Gets a parameter whose value is a (possibly empty) comma-separated list of Strings.
    */
   public List<String> getStringList(final String param) {
     return get(param, new StringToStringList(","),
@@ -837,7 +838,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a ,-separated list of Strings, if available
+   * Gets a parameter whose value is a (possibly empty) comma-separated list of Strings, if present.
    */
   public Optional<List<String>> getOptionalStringList(final String param) {
     if (isPresent(param)) {
@@ -856,7 +857,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a ,-separated list of Symbols
+   * Gets a parameter whose value is a (possibly empty) comma-separated list of Symbols.
    */
   public List<Symbol> getSymbolList(final String param) {
     return get(param, new StringToSymbolList(","),
