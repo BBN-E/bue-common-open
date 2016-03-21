@@ -29,7 +29,6 @@ import com.bbn.bue.common.validators.IsNonNegative;
 import com.bbn.bue.common.validators.IsPositive;
 import com.bbn.bue.common.validators.ValidationException;
 import com.bbn.bue.common.validators.Validator;
-
 import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -576,6 +575,14 @@ public final class Parameters {
     } else {
       return Optional.absent();
     }
+  }
+
+  /**
+   * Gets a parameter whose value is a list of booleans.
+   */
+  public List<Boolean> getBooleanList(final String param) {
+    return getList(param, new StrictStringToBoolean(),
+        new AlwaysValid<Boolean>(), "boolean");
   }
 
   public Optional<String> getOptionalString(final String param) {
