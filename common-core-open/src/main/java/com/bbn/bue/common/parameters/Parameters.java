@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.bbn.bue.common.StringUtils.DotJoiner;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.in;
@@ -203,10 +204,6 @@ public final class Parameters {
     return new Parameters(map, namespace);
   }
 
-  public static Parameters fromMap(Map<String, String> map, String namespace) {
-    return new Parameters(map, StringUtils.OnDots.splitToList(namespace));
-  }
-
   /**
    * Creates a {@code Parameters} from a {@link java.util.Properties} by turning each key and value
    * in the {@code Properties} into a string. If multiple keys in the properties object have the
@@ -275,7 +272,7 @@ public final class Parameters {
     if (namespace.isEmpty()) {
       return param;
     } else {
-      return StringUtils.DotJoiner.join(namespace) + "." + param;
+      return joinNamespace(namespace) + "." + param;
     }
   }
 
@@ -1071,7 +1068,7 @@ public final class Parameters {
    * Returns the dot-separated namespace.
    */
   public String namespace() {
-    return StringUtils.DotJoiner.join(namespace);
+    return joinNamespace(namespace);
   }
 
   /**
@@ -1125,13 +1122,41 @@ public final class Parameters {
     return ret;
   }
 
+  /**
+   * Creates a new builder with the default (empty) namespace.
+   */
+  public static Builder builder() {
+    return new Builder(ImmutableList.<String>of());
+  }
+
+  /**
+   * Creates a new builder with the specified namespace.
+   */
+  public static Builder builder(List<String> namespace) {
+    return new Builder(namespace);
+  }
+
+  /**
+   * Returns the specified namespace split into a list, for example {@code ["foo", "bar"]} for {@code "foo.bar"}.
+   */
+  public static List<String> splitNamespace(final String namespace) {
+    return StringUtils.OnDots.splitToList(namespace);
+  }
+
+  /**
+   * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for {@code ["foo", "bar"]}.
+   */
+  public static String joinNamespace(final List<String> namespace) {
+    return DotJoiner.join(namespace);
+  }
+
   public static final class Builder {
 
     private final Map<String, String> params = Maps.newHashMap();
     private final List<String> namespace;
 
     private Builder(final List<String> namespace) {
-      this.namespace = Lists.newArrayList(namespace);
+      this.namespace = ImmutableList.copyOf(namespace);
     }
 
     public Builder set(String key, String value) {

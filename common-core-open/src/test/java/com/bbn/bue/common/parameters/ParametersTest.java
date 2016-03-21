@@ -7,6 +7,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static com.bbn.bue.common.parameters.Parameters.builder;
+import static com.bbn.bue.common.parameters.Parameters.fromMap;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -20,51 +22,84 @@ public final class ParametersTest {
   public void testFromMap() {
     final ImmutableMap<String, String> map = ImmutableMap.of("a", "1", "b", "", "c.d", "2");
     // Basic parameter
-    assertEquals("1", Parameters.fromMap(map).getString("a"));
+    assertEquals("1", fromMap(map).getString("a"));
     // Empty parameter
-    assertEquals("", Parameters.fromMap(map).getString("b"));
+    assertEquals("", fromMap(map).getString("b"));
     // Namespace specified by list
-    assertEquals("foo", Parameters.fromMap(map, ImmutableList.of("foo")).namespace());
-    assertEquals("foo.bar", Parameters.fromMap(map, ImmutableList.of("foo", "bar")).namespace());
-    // Namespace specified by string
-    assertEquals("foo", Parameters.fromMap(map, "foo").namespace());
-    assertEquals("foo.bar", Parameters.fromMap(map, "foo.bar").namespace());
+    assertEquals("", fromMap(map, ImmutableList.of("")).namespace());
+    assertEquals(ImmutableList.of(), fromMap(map, ImmutableList.<String>of()).namespaceAsList());
+    assertEquals("foo", fromMap(map, ImmutableList.of("foo")).namespace());
+    assertEquals(ImmutableList.of("foo"), fromMap(map, ImmutableList.of("foo")).namespaceAsList());
+    assertEquals("foo.bar", fromMap(map, ImmutableList.of("foo", "bar")).namespace());
+    assertEquals(ImmutableList.of("foo", "bar"), fromMap(map, ImmutableList.of("foo", "bar")).namespaceAsList());
+  }
+
+  @Test
+  public void testSplitNamespace() {
+    assertEquals(ImmutableList.of(), Parameters.splitNamespace(""));
+    assertEquals(ImmutableList.of("foo"), Parameters.splitNamespace("foo"));
+    assertEquals(ImmutableList.of("foo", "bar"), Parameters.splitNamespace("foo.bar"));
+  }
+
+  @Test
+  public void testJoinNamespace() {
+    assertEquals("", Parameters.joinNamespace(ImmutableList.of("")));
+    assertEquals("foo", Parameters.joinNamespace(ImmutableList.of("foo")));
+    assertEquals("foo.bar", Parameters.joinNamespace(ImmutableList.of("foo", "bar")));
+  }
+
+  @Test
+  public void testBuilder() {
+    final ImmutableMap<String, String> map = ImmutableMap.of("a", "1", "b", "2");
+    // Empty namespace
+    assertEquals("1", builder().putAll(map).build().getString("a"));
+    assertEquals("1", fromMap(map).modifiedCopyBuilder().build().getString("a"));
+    // With namespace
+    assertEquals("1", builder(ImmutableList.of("foo")).putAll(map).build().getString("a"));
+    assertEquals("1", fromMap(map, ImmutableList.of("foo")).modifiedCopyBuilder().build().getString("a"));
+    // Check namespace
+    assertEquals("", builder().putAll(map).build().namespace());
+    assertEquals("", fromMap(map).modifiedCopyBuilder().build().namespace());
+    assertEquals("foo", builder(ImmutableList.of("foo")).putAll(map).build().namespace());
+    assertEquals("foo", fromMap(map, ImmutableList.of("foo")).modifiedCopyBuilder().build().namespace());
+    assertEquals("foo.bar", builder(ImmutableList.of("foo", "bar")).putAll(map).build().namespace());
+    assertEquals("foo.bar", fromMap(map, ImmutableList.of("foo", "bar")).modifiedCopyBuilder().build().namespace());
   }
 
   @Test
   public void testStringList() {
     assertEquals(
         ImmutableList.of(),
-        Parameters.fromMap(ImmutableMap.of("list", "")).getStringList("list"));
+        fromMap(ImmutableMap.of("list", "")).getStringList("list"));
     assertEquals(
         ImmutableList.of("a"),
-        Parameters.fromMap(ImmutableMap.of("list", "a")).getStringList("list"));
+        fromMap(ImmutableMap.of("list", "a")).getStringList("list"));
     assertEquals(
         ImmutableList.of("a", "b"),
-        Parameters.fromMap(ImmutableMap.of("list", "a,b")).getStringList("list"));
+        fromMap(ImmutableMap.of("list", "a,b")).getStringList("list"));
   }
 
   @Test
   public void testIntegerList() {
     assertEquals(
         ImmutableList.of(1),
-        Parameters.fromMap(ImmutableMap.of("list", "1")).getIntegerList("list"));
+        fromMap(ImmutableMap.of("list", "1")).getIntegerList("list"));
     assertEquals(
         ImmutableList.of(1, 2),
-        Parameters.fromMap(ImmutableMap.of("list", "1,2")).getIntegerList("list"));
+        fromMap(ImmutableMap.of("list", "1,2")).getIntegerList("list"));
     exception.expect(ParameterConversionException.class);
-    Parameters.fromMap(ImmutableMap.of("list", "a,b")).getIntegerList("list");
+    fromMap(ImmutableMap.of("list", "a,b")).getIntegerList("list");
   }
 
   @Test
   public void testBooleanList() {
     assertEquals(
         ImmutableList.of(true),
-        Parameters.fromMap(ImmutableMap.of("list", "true")).getBooleanList("list"));
+        fromMap(ImmutableMap.of("list", "true")).getBooleanList("list"));
     assertEquals(
         ImmutableList.of(true, false),
-        Parameters.fromMap(ImmutableMap.of("list", "true,false")).getBooleanList("list"));
+        fromMap(ImmutableMap.of("list", "true,false")).getBooleanList("list"));
     exception.expect(ParameterConversionException.class);
-    Parameters.fromMap(ImmutableMap.of("list", "a,b")).getBooleanList("list");
+    fromMap(ImmutableMap.of("list", "a,b")).getBooleanList("list");
   }
 }
