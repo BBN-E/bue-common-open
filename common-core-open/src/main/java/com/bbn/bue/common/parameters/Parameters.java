@@ -29,7 +29,6 @@ import com.bbn.bue.common.validators.IsNonNegative;
 import com.bbn.bue.common.validators.IsPositive;
 import com.bbn.bue.common.validators.ValidationException;
 import com.bbn.bue.common.validators.Validator;
-
 import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -56,6 +55,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.bbn.bue.common.StringUtils.DotJoiner;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.in;
@@ -193,11 +193,15 @@ public final class Parameters {
 
   public static Parameters loadSerifStyle(final File f) throws IOException {
     final SerifStyleParameterFileLoader loader = new SerifStyleParameterFileLoader();
-    return new Parameters(loader.load(f));
+    return new Parameters(loader.load(f), ImmutableList.<String>of());
   }
 
   public static Parameters fromMap(Map<String, String> map) {
-    return new Parameters(map);
+    return new Parameters(map, ImmutableList.<String>of());
+  }
+
+  public static Parameters fromMap(Map<String, String> map, List<String> namespace) {
+    return new Parameters(map, namespace);
   }
 
   /**
@@ -268,7 +272,7 @@ public final class Parameters {
     if (namespace.isEmpty()) {
       return param;
     } else {
-      return StringUtils.DotJoiner.join(namespace) + "." + param;
+      return joinNamespace(namespace) + "." + param;
     }
   }
 
@@ -410,6 +414,9 @@ public final class Parameters {
     }
   }
 
+  /**
+   * Gets a parameter whose value is a (possibly empty) list of enums.
+   */
   public <T extends Enum<T>> List<T> getEnumList(final String param, final Class<T> clazz) {
     return this.<T>getList(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration");
   }
@@ -547,19 +554,12 @@ public final class Parameters {
     return ret.build();
   }
 
+  /**
+   * Gets a parameter whose value is a (possibly empty) list of integers.
+   */
   public List<Integer> getIntegerList(final String param) {
-    final List<String> intStrings = getStringList(param);
-    final ImmutableList.Builder<Integer> ret = ImmutableList.builder();
-
-    for (final String intString : intStrings) {
-      try {
-        ret.add(Integer.parseInt(intString));
-      } catch (final NumberFormatException nfe) {
-        throw new ParameterValidationException(fullString(param), intString, nfe);
-      }
-    }
-
-    return ret.build();
+    return getList(param, new StringToInteger(),
+        new AlwaysValid<Integer>(), "integer");
   }
 
   /**
@@ -576,6 +576,14 @@ public final class Parameters {
     } else {
       return Optional.absent();
     }
+  }
+
+  /**
+   * Gets a parameter whose value is a (possibly empty) list of booleans.
+   */
+  public List<Boolean> getBooleanList(final String param) {
+    return getList(param, new StrictStringToBoolean(),
+        new AlwaysValid<Boolean>(), "boolean");
   }
 
   public Optional<String> getOptionalString(final String param) {
@@ -620,15 +628,13 @@ public final class Parameters {
         new IsPositive<Integer>(), "positive integer");
   }
 
-
   /**
-   * Gets an positive integer list parameter.
+   * Gets a parameter whose value is a (possibly empty) list of positive integers.
    */
   public List<Integer> getPositiveIntegerList(final String param) {
     return getList(param, new StringToInteger(),
         new IsPositive<Integer>(), "positive integer");
   }
-
 
   /**
    * Gets a positive double parameter.
@@ -646,7 +652,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a parameter whose value is a list of positive doubles.
+   * Gets a parameter whose value is a (possibly empty) list of positive doubles.
    */
   public List<Double> getPositiveDoubleList(final String param) {
     return getList(param, new StringToDouble(),
@@ -662,7 +668,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a parameter whose value is a list of non-negative doubles.
+   * Gets a parameter whose value is a (possibly empty) list of non-negative doubles.
    */
   public List<Double> getNonNegativeDoubleList(final String param) {
     return getList(param, new StringToDouble(),
@@ -828,7 +834,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a ,-separated list of Strings
+   * Gets a parameter whose value is a (possibly empty) comma-separated list of Strings.
    */
   public List<String> getStringList(final String param) {
     return get(param, new StringToStringList(","),
@@ -837,7 +843,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a ,-separated list of Strings, if available
+   * Gets a parameter whose value is a (possibly empty) comma-separated list of Strings, if present.
    */
   public Optional<List<String>> getOptionalStringList(final String param) {
     if (isPresent(param)) {
@@ -856,7 +862,7 @@ public final class Parameters {
   }
 
   /**
-   * Gets a ,-separated list of Symbols
+   * Gets a parameter whose value is a (possibly empty) comma-separated list of Symbols.
    */
   public List<Symbol> getSymbolList(final String param) {
     return get(param, new StringToSymbolList(","),
@@ -1062,7 +1068,14 @@ public final class Parameters {
    * Returns the dot-separated namespace.
    */
   public String namespace() {
-    return StringUtils.DotJoiner.join(namespace);
+    return joinNamespace(namespace);
+  }
+
+  /**
+   * Returns the namespace as a list.
+   */
+  public ImmutableList<String> namespaceAsList() {
+    return namespace;
   }
 
   /**
@@ -1109,13 +1122,41 @@ public final class Parameters {
     return ret;
   }
 
+  /**
+   * Creates a new builder with the default (empty) namespace.
+   */
+  public static Builder builder() {
+    return new Builder(ImmutableList.<String>of());
+  }
+
+  /**
+   * Creates a new builder with the specified namespace.
+   */
+  public static Builder builder(List<String> namespace) {
+    return new Builder(namespace);
+  }
+
+  /**
+   * Returns the specified namespace split into a list, for example {@code ["foo", "bar"]} for {@code "foo.bar"}.
+   */
+  public static List<String> splitNamespace(final String namespace) {
+    return StringUtils.onDots().splitToList(namespace);
+  }
+
+  /**
+   * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for {@code ["foo", "bar"]}.
+   */
+  public static String joinNamespace(final List<String> namespace) {
+    return DotJoiner.join(namespace);
+  }
+
   public static final class Builder {
 
     private final Map<String, String> params = Maps.newHashMap();
     private final List<String> namespace;
 
     private Builder(final List<String> namespace) {
-      this.namespace = Lists.newArrayList(namespace);
+      this.namespace = ImmutableList.copyOf(namespace);
     }
 
     public Builder set(String key, String value) {
