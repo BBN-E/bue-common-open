@@ -2,6 +2,7 @@ package com.bbn.bue.common.collections;
 
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -350,6 +351,30 @@ public final class CollectionUtils {
   public static void assertSameElementsOrIllegalState(Iterable<?> left, Iterable<?> right,
       String msgIntroduction,
       String leftName, String rightName) {
+    final Optional<String> exceptionMessage =
+        assertSameElementsCommon(left, right, msgIntroduction, leftName, rightName);
+
+    if (exceptionMessage.isPresent()) {
+      throw new IllegalStateException(exceptionMessage.get());
+    }
+  }
+
+  public static void assertSameElementsOrIllegalArgument(Iterable<?> left, Iterable<?> right,
+      String msgIntroduction,
+      String leftName, String rightName) {
+    final Optional<String> exceptionMessage =
+        assertSameElementsCommon(left, right, msgIntroduction, leftName, rightName);
+
+    if (exceptionMessage.isPresent()) {
+      throw new IllegalArgumentException(exceptionMessage.get());
+    }
+  }
+
+
+  private static Optional<String> assertSameElementsCommon(final Iterable<?> left, final Iterable<?> right,
+      final String msgIntroduction, final String leftName, final String rightName) {
+    final Optional<String> exceptionMessage;
+
     final ImmutableSet<?> leftSet = ImmutableSet.copyOf(left);
     final ImmutableSet<?> rightSet = ImmutableSet.copyOf(right);
 
@@ -361,16 +386,19 @@ public final class CollectionUtils {
       exceptionMsg.append(msgIntroduction);
 
       if (!leftOnly.isEmpty()) {
-        exceptionMsg.append(" ").append(leftOnly.size()).append("  left only: ")
-            .append(leftOnly).append(". ");
+        exceptionMsg.append(" ").append(leftOnly.size()).append("  ").append(leftName)
+            .append(" only: ").append(leftOnly).append(". ");
       }
 
       if (!rightOnly.isEmpty()) {
-        exceptionMsg.append(" ").append(rightOnly.size()).append(" right only: ").append(rightOnly)
-            .append(". ");
+        exceptionMsg.append(" ").append(rightOnly.size()).append(" ").append(rightName)
+            .append(" only: ").append(rightOnly).append(". ");
       }
 
-      throw new IllegalStateException(exceptionMsg.toString());
+      exceptionMessage = Optional.of(exceptionMsg.toString());
+    } else {
+      exceptionMessage = Optional.absent();
     }
+    return exceptionMessage;
   }
 }
