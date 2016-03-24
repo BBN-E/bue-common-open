@@ -118,13 +118,17 @@ public final class StringUtils {
   }
 
   /**
-   * Convenience wrappers for join. This is not better than just executing the underlying guava
-   * call, but IMO has a simpler syntax.
+   @deprecated Just use Guava's {@link Joiner} as normal.
    */
+  @Deprecated
   public static String join(final Iterable<?> list, final String separator) {
     return Joiner.on(separator).join(list);
   }
 
+  /**
+   * @deprecated Just use Guava's {@link Joiner} as normal.
+   */
+  @Deprecated
   public static String joinSkipNulls(final Iterable<?> list, final String separator) {
     return Joiner.on(separator).skipNulls().join(list);
   }
@@ -132,7 +136,7 @@ public final class StringUtils {
   /**
    * Returns a Function which will join the string with the specified separator
    */
-  public static final Function<Iterable<?>, String> JoinFunction(final Joiner joiner) {
+  public static final Function<Iterable<?>, String> joinFunction(final Joiner joiner) {
     return new Function<Iterable<?>, String>() {
       @Override
       public String apply(final Iterable<?> list) {
@@ -141,12 +145,58 @@ public final class StringUtils {
     };
   }
 
+  /**
+   * @deprecated Prefer {@link #joinFunction(Joiner)}'s more consistent capitalization.
+   */
+  @Deprecated
+  public static final Function<Iterable<?>, String> JoinFunction(final Joiner joiner) {
+    return joinFunction(joiner);
+  }
+
+  @SuppressWarnings("deprecation")
+  public static final Joiner spaceJoiner() {
+    return SpaceJoiner;
+  }
+
+  /**
+   * @deprecated Prefer {@link #spaceJoiner()}
+   */
+  @Deprecated
   public static final Joiner SpaceJoiner = Joiner.on(" ");
+  /**
+   * @deprecated Prefer {@link #joinFunction(Joiner)} applies to {@link #spaceJoiner()}.
+   */
+  @Deprecated
   public static final Function<Iterable<?>, String> SpaceJoin =
       JoinFunction(SpaceJoiner);
+
+  @SuppressWarnings("deprecation")
+  public static final Joiner unixNewlineJoiner() {
+    return NewlineJoiner;
+  }
+
+  /**
+   * @deprecated Prefer {@link #unixNewlineJoiner()}
+   */
+  @Deprecated
   public static final Joiner NewlineJoiner = Joiner.on("\n");
+
+  /**
+   * @deprecated Prefer {@link #joinFunction(Joiner)} applied to {@link #unixNewlineJoiner()}
+   */
+  @Deprecated
   public static final Function<Iterable<?>, String> NewlineJoin =
       JoinFunction(NewlineJoiner);
+
+  @SuppressWarnings("deprecation")
+  public static final Joiner commaJoiner() {
+    return CommaJoiner;
+  }
+
+  /**
+   * @deprecated Prefer {@link #commaJoiner()}.
+   */
+  @Deprecated
   public static final Joiner CommaJoiner = Joiner.on(",");
   public static final Function<Iterable<?>, String> CommaJoin =
       JoinFunction(CommaJoiner);
@@ -224,6 +274,15 @@ public final class StringUtils {
    */
   public static Splitter onDots() {
     return onDots;
+  }
+
+  private static final Splitter onDashes = Splitter.on("-").trimResults().omitEmptyStrings();
+
+  /**
+   * Splits on dashes, omitting empty strings and trimming results.
+   */
+  public static Splitter onDashes() {
+    return onDashes;
   }
 
   /********************** Wrapping functions ********************/
