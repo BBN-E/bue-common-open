@@ -7,6 +7,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
@@ -384,6 +385,17 @@ public final class IterableUtils {
       }
     }
     return true;
+  }
+
+  /**
+   * Returns true if and only if no two elements of the provided {@link Iterable} are equal to one
+   * another.  Equality is determined by {@code .equals()}. Elements must have a {@code hashCode}
+   * consistent with their {@code equals} or the result is undefined.
+   *
+   * No element may be {@code null} or an exception will be thrown.
+   */
+  public static <T> boolean noneEqualForHashable(final Iterable<T> iterable) {
+    return Iterables.size(iterable) == ImmutableSet.copyOf(iterable).size();
   }
 
   /**
