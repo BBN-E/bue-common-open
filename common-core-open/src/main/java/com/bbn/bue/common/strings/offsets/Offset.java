@@ -9,4 +9,9 @@ public interface Offset<SelfType extends Offset<SelfType>> extends Comparable<Se
   int value();
 
   int asInt();
+
+  /**
+   * Returns another offset of the same type, shifted by the specified distance.
+   */
+  SelfType shiftedCopy(int shiftAmount);
 }

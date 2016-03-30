@@ -118,6 +118,15 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     return Optional.of(charOffsetRange(0, s.length() - 1));
   }
 
+  /**
+   * Returns a new {@code OffsetRange} of the same type with the start and end points
+   * shifted by the specified amount.
+   */
+  public OffsetRange<OffsetType> shiftedCopy(final int shiftAmount) {
+    return new OffsetRange<>(startInclusive().shiftedCopy(shiftAmount),
+        endInclusive().shiftedCopy(shiftAmount));
+  }
+
   public boolean overlaps(OffsetRange<OffsetType> other) {
     return asRange().isConnected(other.asRange());
   }

@@ -19,4 +19,9 @@ public final class ByteOffset extends AbstractOffset<ByteOffset> {
   public String toString() {
     return "b" + asInt();
   }
+
+  @Override
+  public ByteOffset shiftedCopy(final int shiftAmount) {
+    return ByteOffset.asByteOffset(asInt() + shiftAmount);
+  }
 }

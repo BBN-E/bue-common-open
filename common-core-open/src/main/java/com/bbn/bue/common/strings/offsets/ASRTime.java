@@ -15,4 +15,9 @@ public final class ASRTime extends AbstractOffset<ASRTime> {
   public static ASRTime of(int val) {
     return new ASRTime(val);
   }
+
+  @Override
+  public ASRTime shiftedCopy(final int shiftAmount) {
+    return ASRTime.of(asInt() + shiftAmount);
+  }
 }
