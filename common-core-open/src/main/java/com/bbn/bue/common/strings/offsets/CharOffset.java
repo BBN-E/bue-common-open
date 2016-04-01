@@ -18,4 +18,9 @@ public final class CharOffset extends AbstractOffset<CharOffset> {
   public String toString() {
     return "c" + Integer.toString(asInt());
   }
+
+  @Override
+  public CharOffset shiftedCopy(final int shiftAmount) {
+    return CharOffset.asCharOffset(asInt() + shiftAmount);
+  }
 }

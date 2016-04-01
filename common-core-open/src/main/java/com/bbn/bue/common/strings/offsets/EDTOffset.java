@@ -14,4 +14,8 @@ public final class EDTOffset extends AbstractOffset<EDTOffset> {
     return new EDTOffset(val);
   }
 
+  @Override
+  public EDTOffset shiftedCopy(final int shiftAmount) {
+    return asEDTOffset(asInt()+shiftAmount);
+  }
 }
