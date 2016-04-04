@@ -31,6 +31,7 @@ import com.bbn.bue.common.validators.ValidationException;
 import com.bbn.bue.common.validators.Validator;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -115,7 +116,12 @@ public final class Parameters {
     final List<String> newNamespace = Lists.newArrayList();
     newNamespace.addAll(namespace);
     newNamespace.add(requestedNamespace);
-    return new Parameters(ret.build(), newNamespace);
+    final Parameters paramsRet = new Parameters(ret.build(), newNamespace);
+    // our children inherit our listeners
+    for (final Listener listener : listeners) {
+      paramsRet.registerListener(listener);
+    }
+    return paramsRet;
   }
 
   /**
@@ -248,6 +254,7 @@ public final class Parameters {
     checkArgument(!param.isEmpty());
 
     final String ret = params.get(param);
+    observeWithListeners(param);
 
     if (ret != null) {
       return ret;
@@ -1086,8 +1093,25 @@ public final class Parameters {
     return params;
   }
 
+  /**
+   * package-private
+   */
+  void registerListener(Listener listener) {
+    listeners.add(listener);
+  }
+
+  private void observeWithListeners(final String param) {
+    // all parameter requests eventually get routed through here,
+    // so this is where we observe
+    for (final Parameters.Listener listener : listeners) {
+      listener.observeParameterRequest(StringUtils.dotJoiner().join(
+          FluentIterable.from(namespace).append(param)));
+    }
+  }
+
   private final ImmutableMap<String, String> params;
   private final ImmutableList<String> namespace;
+  private final List<Listener> listeners = Lists.newArrayList();
 
   /**
    * Creates a new {@code Parameters} which has all the parameters in both this one and {@code
@@ -1172,5 +1196,12 @@ public final class Parameters {
     public Parameters build() {
       return new Parameters(params, namespace);
     }
+  }
+
+
+  @Beta
+  interface Listener {
+
+    void observeParameterRequest(String param);
   }
 }
