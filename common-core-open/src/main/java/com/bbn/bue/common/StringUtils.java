@@ -156,6 +156,11 @@ public final class StringUtils {
     return CommaJoiner;
   }
 
+  @SuppressWarnings("deprecation")
+  public static final Joiner dotJoiner() {
+    return DotJoiner;
+  }
+
   /**
    * @deprecated Prefer {@link #commaJoiner()}.
    */
@@ -172,9 +177,12 @@ public final class StringUtils {
   public static final Joiner SemicolonSpaceJoiner = Joiner.on("; ");
   public static final Function<Iterable<?>, String> SemicolonSpaceJoin =
       JoinFunction(SemicolonSpaceJoiner);
+  @Deprecated
+  /**
+   * Prefer {@link #dotJoiner()}
+   */
   public static final Joiner DotJoiner = Joiner.on(".");
-  public static final Function<Iterable<?>, String> DotJoin =
-      JoinFunction(DotJoiner);
+
 
   /************* Splitters ********************/
 
@@ -459,5 +467,12 @@ public final class StringUtils {
    */
   @Deprecated
   public static final Splitter OnCommas = Splitter.on(",").trimResults().omitEmptyStrings();
+
+  @Deprecated
+  /**
+   * @deprecated Prefer {@link #joinFunction(Joiner)} on {@link #dotJoiner()}
+   */
+  public static final Function<Iterable<?>, String> DotJoin =
+      JoinFunction(DotJoiner);
 
 }
