@@ -8,6 +8,8 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
 
+import java.util.Comparator;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -88,12 +90,47 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     };
   }
 
-  public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byStartOrdering() {
+  /**
+   * Provides an {@link Ordering} of {@link OffsetRange}s by their start position. Note that this is
+   * not a total ordering because {@link OffsetRange}s with the same start position but different
+   * end positions will compare as equal.
+   *
+   * Consider producing a compound ordering with {@link #byEndOrdering()} using {@link
+   * Ordering#compound(Comparator)} or using one of the predefined total orderings.
+   */
+  public static <T extends Offset<T>> Ordering<OffsetRange<T>> byStartOrdering() {
     return Ordering.<T>natural().onResultOf(OffsetRange.<T>toStartInclusiveFunction());
   }
 
-  public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byEndOrdering() {
+  /**
+   * Provides an {@link Ordering} of {@link OffsetRange}s by their end position. Note that this is
+   * not a total ordering because {@link OffsetRange}s with the same end position but different
+   * start positions will compare as equal.
+   *
+   * Consider producing a compound ordering with {@link #byStartOrdering()} using {@link
+   * Ordering#compound(Comparator)} or using one of the predefined total orderings.
+   */
+  public static <T extends Offset<T>> Ordering<OffsetRange<T>> byEndOrdering() {
     return Ordering.<T>natural().onResultOf(OffsetRange.<T>toEndInclusiveFunction());
+  }
+
+  /**
+   * Provides a total {@link Ordering} over {@link OffsetRange}s by their start position, breaking
+   * ties by placing the earlier end position first.
+   */
+  public static <T extends Offset<T>> Ordering<OffsetRange<T>> byEarlierStartEarlierEndOrdering() {
+    return Ordering.<T>natural().onResultOf(OffsetRange.<T>toStartInclusiveFunction())
+        .compound(Ordering.<T>natural().onResultOf(OffsetRange.<T>toEndInclusiveFunction()));
+  }
+
+  /**
+   * Provides a total {@link Ordering} over {@link OffsetRange}s by their start position, breaking
+   * ties by placing the later end position first.
+   */
+  public static <T extends Offset<T>> Ordering<OffsetRange<T>> byEarlierStartLaterEndOrdering() {
+    return Ordering.<T>natural().onResultOf(OffsetRange.<T>toStartInclusiveFunction())
+        .compound(
+            Ordering.<T>natural().onResultOf(OffsetRange.<T>toEndInclusiveFunction()).reverse());
   }
 
   public static OffsetRange<CharOffset> charOffsetRange(int startInclusive, int endInclusive) {
