@@ -313,14 +313,12 @@ public final class StringUtils {
     }
   }
 
-  public static final Predicate<String> Contains(final String probe) {
-    checkNotNull(probe);
-    return new Predicate<String>() {
-      @Override
-      public boolean apply(String input) {
-        return input.contains(probe);
-      }
-    };
+  /**
+   * Gets a predicate which returns true for a String iff it contains {@code probe} as a substring.
+   */
+  @SuppressWarnings("unchecked")
+  public static final Predicate<String> containsPredicate(final String probe) {
+    return Contains(probe);
   }
 
   public static final Predicate<String> isEmpty() {
@@ -475,4 +473,17 @@ public final class StringUtils {
   public static final Function<Iterable<?>, String> DotJoin =
       JoinFunction(DotJoiner);
 
+  /**
+   * @deprecated Prefer {@link #containsPredicate(String)}
+   */
+  @Deprecated
+  public static final Predicate<String> Contains(final String probe) {
+    checkNotNull(probe);
+    return new Predicate<String>() {
+      @Override
+      public boolean apply(String input) {
+        return input.contains(probe);
+      }
+    };
+  }
 }
