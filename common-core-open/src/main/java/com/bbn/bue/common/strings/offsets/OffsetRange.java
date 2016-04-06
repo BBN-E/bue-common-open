@@ -8,6 +8,8 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
 
+import java.util.Comparator;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -88,10 +90,26 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     };
   }
 
+  /**
+   * Provides an {@link Ordering} of {@link OffsetRange}s by their start position. Note that this is
+   * not a total ordering because {@link OffsetRange}s with the same start position but different
+   * end positions will compare as equal.
+   *
+   * Consider producing a compound ordering with {@link #byEndOrdering()} using {@link
+   * Ordering#compound(Comparator)}
+   */
   public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byStartOrdering() {
     return Ordering.<T>natural().onResultOf(OffsetRange.<T>toStartInclusiveFunction());
   }
 
+  /**
+   * Provides an {@link Ordering} of {@link OffsetRange}s by their end position. Note that this is
+   * not a total ordering because {@link OffsetRange}s with the same end position but different
+   * start positions will compare as equal.
+   *
+   * Consider producing a compound ordering with {@link #byStartOrdering()} using {@link
+   * Ordering#compound(Comparator)}
+   */
   public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byEndOrdering() {
     return Ordering.<T>natural().onResultOf(OffsetRange.<T>toEndInclusiveFunction());
   }
