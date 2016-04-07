@@ -4,6 +4,7 @@ import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -22,6 +23,8 @@ import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -314,11 +317,24 @@ public final class StringUtils {
   }
 
   /**
-   * Gets a predicate which returns true for a String iff it contains {@code probe} as a substring.
+   * Gets a predicate which returns true for a {@code String} iff it contains {@code probe} as a substring.
    */
   @SuppressWarnings("unchecked")
   public static final Predicate<String> containsPredicate(final String probe) {
     return Contains(probe);
+  }
+
+  /**
+   * A predicate which returns true for a {@code String} iff at least one of its characters
+   * matches the provided {@link CharMatcher}
+   */
+  public static final Predicate<String> anyCharMatches(final CharMatcher matcher) {
+    return new Predicate<String>() {
+      @Override
+      public boolean apply(@Nullable final String input) {
+        return matcher.matchesAnyOf(input);
+      }
+    };
   }
 
   public static final Predicate<String> isEmpty() {
