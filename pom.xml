@@ -161,6 +161,10 @@
         <configuration>
           <source>${maven.compiler.source}</source>
           <target>${maven.compiler.target}</target>
+          <!-- Prevents an endPosTable exception during compilation
+          when using code generation - this is a bug in Java, see
+          https://bugs.openjdk.java.net/browse/JDK-8062800 -->
+          <useIncrementalCompilation>false</useIncrementalCompilation>
         </configuration>
       </plugin>
       <plugin>
