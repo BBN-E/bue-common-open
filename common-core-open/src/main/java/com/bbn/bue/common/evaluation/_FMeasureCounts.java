@@ -1,13 +1,19 @@
 package com.bbn.bue.common.evaluation;
 
+import com.bbn.bue.common.TextGroupPublicImmutable;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Doubles;
+
+import org.immutables.func.Functional;
+import org.immutables.value.Value;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -18,19 +24,25 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public final class FMeasureCounts extends FMeasureInfo {
-  private FMeasureCounts(final double falsePositives,
-      final double falseNegatives, final double keyCount, final double sysCount) {
-    checkArgument(falsePositives >= 0.0f);
-    this.falsePositives = falsePositives;
-    checkArgument(falseNegatives >= 0.0f);
-    this.falseNegatives = falseNegatives;
-    checkArgument(keyCount >= 0.0f);
-    this.keyCount = keyCount;
-    checkArgument(sysCount >= 0.0f);
-    this.systemCount = sysCount;
-    checkArgument(falseNegatives <= keyCount);
-    checkArgument(falsePositives <= sysCount);
+@TextGroupPublicImmutable
+@Value.Immutable
+@Functional
+@JsonSerialize(as=FMeasureCounts.class)
+@JsonDeserialize(as=FMeasureCounts.class)
+abstract class _FMeasureCounts extends FMeasureInfo {
+  public abstract double falsePositives();
+  public abstract double falseNegatives();
+  public abstract double numPredicted();
+  public abstract double numItemsInKey();
+
+  @Value.Check
+  protected void check() {
+    checkArgument(falsePositives() >= 0.0);
+    checkArgument(falseNegatives() >= 0.0);
+    checkArgument(numItemsInKey() >= 0.0);
+    checkArgument(numPredicted() >= 0.0);
+    checkArgument(falseNegatives() <= numItemsInKey());
+    checkArgument(falsePositives() <= numPredicted());
   }
 
   /**
@@ -49,7 +61,11 @@ public final class FMeasureCounts extends FMeasureInfo {
    */
   public static FMeasureCounts fromFPFNKeyCountSysCount(final double falsePositives,
       final double falseNegatives, final double keyCount, final double sysCount) {
-    return new FMeasureCounts(falsePositives, falseNegatives, keyCount, sysCount);
+    return FMeasureCounts.builder()
+      .falsePositives(falsePositives)
+      .falseNegatives(falseNegatives)
+      .numItemsInKey(keyCount)
+      .numPredicted(sysCount).build();
   }
 
   /**
@@ -70,47 +86,33 @@ public final class FMeasureCounts extends FMeasureInfo {
     return fromTPFPFN(truePositives, falsePositives, falseNegatives);
   }
 
-  public double truePositives() {
-    return systemCount-falsePositives;
-  }
+  // derived accessors
 
-  public double falsePositives() {
-    return falsePositives;
-  }
-
-  public double falseNegatives() {
-    return falseNegatives;
-  }
-
-  public double numPredicted() {
-    return systemCount;
-  }
-
-  public double numItemsInKey() {
-    return keyCount;
+  public final double truePositives() {
+    return numPredicted() -falsePositives();
   }
 
   @Override
-  public double precision() {
-    if (systemCount < EPSILON) {
+  public final double precision() {
+    if (numPredicted() < EPSILON) {
       return 0.0;
     } else {
-      return 1.0-falsePositives / systemCount;
+      return 1.0-falsePositives() / numPredicted();
     }
   }
 
   @Override
-  public double recall() {
-    if (keyCount < EPSILON) {
+  public final double recall() {
+    if (numItemsInKey() < EPSILON) {
       return 0.0;
     } else {
-      return 1.0 - falseNegatives / keyCount;
+      return 1.0 - falseNegatives() / numItemsInKey();
     }
   }
 
-  public String compactPrettyString() {
+  public final String compactPrettyString() {
     return String.format("TP: %.2f, FP: %.2f, FN: %.2f; P: %3.2f; R: %3.2f; F: %3.2f",
-        truePositives(), falsePositives, falseNegatives, 100.0 * precision(), 100.0 * recall(),
+        truePositives(), falsePositives(), falseNegatives(), 100.0 * precision(), 100.0 * recall(),
         100.0 * F1());
   }
 
@@ -123,20 +125,15 @@ public final class FMeasureCounts extends FMeasureInfo {
     for (final FMeasureCounts info : infos) {
       falsePositives += info.falsePositives();
       falseNegatives += info.falseNegatives();
-      keyCount += info.keyCount;
-      sysCount += info.systemCount;
+      keyCount += info.numItemsInKey();
+      sysCount += info.numPredicted();
     }
 
     return FMeasureCounts
         .fromFPFNKeyCountSysCount(falsePositives, falseNegatives, keyCount, sysCount);
   }
 
-  private final double falsePositives;
-  private final double falseNegatives;
-  private final double keyCount;
-  private final double systemCount;
-
-  private static double EPSILON = 0.000001;
+  private static final double EPSILON = 0.000001;
 
   @Beta
   public static <T> Map<T, FMeasureCounts> fromLabels(final List<T> goldLabels,
@@ -184,10 +181,10 @@ public final class FMeasureCounts extends FMeasureInfo {
   }
 
   public void writeTo(final DataOutputStream out) throws IOException {
-    out.writeDouble(falsePositives);
-    out.writeDouble(falseNegatives);
-    out.writeDouble(keyCount);
-    out.writeDouble(systemCount);
+    out.writeDouble(falsePositives());
+    out.writeDouble(falseNegatives());
+    out.writeDouble(numItemsInKey());
+    out.writeDouble(numPredicted());
   }
 
   public static FMeasureCounts readFrom(final DataInputStream in) throws IOException {
@@ -211,28 +208,8 @@ public final class FMeasureCounts extends FMeasureInfo {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hashCode(falsePositives, falseNegatives, keyCount, systemCount);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null || getClass() != obj.getClass()) {
-      return false;
-    }
-    final FMeasureCounts other = (FMeasureCounts) obj;
-    return Objects.equal(this.falsePositives, other.falsePositives)
-        && Objects.equal(this.falseNegatives, other.falseNegatives)
-        && Objects.equal(this.keyCount, other.keyCount)
-        && Objects.equal(this.systemCount, other.systemCount);
-  }
-
-  @Override
   public String toString() {
-    return String.format("TP=%.3f;FP=%.3f;#Key=%.3f;#Sys=%.3F", truePositives(), falsePositives,
-        keyCount, systemCount);
+    return String.format("TP=%.3f;FP=%.3f;#Key=%.3f;#Sys=%.3F", truePositives(), falsePositives(),
+        numItemsInKey(), numPredicted());
   }
 }

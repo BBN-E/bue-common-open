@@ -1,7 +1,5 @@
-package com.bbn.bue.common.evaluation;
+package com.bbn.bue.common.strings.offsets;
 
-import com.bbn.bue.common.strings.offsets.Offset;
-import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.google.common.annotations.Beta;
 
 /**

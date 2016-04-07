@@ -1,6 +1,7 @@
 package com.bbn.bue.common.evaluation;
 
 import com.bbn.bue.common.HasDocID;
+import com.bbn.bue.common.strings.offsets.HasOffsetRange;
 import com.bbn.bue.common.strings.offsets.Offset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;

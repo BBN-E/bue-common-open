@@ -2,10 +2,13 @@ package com.bbn.bue.common.evaluation;
 
 import com.bbn.bue.common.Inspector;
 import com.bbn.bue.common.StringUtils;
+import com.bbn.bue.common.serialization.jackson.JacksonSerializer;
 import com.bbn.bue.common.symbols.Symbol;
+
 import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.ByteSink;
 import com.google.common.io.CharSink;
 import com.google.common.io.Files;
 
@@ -46,6 +49,7 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
 
   public static <KeyT, TestT> AggregateBinaryFScoresInspector<KeyT, TestT> createOutputtingTo(final String outputName,
       final File outputDir) {
+    outputDir.mkdirs();
     return new AggregateBinaryFScoresInspector<>(outputName, outputDir,
         ImmutableList.<ScoringEventObserver<KeyT, TestT>>of());
   }
@@ -58,13 +62,19 @@ public final class AggregateBinaryFScoresInspector<KeyT, TestT>
 
   @Override
   public void finish() throws IOException {
-    final CharSink outSink = Files.asCharSink(new File(outputDir, outputName + FILE_SUFFIX), Charsets.UTF_8);
+    final CharSink textSink = Files.asCharSink(new File(outputDir, outputName + FILE_SUFFIX),
+        Charsets.UTF_8);
+    final ByteSink jsonSink = Files.asByteSink(new File(outputDir, outputName + FILE_SUFFIX + ".json"));
+
     final SummaryConfusionMatrix summaryConfusionMatrix = summaryConfusionMatrixB.build();
     // Output the summaries and add a final newline
-    outSink.write(StringUtils.NewlineJoiner.join(
+    final FMeasureCounts fMeasure =
+        SummaryConfusionMatrices.FMeasureVsAllOthers(summaryConfusionMatrix, PRESENT);
+    textSink.write(StringUtils.NewlineJoiner.join(
         SummaryConfusionMatrices.prettyPrint(summaryConfusionMatrix),
-        SummaryConfusionMatrices.FMeasureVsAllOthers(summaryConfusionMatrix, PRESENT).compactPrettyString(),
+        fMeasure.compactPrettyString(),
         ""));  // Empty string creates a bare newline at the end
+    JacksonSerializer.builder().forJson().prettyOutput().build().serializeTo(fMeasure, jsonSink);
 
     // Call finish on the observers
     for (final ScoringEventObserver observer : scoringEventObservers) {

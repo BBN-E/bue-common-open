@@ -1,33 +1,15 @@
 package com.bbn.bue.common.evaluation;
 
-import com.bbn.bue.common.OptionalUtils;
-import com.bbn.bue.common.math.PercentileComputer;
-
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimaps;
-import com.google.common.io.Files;
-import com.google.common.primitives.Doubles;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import static com.bbn.bue.common.evaluation.EvaluationConstants.PRESENT;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
