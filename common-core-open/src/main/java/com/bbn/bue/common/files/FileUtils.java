@@ -46,6 +46,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -679,5 +683,61 @@ public final class FileUtils {
    */
   public static ImmutableSet<Symbol> loadSymbolSet(final CharSource source) throws IOException {
     return ImmutableSet.copyOf(loadSymbolList(source));
+  }
+
+  /**
+   * Recursively delete this directory and all its contents.
+   */
+  public static void recursivelyDeleteDirectory(File directory) throws IOException {
+    if (!directory.exists()) {
+      return;
+    }
+    checkArgument(directory.isDirectory(), "Cannot recursively delete a non-directory");
+    java.nio.file.Files.walkFileTree(directory.toPath(), new DeletionFileVisitor());
+  }
+
+  private static class DeletionFileVisitor implements FileVisitor<Path> {
+
+    @Override
+    public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs)
+        throws IOException {
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
+        throws IOException {
+      java.nio.file.Files.delete(file);
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(final Path file, final IOException exc)
+        throws IOException {
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(final Path dir, final IOException exc)
+        throws IOException {
+      java.nio.file.Files.delete(dir);
+      return FileVisitResult.CONTINUE;
+    }
+  }
+
+  /**
+   * Calls {@link #recursivelyDeleteDirectory(File)} on JVM exit.
+   */
+  public static void recursivelyDeleteDirectoryOnExit(final File directory) {
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        try {
+          recursivelyDeleteDirectory(directory);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
   }
 }
