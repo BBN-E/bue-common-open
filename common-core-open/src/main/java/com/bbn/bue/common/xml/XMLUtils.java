@@ -5,15 +5,18 @@ import com.bbn.bue.common.symbols.SymbolUtils;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.ls.DOMImplementationLS;
 
@@ -166,9 +169,13 @@ public final class XMLUtils {
 
     if (!val.isEmpty()) {
       return val;
+    } else if (e.getAttributeNode(attribute) != null) {
+      // this attribute is present and really is the empty string
+      return val;
     } else {
       throw new XMLUnexpectedInputException(
-          String.format("%s missing required attribute %s: %s", e.getTagName(), attribute, e));
+          String.format("%s missing required attribute %s: %s.", e.getTagName(), attribute,
+              prettyPrintElementLocally(e)));
     }
   }
 
@@ -529,5 +536,20 @@ public final class XMLUtils {
         return endOfData();
       }
     }
+  }
+
+  /**
+   * A human-consumable string representation of an element with its attributes but without its
+   * children. Do not depend on the particular form of this.
+   */
+  public static String prettyPrintElementLocally(Element e) {
+    final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
+    final NamedNodeMap attributes = e.getAttributes();
+    for (int i = 0; i < attributes.getLength(); ++i) {
+      final Node attr = attributes.item(i);
+      ret.put(attr.getNodeName(), "\"" + attr.getNodeValue() + "\"");
+    }
+    return "<" + e.getNodeName() + " " + Joiner.on(" ").withKeyValueSeparator("=").join(ret.build())
+        + "/>";
   }
 }
