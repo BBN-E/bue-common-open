@@ -1,5 +1,7 @@
 package com.bbn.bue.common;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 
 import org.immutables.value.Value;
@@ -12,7 +14,7 @@ import java.lang.annotation.Target;
 /**
  * This is the text group's default style for immutable objects generated using
  * the "Immutables.org" library. Use this whenever you use {@link org.immutables.value.Value.Immutable}
- * unless you have a strong reason to do otherwise.
+ * for objects intended to be public unless you have a strong reason to do otherwise.
  */
 @Beta
 @Target({ElementType.PACKAGE, ElementType.TYPE})
@@ -30,6 +32,9 @@ import java.lang.annotation.Target;
     // so API users only see the generated implementation, not
     // the template
     visibility = Value.Style.ImplementationVisibility.PUBLIC)
+@JsonSerialize
+@JsonDeserialize
 public @interface TextGroupPublicImmutable {
 }
+
 
