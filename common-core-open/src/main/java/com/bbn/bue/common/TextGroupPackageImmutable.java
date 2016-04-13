@@ -12,9 +12,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This is the text group's default style for immutable objects generated using
- * the "Immutables.org" library. Use this whenever you use {@link org.immutables.value.Value.Immutable}
- * for objects intended to be public unless you have a strong reason to do otherwise.
+ * This is the text group's default style for immutable objects generated using the "Immutables.org"
+ * library. Use this whenever you use {@link org.immutables.value.Value.Immutable} for objects
+ * intended to be package-private unless you have a strong reason to do otherwise.
  */
 @Beta
 @Target({ElementType.PACKAGE, ElementType.TYPE})
@@ -31,10 +31,9 @@ import java.lang.annotation.Target;
     // make the class annotated with this package private,
     // so API users only see the generated implementation, not
     // the template
-    visibility = Value.Style.ImplementationVisibility.PUBLIC)
+    visibility = Value.Style.ImplementationVisibility.PACKAGE)
 @JsonSerialize
 @JsonDeserialize
-public @interface TextGroupPublicImmutable {
+public @interface TextGroupPackageImmutable {
+
 }
-
-
