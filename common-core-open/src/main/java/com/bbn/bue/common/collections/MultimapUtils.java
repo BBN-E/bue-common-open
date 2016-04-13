@@ -2,6 +2,7 @@ package com.bbn.bue.common.collections;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -53,6 +54,18 @@ public final class MultimapUtils {
       ret.put(entry.getKey(), reducerFunction.apply(entry.getValue()));
     }
 
+    return ret.build();
+  }
+
+  /**
+   * Returns an {@link ImmutableSet} of all items in the multimap for the given set of keys
+   */
+  public static <K, V> ImmutableSet<V> getAll(final Multimap<K, V> multimap,
+      final Iterable<K> keys) {
+    final ImmutableSet.Builder<V> ret = ImmutableSet.builder();
+    for (final K key : keys) {
+      ret.addAll(multimap.get(key));
+    }
     return ret.build();
   }
 
