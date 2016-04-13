@@ -1,5 +1,7 @@
 package com.bbn.bue.common.symbols;
 
+import com.bbn.bue.common.converters.StringConverter;
+
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -30,18 +32,19 @@ public class SymbolUtils {
       Ordering.natural().onResultOf(desymbolizeFunction());
 
   /**
-   * An ordering which compares <code>Symbol</code>s by the <code>String</code>s used to create them.
+   * An ordering which compares <code>Symbol</code>s by the <code>String</code>s used to create
+   * them.
    */
   public static Ordering<Symbol> byStringOrdering() {
     return symbolStringOrdering;
   }
 
   /**
-   * Compares {@link Symbol}s by the {@link String}s used to create them. Use
-   * {@link #byStringOrdering()} instead.
+   * Compares {@link Symbol}s by the {@link String}s used to create them. Use {@link
+   * #byStringOrdering()} instead.
    *
-   * @see #byStringOrdering()
    * @author rgabbard
+   * @see #byStringOrdering()
    */
   @Deprecated
   public static class ByString implements Comparator<Symbol> {
@@ -71,16 +74,30 @@ public class SymbolUtils {
     }
   };
 
+  public static StringConverter<Symbol> StringToSymbol() {
+    return StringToSymbolConverter.INSTANCE;
+  }
+
+  private enum StringToSymbolConverter implements StringConverter<Symbol> {
+    INSTANCE;
+
+    @Override
+    public Symbol decode(final String s) {
+      return Symbol.from(s);
+    }
+  }
+
   /**
-   * Returns a function that transforms a {@link Symbol} into a {@link String} using
-   * {@link Symbol#asString()}.
+   * Returns a function that transforms a {@link Symbol} into a {@link String} using {@link
+   * Symbol#asString()}.
    */
-  public static Function<Symbol,String> desymbolizeFunction() {
+  public static Function<Symbol, String> desymbolizeFunction() {
     return DesymbolizeFunction.INSTANCE;
   }
 
   private enum DesymbolizeFunction implements Function<Symbol, String> {
     INSTANCE;
+
     @Override
     public String apply(final Symbol s) {
       return s.asString();
@@ -88,8 +105,8 @@ public class SymbolUtils {
   }
 
   /**
-   * Returns a function that transforms a {@link String} into a {@link Symbol} using
-   * {@link Symbol#from(String)}.
+   * Returns a function that transforms a {@link String} into a {@link Symbol} using {@link
+   * Symbol#from(String)}.
    */
   public static Function<String, Symbol> symbolizeFunction() {
     return SymbolizeFunction.INSTANCE;
@@ -97,6 +114,7 @@ public class SymbolUtils {
 
   private enum SymbolizeFunction implements Function<String, Symbol> {
     INSTANCE;
+
     @Override
     public Symbol apply(final String s) {
       return Symbol.from(s);
@@ -157,8 +175,8 @@ public class SymbolUtils {
   }
 
   /**
-   * Creates a map of {@link Symbol}s from a map of {@link String}s.  No keys or values
-   * may be null.
+   * Creates a map of {@link Symbol}s from a map of {@link String}s.  No keys or values may be
+   * null.
    */
   public static ImmutableMap<Symbol, Symbol> mapFrom(Map<String, String> stringMap) {
     final ImmutableMap.Builder<Symbol, Symbol> ret = ImmutableMap.builder();
