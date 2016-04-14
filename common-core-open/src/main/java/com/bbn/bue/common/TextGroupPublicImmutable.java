@@ -1,7 +1,5 @@
 package com.bbn.bue.common;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.annotations.Beta;
 
 import org.immutables.value.Value;
