@@ -32,8 +32,6 @@ import java.lang.annotation.Target;
     // so API users only see the generated implementation, not
     // the template
     visibility = Value.Style.ImplementationVisibility.PUBLIC)
-@JsonSerialize
-@JsonDeserialize
 public @interface TextGroupPublicImmutable {
 }
 
