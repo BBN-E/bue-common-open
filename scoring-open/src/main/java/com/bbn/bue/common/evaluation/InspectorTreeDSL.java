@@ -34,7 +34,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * output and a gold standard).  This will be the root of the inspection tree which you will feed
  * the data to inspect to.  It will be an {@link InspectionNode} without any inspectors.
  *
- * To add a transformation node, use use {@link #transformed(InspectorTreeNode, Function)} or {@link
+ * To add a transformation node, use {@link #transformed(InspectorTreeNode, Function)} or {@link
  * #transformBoth(InspectorTreeNode, Function)}. To add an observation node, use {@link
  * #inspect(InspectorTreeNode)} like this:
  * <pre>
