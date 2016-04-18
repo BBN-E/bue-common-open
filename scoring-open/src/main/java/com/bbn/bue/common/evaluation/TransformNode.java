@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * consumers.  See {@link InspectorTreeDSL}.
  */
 @Beta
-public class TransformNode<InT, OutT> extends InspectorTreeNode<OutT> implements
+class TransformNode<InT, OutT> extends InspectorTreeNode<OutT> implements
     Inspector<InT> {
 
   private final Function<? super InT, ? extends OutT> transform;
