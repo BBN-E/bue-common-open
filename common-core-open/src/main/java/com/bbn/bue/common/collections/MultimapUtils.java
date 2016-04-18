@@ -58,9 +58,10 @@ public final class MultimapUtils {
   }
 
   /**
-   * Returns an {@link ImmutableSet} of all items in the multimap for the given set of keys
+   * Returns an {@link ImmutableSet} of all items in the multimap for the given set of keys, without
+   * preserving mulitiplicity.
    */
-  public static <K, V> ImmutableSet<V> getAll(final Multimap<K, V> multimap,
+  public static <K, V> ImmutableSet<V> getAllAsSet(final Multimap<K, V> multimap,
       final Iterable<K> keys) {
     final ImmutableSet.Builder<V> ret = ImmutableSet.builder();
     for (final K key : keys) {
