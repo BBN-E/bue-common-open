@@ -29,7 +29,8 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
   }
 
   /**
-   * Returns all ranges for which {@link Range#contains(Comparable)} item is true
+   * Returns all ranges for which {@link Range#contains(Comparable)} item is true, without
+   * preserving mulitiplicity.
    */
   @Override
   public Collection<Range<T>> rangesContaining(final T item) {
@@ -44,7 +45,7 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
 
   /**
    * Finds every range in this object for which {@code range}.{@link Range#encloses(Range)} {@code
-   * queryRange}
+   * queryRange}, without preserving mulitiplicity.
    */
   @Override
   public Collection<Range<T>> rangesContaining(final Range<T> queryRange) {
@@ -58,10 +59,11 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
   }
 
   /**
-   * Finds every range in this object for which {@code queryRange}.{@link Range#encloses(Range)}
+   * Finds every range in this object for which {@code queryRange}.{@link Range#encloses(Range)},
+   * without preserving mulitiplicity.
    */
   @Override
-  public Collection<Range<T>> rangesContained(final Range<T> queryRange) {
+  public Collection<Range<T>> rangesContainedBy(final Range<T> queryRange) {
     final ImmutableSet.Builder<Range<T>> ret = ImmutableSet.builder();
     for (final Range<T> range : ranges) {
       if (queryRange.encloses(range)) {
@@ -72,10 +74,11 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
   }
 
   /**
-   * For every range in this, asks Guava's {@link Range#isConnected(Range)} to {@code queryRange}
+   * For every range in this, asks Guava's {@link Range#isConnected(Range)} to {@code queryRange},
+   * without preserving mulitiplicity.
    */
   @Override
-  public Collection<Range<T>> rangesOverlapped(final Range<T> queryRange) {
+  public Collection<Range<T>> rangesOverlapping(final Range<T> queryRange) {
     final ImmutableSet.Builder<Range<T>> ret = ImmutableSet.builder();
     for (final Range<T> range : ranges) {
       if (range.isConnected(queryRange)) {
@@ -96,6 +99,7 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
   }
 
   public static class Builder<T extends Comparable<T>> {
+
     private final Set<Range<T>> ranges = Sets.newHashSet();
 
     public void addRange(final Range<T> range) {
