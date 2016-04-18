@@ -5,8 +5,9 @@ import com.google.common.collect.Range;
 import java.util.Collection;
 
 /**
- * A class that supports overlapping {@code Range<T>}. All operations support the closedness notion
- * of the inserted {@link Range}s.
+ * A container for a set of potentially overlapping {@code Range<T>} which supports various
+ * containment queries. All operations support the closedness notion of the inserted {@link
+ * Range}s.
  *
  * Guava supports collections disjoint and nested ranges, see {@link
  * com.google.common.collect.RangeSet} and {@link com.google.common.collect.TreeRangeSet}, however
