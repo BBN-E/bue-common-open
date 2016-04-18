@@ -30,7 +30,7 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
 
   /**
    * Returns all ranges for which {@link Range#contains(Comparable)} item is true, without
-   * preserving mulitiplicity.
+   * preserving multiplicity.
    */
   @Override
   public Collection<Range<T>> rangesContaining(final T item) {
@@ -45,7 +45,7 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
 
   /**
    * Finds every range in this object for which {@code range}.{@link Range#encloses(Range)} {@code
-   * queryRange}, without preserving mulitiplicity.
+   * queryRange}, without preserving multiplicity.
    */
   @Override
   public Collection<Range<T>> rangesContaining(final Range<T> queryRange) {
@@ -60,7 +60,7 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
 
   /**
    * Finds every range in this object for which {@code queryRange}.{@link Range#encloses(Range)},
-   * without preserving mulitiplicity.
+   * without preserving multiplicity.
    */
   @Override
   public Collection<Range<T>> rangesContainedBy(final Range<T> queryRange) {
@@ -74,14 +74,14 @@ public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
   }
 
   /**
-   * For every range in this, asks Guava's {@link Range#isConnected(Range)} to {@code queryRange},
-   * without preserving mulitiplicity.
+   * Returns all {@link Range}s {@link Range#isConnected(Range)} to the {@code queryRange} for which
+   * {@link Range#isEmpty()} is false. Does not preserve multiplicity of {@link Range}s
    */
   @Override
   public Collection<Range<T>> rangesOverlapping(final Range<T> queryRange) {
     final ImmutableSet.Builder<Range<T>> ret = ImmutableSet.builder();
     for (final Range<T> range : ranges) {
-      if (range.isConnected(queryRange)) {
+      if (range.isConnected(queryRange) && !range.intersection(queryRange).isEmpty()) {
         ret.add(range);
       }
     }
