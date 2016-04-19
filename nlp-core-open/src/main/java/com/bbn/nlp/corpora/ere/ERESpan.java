@@ -1,8 +1,8 @@
 package com.bbn.nlp.corpora.ere;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.base.Objects;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class ERESpan {
   public final int start;
@@ -14,7 +14,7 @@ public final class ERESpan {
     this.end = end;
     this.text = checkNotNull(text);
   }
-  
+
   public static ERESpan from(final int start, final int end, final String text) {
     return new ERESpan(start, end, text);
   }
@@ -29,6 +29,15 @@ public final class ERESpan {
 
   public String getText() {
     return text;
+  }
+
+  @Override
+  public String toString() {
+    return "ERESpan{" +
+        "start=" + start +
+        ", end=" + end +
+        ", text='" + text + '\'' +
+        '}';
   }
 
   @Override
@@ -47,7 +56,7 @@ public final class ERESpan {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    
+
     ERESpan other = (ERESpan) obj;
     return (start==other.start) && (end==other.end) && text.equals(other.text);
   }

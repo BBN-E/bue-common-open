@@ -42,6 +42,15 @@ public final class CoreNLPToken {
     return offsets;
   }
 
+  @Override
+  public String toString() {
+    return "CoreNLPToken{" +
+        "POS=" + POS +
+        ", text='" + text + '\'' +
+        ", offsets=" + offsets +
+        '}';
+  }
+
   public static Function<CoreNLPToken, String> contentFunction() {
     return new Function<CoreNLPToken, String>() {
       @Override
