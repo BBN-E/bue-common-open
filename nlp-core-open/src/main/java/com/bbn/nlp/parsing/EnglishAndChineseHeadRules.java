@@ -51,7 +51,8 @@ final class EnglishAndChineseHeadRules {
       throws IOException {
     final boolean headInitial = true;
     final CharSource resource = Resources
-        .asCharSource(EnglishAndChineseHeadRules.class.getResource("en_heads.collins.txt"), Charsets.UTF_8);
+        .asCharSource(EnglishAndChineseHeadRules.class.getResource("en_heads.collins.txt"),
+            Charsets.UTF_8);
     final HeadRule<NodeT> englishNPHandling = EnglishNPHeadRules();
     final ImmutableMap<Symbol, HeadRule<NodeT>> headRules =
         headRulesFromResources(headInitial, resource);
@@ -106,13 +107,14 @@ final class EnglishAndChineseHeadRules {
 
   // English Rules
   private static <NodeT extends ConstituentNode<NodeT, ?>> HeadRule<NodeT> EnglishNPHeadRules() {
-    final List<HeadRule<NodeT>> rules = ImmutableList.<HeadRule<NodeT>>of(new EnglishPOSRule<NodeT>(),
-        new EnglishNSRule<NodeT>(),
-        new EnglishNPNPRule<NodeT>(),
-        new EnglishAdjPRNPhraseRule<NodeT>(),
-        new EnglishCDRule<NodeT>(),
-        new EnglishAdjRule<NodeT>(),
-        new EnglishFallBackRule<NodeT>());
+    final List<HeadRule<NodeT>> rules =
+        ImmutableList.<HeadRule<NodeT>>of(new EnglishPOSRule<NodeT>(),
+            new EnglishNSRule<NodeT>(),
+            new EnglishNPNPRule<NodeT>(),
+            new EnglishAdjPRNPhraseRule<NodeT>(),
+            new EnglishCDRule<NodeT>(),
+            new EnglishAdjRule<NodeT>(),
+            new EnglishFallBackRule<NodeT>());
     return CompositeHeadRule.create(rules);
   }
 
@@ -145,7 +147,8 @@ final class EnglishAndChineseHeadRules {
         final Iterable<NodeT> childNodes) {
       final ImmutableList<NodeT> children = ImmutableList.copyOf(childNodes);
       // if POS
-      if (children.reverse().get(0).terminal()) {
+      if (children.reverse().get(0).terminal() && !children.reverse().get(0).tag().asString()
+          .matches("\\p{Punct}+")) {
         return Optional.of(children.reverse().get(0));
       }
       return Optional.absent();
