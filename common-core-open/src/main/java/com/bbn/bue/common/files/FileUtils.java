@@ -240,7 +240,7 @@ public final class FileUtils {
       throws IOException {
 
     return Maps.transformValues(loadSymbolToFileMap(source),
-        FileUtils.AsCharSource);
+        FileUtils.asUTF8CharSourceFunction());
   }
 
   public static Map<String, File> loadStringToFileMap(final File f) throws IOException {
@@ -599,15 +599,20 @@ public final class FileUtils {
   private static final Splitter multimapSplitter =
       Splitter.on("\t").trimResults().omitEmptyStrings();
 
-  /**
-   * Transforms a file to a {@link com.google.common.io.CharSource} with UTF-8 encoding.
-   */
-  private static final Function<File, CharSource> AsCharSource = new Function<File, CharSource>() {
-    @Override
+  private enum AsUTF8CharSource implements Function<File, CharSource> {
+    INSTANCE;
+
     public CharSource apply(File f) {
       return Files.asCharSource(f, Charsets.UTF_8);
     }
-  };
+  }
+
+  /**
+   * Transforms a file to a {@link com.google.common.io.CharSource} with UTF-8 encoding.
+   */
+  private static Function<File, CharSource> asUTF8CharSourceFunction() {
+    return AsUTF8CharSource.INSTANCE;
+  }
 
   /**
    * Throws an {@link java.io.IOException} if the supplied directory either does not exist or is not
