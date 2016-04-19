@@ -610,7 +610,7 @@ public final class FileUtils {
   /**
    * Transforms a file to a {@link com.google.common.io.CharSource} with UTF-8 encoding.
    */
-  private static Function<File, CharSource> asUTF8CharSourceFunction() {
+  public static Function<File, CharSource> asUTF8CharSourceFunction() {
     return AsUTF8CharSource.INSTANCE;
   }
 
