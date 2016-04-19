@@ -7,6 +7,7 @@ import com.bbn.nlp.ConstituentNode;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
@@ -18,6 +19,8 @@ import com.google.common.io.Resources;
 
 import java.io.IOException;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * Implements the head rules as found in: Three Generative, Lexicalised Models for Statistical
@@ -142,17 +145,33 @@ final class EnglishAndChineseHeadRules {
   private static class EnglishPOSRule<NodeT extends ConstituentNode<NodeT, ?>>
       implements HeadRule<NodeT> {
 
+    private static final ImmutableSet<Symbol> bannedFromNPPos = SymbolUtils.setFrom("ADJP", "QP");
+
     @Override
     public Optional<NodeT> matchForChildren(
         final Iterable<NodeT> childNodes) {
-      final ImmutableList<NodeT> children = ImmutableList.copyOf(childNodes);
-      // if POS
+      // see email reference pointing to filtering and handling punctuation
+      final ImmutableList<NodeT> children = FluentIterable.from(childNodes)
+          .filter(Predicates.compose(Predicates.not(Predicates.in(bannedFromNPPos)), tagFunction))
+          .toList();
+      if(children.size() == 0) {
+        return Optional.absent();
+      }
       if (children.reverse().get(0).terminal() && !children.reverse().get(0).tag().asString()
           .matches("\\p{Punct}+")) {
         return Optional.of(children.reverse().get(0));
       }
       return Optional.absent();
     }
+
+    private static final Function<ConstituentNode<?, ?>, Symbol> tagFunction =
+        new Function<ConstituentNode<?, ?>, Symbol>() {
+          @Nullable
+          @Override
+          public Symbol apply(@Nullable final ConstituentNode<?, ?> node) {
+            return node.tag();
+          }
+        };
   }
 
   private static class EnglishNSRule<NodeT extends ConstituentNode<NodeT, ?>>
