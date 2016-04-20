@@ -9,7 +9,6 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,6 +20,11 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Predicates.compose;
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.filter;
 
 /**
  * Implements the head rules as found in: Three Generative, Lexicalised Models for Statistical
@@ -96,8 +100,8 @@ final class EnglishAndChineseHeadRules {
       throws IOException {
     return ImmutableMap.copyOf(FluentIterable.from(p.readLines())
         .transform(StringUtils.Trim)
-        .filter(Predicates.not(StringUtils.startsWith("#")))
-        .filter(Predicates.not(StringUtils.isEmpty()))
+        .filter(not(StringUtils.startsWith("#")))
+        .filter(not(StringUtils.isEmpty()))
         .transform(CollinsStyleHeadRule.<NodeT>fromHeadRuleFileLine(headInitial)).toList());
   }
 
@@ -151,10 +155,9 @@ final class EnglishAndChineseHeadRules {
     public Optional<NodeT> matchForChildren(
         final Iterable<NodeT> childNodes) {
       // see email reference pointing to filtering and handling punctuation
-      final ImmutableList<NodeT> children = FluentIterable.from(childNodes)
-          .filter(Predicates.compose(Predicates.not(Predicates.in(bannedFromNPPos)), tagFunction))
-          .toList();
-      if(children.size() == 0) {
+      final ImmutableList<NodeT> children = ImmutableList
+          .copyOf(filter(childNodes, compose(not(in(bannedFromNPPos)), tagFunction)));
+      if (children.size() == 0) {
         return Optional.absent();
       }
       if (children.reverse().get(0).terminal() && !children.reverse().get(0).tag().asString()
