@@ -7,8 +7,8 @@ import com.bbn.nlp.ConstituentNode;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -18,6 +18,13 @@ import com.google.common.io.Resources;
 
 import java.io.IOException;
 import java.util.List;
+
+import javax.annotation.Nullable;
+
+import static com.google.common.base.Predicates.compose;
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.filter;
 
 /**
  * Implements the head rules as found in: Three Generative, Lexicalised Models for Statistical
@@ -51,7 +58,8 @@ final class EnglishAndChineseHeadRules {
       throws IOException {
     final boolean headInitial = true;
     final CharSource resource = Resources
-        .asCharSource(EnglishAndChineseHeadRules.class.getResource("en_heads.collins.txt"), Charsets.UTF_8);
+        .asCharSource(EnglishAndChineseHeadRules.class.getResource("en_heads.collins.txt"),
+            Charsets.UTF_8);
     final HeadRule<NodeT> englishNPHandling = EnglishNPHeadRules();
     final ImmutableMap<Symbol, HeadRule<NodeT>> headRules =
         headRulesFromResources(headInitial, resource);
@@ -92,8 +100,8 @@ final class EnglishAndChineseHeadRules {
       throws IOException {
     return ImmutableMap.copyOf(FluentIterable.from(p.readLines())
         .transform(StringUtils.Trim)
-        .filter(Predicates.not(StringUtils.startsWith("#")))
-        .filter(Predicates.not(StringUtils.isEmpty()))
+        .filter(not(StringUtils.startsWith("#")))
+        .filter(not(StringUtils.isEmpty()))
         .transform(CollinsStyleHeadRule.<NodeT>fromHeadRuleFileLine(headInitial)).toList());
   }
 
@@ -106,13 +114,14 @@ final class EnglishAndChineseHeadRules {
 
   // English Rules
   private static <NodeT extends ConstituentNode<NodeT, ?>> HeadRule<NodeT> EnglishNPHeadRules() {
-    final List<HeadRule<NodeT>> rules = ImmutableList.<HeadRule<NodeT>>of(new EnglishPOSRule<NodeT>(),
-        new EnglishNSRule<NodeT>(),
-        new EnglishNPNPRule<NodeT>(),
-        new EnglishAdjPRNPhraseRule<NodeT>(),
-        new EnglishCDRule<NodeT>(),
-        new EnglishAdjRule<NodeT>(),
-        new EnglishFallBackRule<NodeT>());
+    final List<HeadRule<NodeT>> rules =
+        ImmutableList.<HeadRule<NodeT>>of(new EnglishPOSRule<NodeT>(),
+            new EnglishNSRule<NodeT>(),
+            new EnglishNPNPRule<NodeT>(),
+            new EnglishAdjPRNPhraseRule<NodeT>(),
+            new EnglishCDRule<NodeT>(),
+            new EnglishAdjRule<NodeT>(),
+            new EnglishFallBackRule<NodeT>());
     return CompositeHeadRule.create(rules);
   }
 
@@ -140,16 +149,32 @@ final class EnglishAndChineseHeadRules {
   private static class EnglishPOSRule<NodeT extends ConstituentNode<NodeT, ?>>
       implements HeadRule<NodeT> {
 
+    private static final ImmutableSet<Symbol> bannedFromNPPos = SymbolUtils.setFrom("ADJP", "QP");
+
     @Override
     public Optional<NodeT> matchForChildren(
         final Iterable<NodeT> childNodes) {
-      final ImmutableList<NodeT> children = ImmutableList.copyOf(childNodes);
-      // if POS
-      if (children.reverse().get(0).terminal()) {
+      // see email reference pointing to filtering and handling punctuation
+      final ImmutableList<NodeT> children = ImmutableList
+          .copyOf(filter(childNodes, compose(not(in(bannedFromNPPos)), tagFunction)));
+      if (children.size() == 0) {
+        return Optional.absent();
+      }
+      if (children.reverse().get(0).terminal() && !children.reverse().get(0).tag().asString()
+          .matches("\\p{Punct}+")) {
         return Optional.of(children.reverse().get(0));
       }
       return Optional.absent();
     }
+
+    private static final Function<ConstituentNode<?, ?>, Symbol> tagFunction =
+        new Function<ConstituentNode<?, ?>, Symbol>() {
+          @Nullable
+          @Override
+          public Symbol apply(@Nullable final ConstituentNode<?, ?> node) {
+            return node.tag();
+          }
+        };
   }
 
   private static class EnglishNSRule<NodeT extends ConstituentNode<NodeT, ?>>
