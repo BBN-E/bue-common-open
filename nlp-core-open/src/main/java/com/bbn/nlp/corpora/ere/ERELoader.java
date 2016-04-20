@@ -273,6 +273,8 @@ final class ERELoading {
     final Optional<String>
         entityMentionId = XMLUtils.optionalStringAttribute(e, "entity_mention_id");
     final Optional<String> fillerId = XMLUtils.optionalStringAttribute(e, "filler_id");
+    // null if relation_mention argument, populated in event_mention arguments
+    final Boolean realis = XMLUtils.optionalBooleanAttribute(e, "realis").orNull();
 
     String mentionId = docid + "-";
     if(entityMentionId.isPresent()) {
@@ -287,10 +289,10 @@ final class ERELoading {
     Object obj = fetch(mentionId);
     if(obj instanceof EREEntityMention) {
       final EREEntityMention m = (EREEntityMention) obj;
-      arg = EREEntityArgument.from(role, m);
+      arg = EREEntityArgument.from(role, realis, m);
     } else if(obj instanceof EREFiller) {
       final EREFiller m = (EREFiller) obj;
-      arg = EREFillerArgument.from(role, m);
+      arg = EREFillerArgument.from(role, realis, m);
     } else {
       throw EREException.forElement("Expected either an EREEntityMention or an EREFiller "
                                     + "but got " + obj.getClass(), e);
