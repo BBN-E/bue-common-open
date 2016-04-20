@@ -13,10 +13,10 @@ public final class EREFillerArgument implements EREArgument {
 
   private final String role;
   @Nullable
-  private final Boolean realis;
+  private final LinkRealis realis;
   private final EREFiller filler;
 
-  private EREFillerArgument(final String role, @Nullable final Boolean realis,
+  private EREFillerArgument(final String role, @Nullable final LinkRealis realis,
       final EREFiller filler) {
     this.realis = realis;
     this.role = checkNotNull(role);
@@ -27,7 +27,7 @@ public final class EREFillerArgument implements EREArgument {
     return from(role, null, filler);
   }
 
-  public static EREFillerArgument from(final String role, @Nullable final Boolean realis,
+  public static EREFillerArgument from(final String role, @Nullable final LinkRealis realis,
       final EREFiller filler) {
     return new EREFillerArgument(role, realis, filler);
   }
@@ -47,7 +47,7 @@ public final class EREFillerArgument implements EREArgument {
   }
 
   @Override
-  public Optional<Boolean> getRealis() {
+  public Optional<LinkRealis> getRealis() {
     return Optional.fromNullable(realis);
   }
 

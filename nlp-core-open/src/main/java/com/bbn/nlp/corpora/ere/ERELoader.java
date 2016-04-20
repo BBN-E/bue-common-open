@@ -274,7 +274,17 @@ final class ERELoading {
         entityMentionId = XMLUtils.optionalStringAttribute(e, "entity_mention_id");
     final Optional<String> fillerId = XMLUtils.optionalStringAttribute(e, "filler_id");
     // null if relation_mention argument, populated in event_mention arguments
-    final Boolean realis = XMLUtils.optionalBooleanAttribute(e, "realis").orNull();
+    final LinkRealis realis;
+    final Optional<Boolean> linkRealis = XMLUtils.optionalBooleanAttribute(e, "realis");
+    if(linkRealis.isPresent()) {
+      if(linkRealis.get()) {
+        realis = LinkRealis.REALIS;
+      } else {
+        realis = LinkRealis.IRREALIS;
+      }
+    } else {
+      realis = null;
+    }
 
     String mentionId = docid + "-";
     if(entityMentionId.isPresent()) {

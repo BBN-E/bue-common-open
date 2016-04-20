@@ -12,10 +12,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class EREEntityArgument implements EREArgument {
 
   private final String role;
-  @Nullable private final Boolean realis;
+  @Nullable private final LinkRealis realis;
   private final EREEntityMention entityMention;
 
-  private EREEntityArgument(final String role, @Nullable final Boolean realis,
+  private EREEntityArgument(final String role, @Nullable final LinkRealis realis,
       final EREEntityMention entityMention) {
     this.realis = realis;
     this.role = checkNotNull(role);
@@ -26,7 +26,7 @@ public final class EREEntityArgument implements EREArgument {
     return from(role, null, entityMention);
   }
 
-  public static EREEntityArgument from(final String role, @Nullable final Boolean realis,
+  public static EREEntityArgument from(final String role, @Nullable final LinkRealis realis,
       final EREEntityMention entityMention) {
     return new EREEntityArgument(role, realis, entityMention);
   }
@@ -46,7 +46,7 @@ public final class EREEntityArgument implements EREArgument {
   }
 
   @Override
-  public Optional<Boolean> getRealis() {
+  public Optional<LinkRealis> getRealis() {
     return Optional.fromNullable(realis);
   }
 

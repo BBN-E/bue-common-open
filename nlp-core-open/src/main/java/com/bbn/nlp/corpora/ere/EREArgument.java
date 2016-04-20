@@ -9,5 +9,5 @@ public interface EREArgument {
 
   public String getRole();
 
-  public Optional<Boolean> getRealis();
+  public Optional<LinkRealis> getRealis();
 }
