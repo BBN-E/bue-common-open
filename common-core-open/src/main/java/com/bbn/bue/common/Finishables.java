@@ -31,6 +31,13 @@ public final class Finishables {
   }
 
   /**
+   * If the provided object is {@link Finishable}, calls {@link Finishable#finish()}.
+   */
+  public static void finishIfApplicable(Object toFinish) throws IOException {
+      finishIfApplicable(ImmutableList.of(toFinish));
+  }
+
+  /**
    * Calls {@link Finishable#finish()} on all objects provided which implement {@link Finishable}
    */
   public static void finishIfApplicable(Iterable<?> toFinish) throws IOException {
