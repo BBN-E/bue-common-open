@@ -109,7 +109,8 @@ public final class FileUtils {
   }
 
   /**
-   * Writes the absolutes paths of the given files in iteration order, one-per-line.
+   * Writes the absolutes paths of the given files in iteration order, one-per-line. Each line
+   * will end with a Unix newline.
    */
   public static void writeFileList(Iterable<File> files, CharSink sink) throws IOException {
     writeUnixLines(FluentIterable.from(files)
