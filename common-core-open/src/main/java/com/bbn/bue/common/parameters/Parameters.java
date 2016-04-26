@@ -1228,4 +1228,43 @@ public final class Parameters {
 
     void observeParameterRequest(String param);
   }
+
+  /**
+   * Gets objects defined by namespaces. It frequently happens that a program needs to have
+   * specified some set of objects to use, where each object is defined by some namespace. For
+   * example, in the name finder, we might need to use a number of different name set groups, where
+   * each group is defined by either a single name list or a map of name list names to name lists.
+   * Using this we would have a parameter file like this:
+   * <pre>
+   *   # note foo is not used
+   *   com.bbn.serif.names.lists.activeListGroups: standard,geonames,single
+   *   com.bbn.serif.names.lists.standard.mapFile: /nfs/.....
+   *   com.bbn.serif.names.lists.geonames.mapFile: /nfs/....
+   *   com.bbn.serif.names.lists.foo.listPath: /nfs/....
+   *   com.bbn.serif.names.lists.foo.listName: single
+   *   com.bbn.serif.names.lists.foo.listPath: /nfs/...
+   *   com.bbn.serif.names.lists.foo.listName: foo
+   * </pre>
+   *
+   * The user could load these by {@code objectsFromNameSpace("com.bbn.serif.names.lists",
+   * "activeListGroups", aNameSpaceToObjectMapperImplementation)}.
+   *
+   * If {@code activeNameSpacesFeature} is absent this will thrown a {@link ParameterException}.
+   */
+  public <T> ImmutableSet<T> objectsFromNamespaces(String baseNamespace,
+      String activeNamespacesFeature,
+      NamespaceToObjectMapper<? extends T> nameSpaceToObjectMapper) {
+    final Parameters subNamespace = copyNamespace(baseNamespace);
+    final ImmutableSet.Builder<T> ret = ImmutableSet.builder();
+    for (final String activeNamespace : subNamespace.getStringList(activeNamespacesFeature)) {
+      ret.add(nameSpaceToObjectMapper.fromNameSpace(subNamespace.copyNamespace(activeNamespace)));
+    }
+    return ret.build();
+  }
+
+  @Beta
+  public interface NamespaceToObjectMapper<T> {
+
+    T fromNameSpace(Parameters params);
+  }
 }
