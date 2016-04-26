@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -59,9 +58,9 @@ import java.util.zip.GZIPInputStream;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.skip;
+import static com.google.common.collect.Iterables.transform;
 
 public final class FileUtils {
-
   private FileUtils() {
     throw new UnsupportedOperationException();
   }
@@ -110,19 +109,12 @@ public final class FileUtils {
   }
 
   /**
-   * Writes the absolutes paths of the given files in iteration order, one-per-line. The currently
-   * implementation is just a quick one which forms the string in memory and writes it. If your file
-   * list is very large, you should modify it to work line-by-line, being very careful with all the
-   * trickiness of file I/O exception handling in Java 6.
+   * Writes the absolutes paths of the given files in iteration order, one-per-line. Each line
+   * will end with a Unix newline.
    */
   public static void writeFileList(Iterable<File> files, CharSink sink) throws IOException {
-    // proper exception handling in JDK 6 is ugly, so we'll let Guava handle it for us
-    // at the expense of memory.  If you are writing huge file lists, go ahead and implement
-    // the line-by-line version, but it is out-of-scope for the moment
-    sink.write(FluentIterable.from(files)
-        .transform(ToAbsolutePath)
-        .join(StringUtils.NewlineJoiner)
-        .concat("\n"));
+    writeUnixLines(FluentIterable.from(files)
+        .transform(toAbsolutePathFunction()), sink);
   }
 
   /**
@@ -195,6 +187,11 @@ public final class FileUtils {
     return new File(absolutePath + "." + extension);
   }
 
+  /**
+   * @deprecated Prefer {@link CharSink#writeLines(Iterable, String)} or {@link
+   * FileUtils#writeUnixLines(Iterable, CharSink)}.
+   */
+  @Deprecated
   public static void writeLines(final File f, final Iterable<String> data, final Charset charSet)
       throws IOException {
     final FileOutputStream fin = new FileOutputStream(f);
@@ -228,12 +225,25 @@ public final class FileUtils {
    * separated by a single tab.  The file will have a trailing newline.
    */
   public static void writeSymbolToFileMap(Map<Symbol, File> symbolToFileMap, CharSink sink) throws IOException {
-    final StringBuilder sb = new StringBuilder();
+    writeSymbolToFileEntries(symbolToFileMap.entrySet(), sink);
+  }
 
-    Joiner.on("\n").withKeyValueSeparator("\t").appendTo(sb,
-        Maps.transformValues(symbolToFileMap, FileUtils.ToAbsolutePath));
-    sb.append("\n");
-    sink.write(sb.toString());
+  private static final Function<Map.Entry<Symbol, String>, String>
+      TO_TAB_SEPARATED_ENTRY = MapUtils.toStringWithKeyValueSeparator("\t");
+
+  /**
+   * Writes map entries from symbols to file absolute paths to a file. Each line has a mapping with
+   * the key and value separated by a single tab.  The file will have a trailing newline.  Note that
+   * the same "key" may appear in the file with multiple mappings.
+   */
+  public static void writeSymbolToFileEntries(final Iterable<Map.Entry<Symbol, File>> entries,
+      final CharSink sink) throws IOException {
+
+    writeUnixLines(
+        transform(
+            MapUtils.transformValues(entries, toAbsolutePathFunction()),
+            TO_TAB_SEPARATED_ENTRY),
+        sink);
   }
 
   public static Map<Symbol, CharSource> loadSymbolToFileCharSourceMap(CharSource source)
@@ -414,12 +424,18 @@ public final class FileUtils {
     }
   };
 
-  public static final Function<File, String> ToAbsolutePath = new Function<File, String>() {
+  public static final Function<File, String> toAbsolutePathFunction() {
+    return ToAbsolutePathFunction.INSTANCE;
+  }
+
+  private enum ToAbsolutePathFunction implements Function<File, String> {
+    INSTANCE;
+
     @Override
-    public String apply(final File f) {
-      return f.getAbsolutePath();
+    public String apply(final File input) {
+      return input.getAbsolutePath();
     }
-  };
+  }
 
   public static boolean isEmptyDirectory(final File directory) {
     if (directory.exists() && directory.isDirectory()) {
@@ -568,13 +584,13 @@ public final class FileUtils {
   public static void writeSymbolMultimap(Multimap<Symbol, Symbol> mm, CharSink charSink)
       throws IOException {
     final Joiner tabJoiner = Joiner.on('\t');
-    charSink.writeLines(Iterables.transform(mm.asMap().entrySet(),
+    writeUnixLines(transform(mm.asMap().entrySet(),
         new Function<Map.Entry<Symbol, Collection<Symbol>>, String>() {
           @Override
           public String apply(Map.Entry<Symbol, Collection<Symbol>> input) {
             return input.getKey() + "\t" + tabJoiner.join(input.getValue());
           }
-        }));
+        }), charSink);
   }
 
 
@@ -744,5 +760,26 @@ public final class FileUtils {
         }
       }
     });
+  }
+
+  /**
+   * @deprecated See {@link #toAbsolutePathFunction()}.
+   */
+  @Deprecated
+  public static final Function<File, String> ToAbsolutePath = new Function<File, String>() {
+    @Override
+    public String apply(final File f) {
+      return f.getAbsolutePath();
+    }
+  };
+
+  /**
+   * Generally we want to avoid {@link CharSink#writeLines(Iterable)} because it uses the OS default
+   * line separator, but our code always works with Unix line endings regardless of platform. This
+   * is just like {@link CharSink#writeLines(Iterable)}, but always uses Unix endings.
+   */
+  public static void writeUnixLines(Iterable<? extends CharSequence> lines, CharSink sink)
+      throws IOException {
+    sink.writeLines(lines, "\n");
   }
 }

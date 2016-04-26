@@ -9,6 +9,8 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 
 import java.util.Comparator;
@@ -364,6 +366,93 @@ public final class MapUtils {
    */
   public static <K,V> LaxImmutableMapBuilder<K,V> immutableMapBuilderResolvingDuplicatesBy(Comparator<? super V> conflictComparator) {
     return new NonMonotonicLaxImmutableMapBuilder<>(Ordering.from(conflictComparator));
+  }
+
+  /**
+   * Returns a Guava {@link Function} to transform map entries to strings by taking the {@link
+   * Object#toString()} of the key and the value and joining them with the supplied {@code
+   * separator}. None of the key, value, or separator may be null.
+   */
+  public static <K, V> Function<Map.Entry<K, V>, String> toStringWithKeyValueSeparator(
+      final String separator) {
+    return new EntryJoinerFunction<>(separator);
+  }
+
+  private static class EntryJoinerFunction<K, V> implements Function<Entry<K, V>, String> {
+
+    private final String separator;
+
+    public EntryJoinerFunction(final String separator) {
+      this.separator = checkNotNull(separator);
+    }
+
+    @Override
+    public String apply(final Entry<K, V> input) {
+      return input.getKey() + separator + input.getValue();
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(separator);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      }
+      final EntryJoinerFunction other = (EntryJoinerFunction) obj;
+      return Objects.equal(this.separator, other.separator);
+    }
+  }
+
+  /**
+   * Just like {@link Maps#transformEntries(Map, Maps.EntryTransformer)} but on an {@link Iterable}
+   * of {@link Map.Entry}.
+   */
+  public static <K, V1, V2> Iterable<Map.Entry<K, V2>> transformValues(
+      Iterable<Map.Entry<K, V1>> input,
+      final Function<? super V1, V2> valueTransformer) {
+    return Iterables.transform(input, new Function<Entry<K, V1>, Entry<K, V2>>() {
+      @Override
+      public Entry<K, V2> apply(final Entry<K, V1> input) {
+        return Maps.immutableEntry(input.getKey(), valueTransformer.apply(input.getValue()));
+      }
+    });
+  }
+
+  /**
+   * Just like {@link Maps#transformEntries(Map, Maps.EntryTransformer)} but on an {@link Iterable}
+   * of {@link Map.Entry}.
+   */
+  public static <K, V1, V2> Iterable<Map.Entry<K, V2>> transformEntries(
+      Iterable<Map.Entry<K, V1>> input,
+      final Maps.EntryTransformer<? super K, ? super V1, V2> entryTransformer) {
+    return Iterables.transform(input, new Function<Entry<K, V1>, Entry<K, V2>>() {
+      @Override
+      public Entry<K, V2> apply(final Entry<K, V1> input) {
+        return Maps.immutableEntry(input.getKey(),
+            entryTransformer.transformEntry(input.getKey(), input.getValue()));
+      }
+    });
+  }
+
+  /**
+   * Creates a {@link com.google.common.collect.Maps.EntryTransformer} which applies the supplied
+   * {@link Function} to map entry values.
+   */
+  public static <K, V1, V2> Maps.EntryTransformer<K, V1, V2> valueTransformer(
+      final Function<? super V1, V2> valueFunction) {
+    checkNotNull(valueFunction);
+    return new Maps.EntryTransformer<K, V1, V2>() {
+      @Override
+      public V2 transformEntry(final K key, final V1 value) {
+        return valueFunction.apply(value);
+      }
+    };
   }
 }
 
