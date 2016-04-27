@@ -26,4 +26,7 @@ references.
 
 # Legal notes
 
-The project, DARPA DEFT, was previously assessed and assigned a final determination of EAR99. The JCAT part number is PN-BBN-E-14230.
+WARNING - This document contains technology whose export or disclosure to
+Non-U.S. persons, wherever located, is subject to the Export Administrations
+Regulations (EAR) (15 C.F.R. Sections 730-774). Violations are subject to
+severe criminal penalties.
