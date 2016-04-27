@@ -225,7 +225,7 @@ public final class FileUtils {
 
   public static ImmutableListMultimap<Symbol, File> loadSymbolToFileListMultimap(
       final CharSource source) throws IOException {
-    return MultimapUtils.copyWithKeysTransformedByInjection(
+    return MultimapUtils.copyWithTransformedKeys(
         loadStringToFileListMultimap(source), Symbol.FromString);
   }
 
