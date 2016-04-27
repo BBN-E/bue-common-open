@@ -8,6 +8,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -454,5 +455,89 @@ public final class MapUtils {
       }
     };
   }
+
+  /**
+   * Returns a wrapper around an {@link com.google.common.collect.ImmutableMultimap.Builder} which
+   * hides the differences between it and {@link com.google.common.collect.ImmutableMap.Builder} for
+   * the purpse of population.
+   */
+  public static <K,V> MapSink<K,V> asMapSink(ImmutableMultimap.Builder<K,V> multimapB) {
+    return new ImmutableMultimapBuilderSink<>(multimapB);
+  }
+
+  /**
+   * Returns a wrapper around an {@link com.google.common.collect.ImmutableMap.Builder} which
+   * hides the differences between it and {@link com.google.common.collect.ImmutableMultimap.Builder} for
+   * the purpse of population. Beware {@link com.google.common.collect.ImmutableMap.Builder} will
+   * still throw an exception for duplicate entries!
+   */
+  public static <K,V> MapSink<K,V> asMapSink(ImmutableMap.Builder<K,V> mapB) {
+    return new ImmutableMapBuilderSink<>(mapB);
+  }
 }
 
+final class ImmutableMapBuilderSink<K,V> implements MapSink<K,V> {
+  final ImmutableMap.Builder<K,V> builder;
+
+  ImmutableMapBuilderSink(final ImmutableMap.Builder<K, V> builder) {
+    this.builder = checkNotNull(builder);
+  }
+
+  @Override
+  public MapSink<K, V> put(final K key, final V value) {
+    builder.put(key, value);
+    return this;
+  }
+
+  @Override
+  public MapSink<K, V> put(final Entry<K, V> entry) {
+    builder.put(entry);
+    return this;
+  }
+
+  @Override
+  public MapSink<K,V> putAll(Map<? extends K, ? extends V> map) {
+    builder.putAll(map);
+    return this;
+  }
+
+  @Override
+  public MapSink<K, V> putAll(final Iterable<? extends Entry<? extends K, ? extends V>> entries) {
+    builder.putAll(entries);
+    return this;
+  }
+}
+
+final class ImmutableMultimapBuilderSink<K,V> implements MapSink<K,V> {
+  final ImmutableMultimap.Builder<K,V> builder;
+
+  ImmutableMultimapBuilderSink(final ImmutableMultimap.Builder<K, V> builder) {
+    this.builder = checkNotNull(builder);
+  }
+
+  @Override
+  public MapSink<K, V> put(final K key, final V value) {
+    builder.put(key, value);
+    return this;
+  }
+
+  @Override
+  public MapSink<K, V> put(final Entry<K, V> entry) {
+    builder.put(entry);
+    return this;
+  }
+
+  @Override
+  public MapSink<K,V> putAll(Map<? extends K, ? extends V> map) {
+    for (final Entry<? extends K, ? extends V> e : map.entrySet()) {
+      builder.put(e.getKey(), e.getValue());
+    }
+    return this;
+  }
+
+  @Override
+  public MapSink<K, V> putAll(final Iterable<? extends Entry<? extends K, ? extends V>> entries) {
+    builder.putAll(entries);
+    return this;
+  }
+}
