@@ -24,3 +24,6 @@ or appending to the parent's group ID because it resulted from the merger
 of multiple git repositories and we did not want to break existing Maven
 references.
 
+# Legal notes
+
+The project, DARPA DEFT, was previously assessed and assigned a final determination of EAR99. The JCAT part number is PN-BBN-E-14230.
