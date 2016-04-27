@@ -1,7 +1,7 @@
 package com.bbn.bue.common.files;
 
 import com.bbn.bue.common.StringUtils;
-import com.bbn.bue.common.collections.MapSink;
+import com.bbn.bue.common.collections.KeyValueSink;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.collections.MultimapUtils;
 import com.bbn.bue.common.io.GZIPByteSink;
@@ -281,7 +281,8 @@ public final class FileUtils {
     return ret.build();
   }
 
-  private static void loadStringToFileMapToSink(final CharSource source, MapSink<String, File> mapSink)
+  private static void loadStringToFileMapToSink(final CharSource source,
+      KeyValueSink<String, File> mapSink)
       throws IOException {
     final Splitter onTab = Splitter.on("\t").trimResults();
     int lineNo = 0;
