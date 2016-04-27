@@ -476,7 +476,25 @@ public final class MapUtils {
   }
 }
 
-final class ImmutableMapBuilderSink<K, V> implements KeyValueSink<K, V> {
+abstract class AbstractKeyValueSink<K, V> implements KeyValueSink<K, V> {
+
+  @Override
+  public KeyValueSink<K, V> put(final Entry<K, V> entry) {
+    put(entry.getKey(), entry.getValue());
+    return this;
+  }
+
+  @Override
+  public KeyValueSink<K, V> putAll(
+      final Iterable<? extends Entry<? extends K, ? extends V>> entries) {
+    for (final Entry<? extends K, ? extends V> entry : entries) {
+      put(entry.getKey(), entry.getValue());
+    }
+    return this;
+  }
+}
+
+final class ImmutableMapBuilderSink<K, V> extends AbstractKeyValueSink<K, V> {
   final ImmutableMap.Builder<K,V> builder;
 
   ImmutableMapBuilderSink(final ImmutableMap.Builder<K, V> builder) {
@@ -489,21 +507,10 @@ final class ImmutableMapBuilderSink<K, V> implements KeyValueSink<K, V> {
     return this;
   }
 
-  @Override
-  public KeyValueSink<K, V> put(final Entry<K, V> entry) {
-    builder.put(entry);
-    return this;
-  }
 
-  @Override
-  public KeyValueSink<K, V> putAll(
-      final Iterable<? extends Entry<? extends K, ? extends V>> entries) {
-    builder.putAll(entries);
-    return this;
-  }
 }
 
-final class ImmutableMultimapBuilderSink<K, V> implements KeyValueSink<K, V> {
+final class ImmutableMultimapBuilderSink<K, V> extends AbstractKeyValueSink<K, V> {
   final ImmutableMultimap.Builder<K,V> builder;
 
   ImmutableMultimapBuilderSink(final ImmutableMultimap.Builder<K, V> builder) {
