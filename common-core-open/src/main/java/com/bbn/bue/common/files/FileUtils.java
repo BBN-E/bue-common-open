@@ -1,7 +1,9 @@
 package com.bbn.bue.common.files;
 
 import com.bbn.bue.common.StringUtils;
+import com.bbn.bue.common.collections.KeyValueSink;
 import com.bbn.bue.common.collections.MapUtils;
+import com.bbn.bue.common.collections.MultimapUtils;
 import com.bbn.bue.common.io.GZIPByteSink;
 import com.bbn.bue.common.io.GZIPByteSource;
 import com.bbn.bue.common.symbols.Symbol;
@@ -15,6 +17,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -220,6 +223,12 @@ public final class FileUtils {
         loadStringToFileMap(source), Symbol.FromString);
   }
 
+  public static ImmutableListMultimap<Symbol, File> loadSymbolToFileListMultimap(
+      final CharSource source) throws IOException {
+    return MultimapUtils.copyWithTransformedKeys(
+        loadStringToFileListMultimap(source), Symbol.FromString);
+  }
+
   /**
    * Writes a map from symbols to file absolute paths to a file. Each line has a mapping with the key and value
    * separated by a single tab.  The file will have a trailing newline.
@@ -260,8 +269,22 @@ public final class FileUtils {
 
   public static Map<String, File> loadStringToFileMap(
       final CharSource source) throws IOException {
-    final Splitter onTab = Splitter.on("\t").trimResults();
     final ImmutableMap.Builder<String, File> ret = ImmutableMap.builder();
+    loadStringToFileMapToSink(source, MapUtils.asMapSink(ret));
+    return ret.build();
+  }
+
+  public static ImmutableListMultimap<String, File> loadStringToFileListMultimap(
+      final CharSource source) throws IOException {
+    final ImmutableListMultimap.Builder<String, File> ret = ImmutableListMultimap.builder();
+    loadStringToFileMapToSink(source, MapUtils.asMapSink(ret));
+    return ret.build();
+  }
+
+  private static void loadStringToFileMapToSink(final CharSource source,
+      KeyValueSink<String, File> mapSink)
+      throws IOException {
+    final Splitter onTab = Splitter.on("\t").trimResults();
     int lineNo = 0;
     for (final String line : source.readLines()) {
       if (line.isEmpty()) {
@@ -293,14 +316,13 @@ public final class FileUtils {
       }
 
       try {
-        ret.put(key, value);
+        mapSink.put(key, value);
       } catch (IllegalArgumentException iae) {
         throw new IOException(String.format("Error processing line %d of file map: %s",
             lineNo, line), iae);
       }
       ++lineNo;
     }
-    return ret.build();
   }
 
   /**

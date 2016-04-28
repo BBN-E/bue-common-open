@@ -8,6 +8,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -454,5 +455,71 @@ public final class MapUtils {
       }
     };
   }
+
+  /**
+   * Returns a wrapper around an {@link com.google.common.collect.ImmutableMultimap.Builder} which
+   * hides the differences between it and {@link com.google.common.collect.ImmutableMap.Builder} for
+   * the purpse of population.
+   */
+  public static <K, V> KeyValueSink<K, V> asMapSink(ImmutableMultimap.Builder<K, V> multimapB) {
+    return new ImmutableMultimapBuilderSink<>(multimapB);
+  }
+
+  /**
+   * Returns a wrapper around an {@link com.google.common.collect.ImmutableMap.Builder} which
+   * hides the differences between it and {@link com.google.common.collect.ImmutableMultimap.Builder} for
+   * the purpse of population. Beware {@link com.google.common.collect.ImmutableMap.Builder} will
+   * still throw an exception for duplicate entries!
+   */
+  public static <K, V> KeyValueSink<K, V> asMapSink(ImmutableMap.Builder<K, V> mapB) {
+    return new ImmutableMapBuilderSink<>(mapB);
+  }
 }
 
+abstract class AbstractKeyValueSink<K, V> implements KeyValueSink<K, V> {
+
+  @Override
+  public final KeyValueSink<K, V> put(final Entry<K, V> entry) {
+    put(entry.getKey(), entry.getValue());
+    return this;
+  }
+
+  @Override
+  public final KeyValueSink<K, V> putAll(
+      final Iterable<? extends Entry<? extends K, ? extends V>> entries) {
+    for (final Entry<? extends K, ? extends V> entry : entries) {
+      put(entry.getKey(), entry.getValue());
+    }
+    return this;
+  }
+}
+
+final class ImmutableMapBuilderSink<K, V> extends AbstractKeyValueSink<K, V> {
+  final ImmutableMap.Builder<K,V> builder;
+
+  ImmutableMapBuilderSink(final ImmutableMap.Builder<K, V> builder) {
+    this.builder = checkNotNull(builder);
+  }
+
+  @Override
+  public KeyValueSink<K, V> put(final K key, final V value) {
+    builder.put(key, value);
+    return this;
+  }
+
+
+}
+
+final class ImmutableMultimapBuilderSink<K, V> extends AbstractKeyValueSink<K, V> {
+  final ImmutableMultimap.Builder<K,V> builder;
+
+  ImmutableMultimapBuilderSink(final ImmutableMultimap.Builder<K, V> builder) {
+    this.builder = checkNotNull(builder);
+  }
+
+  @Override
+  public KeyValueSink<K, V> put(final K key, final V value) {
+    builder.put(key, value);
+    return this;
+  }
+}

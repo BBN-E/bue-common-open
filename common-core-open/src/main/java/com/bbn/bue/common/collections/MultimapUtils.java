@@ -1,10 +1,12 @@
 package com.bbn.bue.common.collections;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 
 import java.util.Collection;
@@ -107,5 +109,20 @@ public final class MultimapUtils {
       final Multimap<K1, V1> first, final Multimap<K2, V2> second) {
     checkArgument(second.keySet().containsAll(first.values()));
     return composeToSetMultimap(first, second);
+  }
+
+  /**
+   * Creates a copy of the supplied multimap with its keys transformed by the supplied function.
+   *
+   * The {@code injection} must never return null and the input multimap must contain no nulls.
+   */
+  public static <K1, K2, V> ImmutableListMultimap<K2, V> copyWithTransformedKeys(
+      final ListMultimap<K1,V> listMultimap,
+      final Function<? super K1, ? extends K2> injection) {
+    final ImmutableListMultimap.Builder<K2,V> ret = ImmutableListMultimap.builder();
+    for (final Map.Entry<K1, V> entry : listMultimap.entries()) {
+      ret.put(injection.apply(entry.getKey()), entry.getValue());
+    }
+    return ret.build();
   }
 }
