@@ -479,13 +479,13 @@ public final class MapUtils {
 abstract class AbstractKeyValueSink<K, V> implements KeyValueSink<K, V> {
 
   @Override
-  public KeyValueSink<K, V> put(final Entry<K, V> entry) {
+  public final KeyValueSink<K, V> put(final Entry<K, V> entry) {
     put(entry.getKey(), entry.getValue());
     return this;
   }
 
   @Override
-  public KeyValueSink<K, V> putAll(
+  public final KeyValueSink<K, V> putAll(
       final Iterable<? extends Entry<? extends K, ? extends V>> entries) {
     for (final Entry<? extends K, ? extends V> entry : entries) {
       put(entry.getKey(), entry.getValue());
@@ -520,19 +520,6 @@ final class ImmutableMultimapBuilderSink<K, V> extends AbstractKeyValueSink<K, V
   @Override
   public KeyValueSink<K, V> put(final K key, final V value) {
     builder.put(key, value);
-    return this;
-  }
-
-  @Override
-  public KeyValueSink<K, V> put(final Entry<K, V> entry) {
-    builder.put(entry);
-    return this;
-  }
-
-  @Override
-  public KeyValueSink<K, V> putAll(
-      final Iterable<? extends Entry<? extends K, ? extends V>> entries) {
-    builder.putAll(entries);
     return this;
   }
 }
