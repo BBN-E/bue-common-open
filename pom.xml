@@ -262,7 +262,7 @@
     </repository>
   </distributionManagement>
 
-  <!--<profiles>
+  <profiles>
       <profile>
           <id>release</id>
 <build>
@@ -326,6 +326,6 @@
     </snapshotRepository>
   </distributionManagement>
       </profile>
-  </profiles> -->
+  </profiles> 
 
 </project>
