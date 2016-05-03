@@ -188,4 +188,16 @@ public class SymbolUtils {
 
     return ret.build();
   }
+
+  public static Symbol concat(Symbol x, Symbol y) {
+    return Symbol.from(x.asString() + y.asString());
+  }
+
+  public static Symbol concat(String x, Symbol y) {
+    return Symbol.from(Symbol.from(x) + y.asString());
+  }
+
+  public static Symbol concat(Symbol x, String y) {
+    return Symbol.from(x.asString() + y);
+  }
 }
