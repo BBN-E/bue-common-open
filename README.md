@@ -26,6 +26,8 @@ references.
 
 # Legal notes
 
+Distribution Statement "A" (Approved for Public Release, Distribution Unlimited)
+
 WARNING - This document contains technology whose export or disclosure to
 Non-U.S. persons, wherever located, is subject to the Export Administrations
 Regulations (EAR) (15 C.F.R. Sections 730-774). Violations are subject to
