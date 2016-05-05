@@ -352,6 +352,8 @@ public final class LocatedString {
   private final String content;
   private final OffsetGroupRange bounds;
   private final List<OffsetEntry> offsets;
+  private boolean hashCodeInitialized = false;
+  private int hashCode = Integer.MIN_VALUE;
 
   private LocatedString(final String content, final List<OffsetEntry> offsets,
       final OffsetGroupRange bounds) {
@@ -366,7 +368,11 @@ public final class LocatedString {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(content, bounds, offsets);
+    if (!hashCodeInitialized) {
+      hashCode = Objects.hashCode(content, bounds, offsets);
+      hashCodeInitialized = true;
+    }
+    return hashCode;
   }
 
   @Override
@@ -382,6 +388,11 @@ public final class LocatedString {
       return false;
     }
     final LocatedString other = (LocatedString) obj;
+
+    if (hashCode() != other.hashCode()) {
+      return false;
+    }
+
     return Objects.equal(this.bounds, other.bounds) && Objects.equal(this.content, other.content)
         && Objects.equal(this.offsets, other.offsets);
   }
