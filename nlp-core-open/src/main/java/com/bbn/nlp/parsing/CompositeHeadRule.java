@@ -22,6 +22,7 @@ final class CompositeHeadRule<NodeT extends ConstituentNode<NodeT, ?>>
     return new CompositeHeadRule<NodeT>(rulesInOrder);
   }
 
+  @SafeVarargs
   public static <NodeT extends ConstituentNode<NodeT, ?>> CompositeHeadRule<NodeT> create(
       final HeadRule<NodeT>... rulesInOrder) {
     return new CompositeHeadRule<NodeT>(ImmutableList.copyOf(rulesInOrder));

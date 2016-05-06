@@ -20,6 +20,8 @@ public class TestSerialization extends TestCase {
 
   private final JacksonSerializer serializer = JacksonSerializer.builder().prettyOutput().build();
 
+  // can't be type-safe when deserializing
+  @SuppressWarnings("unchecked")
   @Test
   public void testFMeasureCounts() throws IOException {
     final Map<String, FMeasureCounts> foo = ImmutableMap.of("Hello",
@@ -30,6 +32,8 @@ public class TestSerialization extends TestCase {
     assertEquals(foo, JacksonTestUtils.roundTripThroughSerializer(foo, serializer));
   }
 
+  // can't be type-safe when deserializing
+  @SuppressWarnings("unchecked")
   @Test
   public void testSerializingFromString() throws IOException {
     final Map<String, FMeasureCounts> foo = ImmutableMap.of("Hello",
@@ -38,6 +42,8 @@ public class TestSerialization extends TestCase {
     assertEquals(foo, serializer.deserializeFromString(serialized, foo.getClass()));
   }
 
+  // can't be type-safe when deserializing
+  @SuppressWarnings("unchecked")
   @Test
   public void testImmutableMapProxy() throws IOException {
     final ImmutableMapWrapper expected = new ImmutableMapWrapper(ImmutableMap.of("a", 1));
@@ -45,6 +51,8 @@ public class TestSerialization extends TestCase {
     assertEquals(expected, serializer.deserializeFromString(serialized, expected.getClass()));
   }
 
+  // can't be type-safe when deserializing
+  @SuppressWarnings("unchecked")
   @Test
   public void testImmutableMultimapProxy() throws IOException {
     final ImmutableMultimapWrapper expected = new ImmutableMultimapWrapper(
