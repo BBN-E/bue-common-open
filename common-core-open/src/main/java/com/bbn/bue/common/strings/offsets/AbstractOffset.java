@@ -16,6 +16,9 @@ public abstract class AbstractOffset<SelfType extends Offset<SelfType>>
     this.value = value;
   }
 
+  /**
+   * @deprecated Prefer {@link #asInt()}
+   */
   @Deprecated
   @Override
   public final int value() {

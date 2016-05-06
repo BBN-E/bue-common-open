@@ -154,10 +154,10 @@ public final class TestCorefMeasures {
     final ImmutableSet.Builder<ImmutableSet<Integer>> ret = ImmutableSet.builder();
 
     // strip parens
-    for (final String inParens : StringUtils.OnSpaces.split(s)) {
+    for (final String inParens : StringUtils.onSpaces().split(s)) {
       final String withinParens = inParens.substring(1, inParens.length() - 1);
       final ImmutableSet.Builder<Integer> cluster = ImmutableSet.builder();
-      for (final String number : StringUtils.OnCommas.split(withinParens)) {
+      for (final String number : StringUtils.onCommas().split(withinParens)) {
 
         // strip parens before parsing
         cluster.add(Integer.parseInt(number));

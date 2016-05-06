@@ -381,8 +381,8 @@ public final class StringUtils {
   };
 
   public static String substring(String s, OffsetRange<CharOffset> substringBounds) {
-    return s.substring(substringBounds.startInclusive().value(),
-        substringBounds.endInclusive().value() + 1);
+    return s.substring(substringBounds.startInclusive().asInt(),
+        substringBounds.endInclusive().asInt() + 1);
   }
 
   /**
