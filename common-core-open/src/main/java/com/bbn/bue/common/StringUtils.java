@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
@@ -416,6 +417,37 @@ public final class StringUtils {
     final String baseString = Integer.toString(numToPad);
     final String padding = Strings.repeat("0", maxLength - baseString.length());
     return padding + numToPad;
+  }
+
+  /**
+   * Returns the code points contained in a {@link String}. Use {@link #toCodepointStrings(String)}
+   * to get the {@link String} representation for each codepoint.
+   *
+   * @see #toCodepoints(String)
+   */
+  public static ImmutableList<Integer> toCodepoints(final String s) {
+    final ImmutableList.Builder<Integer> ret = ImmutableList.builder();
+    for (int offset = 0; offset < s.length();) {
+      final int codePoint = s.codePointAt(offset);
+      ret.add(codePoint);
+      offset += Character.charCount(codePoint);
+    }
+    return ret.build();
+  }
+
+  /**
+   * Returns each code point in a {@link String} converted into a {@link String}. Useful for iterating
+   * over {@link String}s in a Unicode-aware fashion. Use {@link #toCodepoints(String)} to get the
+   * codepoints themselves.
+   *
+   * @see #toCodepoints(String)
+   */
+  public static ImmutableList<String> toCodepointStrings(final String s) {
+    final ImmutableList.Builder<String> ret = ImmutableList.builder();
+    for (int codePoint : toCodepoints(s)) {
+      ret.add(new String(Character.toChars(codePoint)));
+    }
+    return ret.build();
   }
 
   /******************************** Deprecated code ************************************/
