@@ -24,11 +24,11 @@ or appending to the parent's group ID because it resulted from the merger
 of multiple git repositories and we did not want to break existing Maven
 references.
 
-# Legal notes
+<sub>**Legal notes**</sub>
 
-Distribution Statement "A" (Approved for Public Release, Distribution Unlimited)
+<sub>Distribution Statement "A" (Approved for Public Release, Distribution Unlimited)</sub>
 
-WARNING - This document contains technology whose export or disclosure to
+<sub>WARNING - This document contains technology whose export or disclosure to
 Non-U.S. persons, wherever located, is subject to the Export Administrations
 Regulations (EAR) (15 C.F.R. Sections 730-774). Violations are subject to
-severe criminal penalties.
+severe criminal penalties.</sub>
