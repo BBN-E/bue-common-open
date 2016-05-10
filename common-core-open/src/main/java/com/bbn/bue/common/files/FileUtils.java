@@ -622,7 +622,7 @@ public final class FileUtils {
 
     int lineNo = 0;
     for (final String line : input.readLines()) {
-      final List<String> parts = StringUtils.OnTabs.splitToList(line);
+      final List<String> parts = StringUtils.onTabs().splitToList(line);
       if (parts.size() != 3) {
         throw new IOException(String.format("Invalid line %d when reading symbol table: %s",
             lineNo, line));

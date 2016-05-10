@@ -81,7 +81,7 @@ public final class SummaryConfusionMatrices {
     }
 
     // Return all lines
-    return StringUtils.NewlineJoiner.join(lines.build());
+    return StringUtils.unixNewlineJoiner().join(lines.build());
   }
 
   public static String prettyPrint(SummaryConfusionMatrix m) {

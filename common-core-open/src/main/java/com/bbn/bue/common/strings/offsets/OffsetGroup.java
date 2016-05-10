@@ -101,16 +101,16 @@ public final class OffsetGroup {
     if (charOffset.asInt() == edtOffset.asInt()) {
       ret.append("ce").append(charOffset.asInt());
     } else {
-      ret.append("c").append(charOffset.value())
-          .append(";e").append(edtOffset.value());
+      ret.append("c").append(charOffset.asInt())
+          .append(";e").append(edtOffset.asInt());
     }
 
     if (byteOffset != null) {
-      ret.append(";b").append(byteOffset.value());
+      ret.append(";b").append(byteOffset.asInt());
     }
 
     if (asrTime != null) {
-      ret.append(";asr").append(asrTime.value());
+      ret.append(";asr").append(asrTime.asInt());
     }
 
     return ret.toString();

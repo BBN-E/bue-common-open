@@ -47,7 +47,7 @@ public final class DocIDToFileMapContains {
     final ImmutableSet<String> difference = Sets.difference(idsInDocList, idsMapped).immutableCopy();
 
     if (!difference.isEmpty()) {
-      System.out.println(StringUtils.NewlineJoiner.join(difference));
+      System.out.println(StringUtils.unixNewlineJoiner().join(difference));
       System.exit(1);
     } else {
       System.exit(0);

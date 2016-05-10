@@ -59,7 +59,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.bbn.bue.common.StringUtils.DotJoiner;
+import static com.bbn.bue.common.StringUtils.dotJoiner;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.in;
@@ -1081,7 +1081,7 @@ public final class Parameters {
     } catch (NoSuchFieldException e) {
       try {
         return getFirstExistingParamName(
-            StringUtils.OnCommas.splitToList((String) clazz.getField("params").get(""))
+            StringUtils.onCommas().splitToList((String) clazz.getField("params").get(""))
                 .toArray(new String[]{}));
       } catch (NoSuchFieldException e1) {
         throw new ParameterException("Annotation " + clazz + " must have param or params field");
@@ -1195,7 +1195,7 @@ public final class Parameters {
    * ["foo", "bar"]}.
    */
   public static String joinNamespace(final List<String> namespace) {
-    return DotJoiner.join(namespace);
+    return dotJoiner().join(namespace);
   }
 
   public static final class Builder {

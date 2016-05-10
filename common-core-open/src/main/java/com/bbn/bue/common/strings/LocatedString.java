@@ -167,8 +167,8 @@ public final class LocatedString {
    * content, you should use rawSubstring() instead.
    */
   public LocatedString substring(final CharOffset start, final CharOffset end) {
-    final int startOffset = start.value() - bounds.startInclusive().charOffset().value();
-    final int endOffset = end.value() - bounds.startInclusive().charOffset().value() + 1;
+    final int startOffset = start.asInt() - bounds.startInclusive().charOffset().asInt();
+    final int endOffset = end.asInt() - bounds.startInclusive().charOffset().asInt() + 1;
 
     return substring(startOffset, endOffset);
   }
@@ -236,8 +236,8 @@ public final class LocatedString {
    * @return
    */
   public String rawSubstring(final CharOffset start, final CharOffset end) {
-    final int startOffset = start.value() - bounds.startInclusive().charOffset().value();
-    final int endOffset = end.value() - bounds.startInclusive().charOffset().value() + 1;
+    final int startOffset = start.asInt() - bounds.startInclusive().charOffset().asInt();
+    final int endOffset = end.asInt() - bounds.startInclusive().charOffset().asInt() + 1;
 
     return rawSubstring(startOffset, endOffset);
   }
@@ -261,13 +261,13 @@ public final class LocatedString {
   public OffsetGroup offsetGroupForCharOffset(final CharOffset offset) {
     // if this ever slows us down significantly, we can binary search
     for (final OffsetEntry entry : offsets) {
-      if (entry.startOffset.charOffset().value() <= offset.value()
-          && entry.endOffset.charOffset().value() > offset.value()) {
+      if (entry.startOffset.charOffset().asInt() <= offset.asInt()
+          && entry.endOffset.charOffset().asInt() > offset.asInt()) {
         // we assume EDT offsets are continuous witihn entries
-        final int offsetWithinEntry = offset.value() - entry.startOffset.charOffset().value();
+        final int offsetWithinEntry = offset.asInt() - entry.startOffset.charOffset().asInt();
 
         return OffsetGroup
-            .from(offset, EDTOffset.asEDTOffset(entry.startOffset.edtOffset().value() + offsetWithinEntry));
+            .from(offset, EDTOffset.asEDTOffset(entry.startOffset.edtOffset().asInt() + offsetWithinEntry));
       }
     }
     throw new NoSuchElementException();
@@ -474,9 +474,9 @@ public final class LocatedString {
     final Optional<ASRTime> weDontKnowASRTime = Optional.absent();
     int inTag = 0;
     boolean useByteOffsets = initialOffsets.byteOffset().isPresent();
-    int byteOffset = useByteOffsets ? initialOffsets.byteOffset().get().value() : Integer.MIN_VALUE;
-    int charOffset = initialOffsets.charOffset().value();
-    int edtOffset = initialOffsets.edtOffset().value();
+    int byteOffset = useByteOffsets ? initialOffsets.byteOffset().get().asInt() : Integer.MIN_VALUE;
+    int charOffset = initialOffsets.charOffset().asInt();
+    int edtOffset = initialOffsets.edtOffset().asInt();
 
     int pos = 0;
     int startPos = 0;
@@ -494,12 +494,12 @@ public final class LocatedString {
             (edtOffset == 0 || prevChar == '\r') ? edtOffset : (edtOffset - 1);
         offsets.add(
             new OffsetEntry(startPos, pos, start,
-                OffsetGroup.from(useByteOffsets ? new ByteOffset(byteOffset - 1) : null,
-                new CharOffset(charOffset - 1), EDTOffset.asEDTOffset(prevEDTOffset)), justLeftXMLTag));
+                OffsetGroup.from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset - 1) : null,
+                CharOffset.asCharOffset(charOffset - 1), EDTOffset.asEDTOffset(prevEDTOffset)), justLeftXMLTag));
         startPos = pos;
         final int startEDTOffset = (c == '<') ? edtOffset - 1 : edtOffset;
         start = OffsetGroup
-            .from(useByteOffsets ? new ByteOffset(byteOffset) : null, new CharOffset(charOffset),
+            .from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset) : null, CharOffset.asCharOffset(charOffset),
             EDTOffset.asEDTOffset(startEDTOffset));
       }
 
@@ -522,10 +522,10 @@ public final class LocatedString {
       prevChar = c;
     }
     if (pos > startPos) {
-      final int prevEDTOffset = Math.max(start.edtOffset().value(), edtOffset - 1);
+      final int prevEDTOffset = Math.max(start.edtOffset().asInt(), edtOffset - 1);
       offsets.add(new OffsetEntry(startPos, pos, start,
-          OffsetGroup.from(useByteOffsets ? new ByteOffset(byteOffset - 1) : null,
-              new CharOffset(charOffset - 1),
+          OffsetGroup.from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset - 1) : null,
+              CharOffset.asCharOffset(charOffset - 1),
               EDTOffset.asEDTOffset(prevEDTOffset)), inTag > 0 || justLeftXMLTag));
     }
     return offsets.build();
@@ -574,9 +574,9 @@ public final class LocatedString {
       OffsetGroup newEndOffset = entry.endOffset;
 
       final int charLength =
-          entry.endOffset.charOffset().value() - entry.startOffset.charOffset().value();
+          entry.endOffset.charOffset().asInt() - entry.startOffset.charOffset().asInt();
       final int edtLength =
-          entry.endOffset.edtOffset().value() - entry.startOffset.edtOffset().value();
+          entry.endOffset.edtOffset().asInt() - entry.startOffset.edtOffset().asInt();
 
 			/* DK: Recalculation of EDT offset assumes that within this OffsetEntry, there is no longer any difference
 			 * between edt chars and actual chars.  The checkArgument call makes this assumption explicit, allowing the
@@ -590,23 +590,23 @@ public final class LocatedString {
         newStartPos = startIndexInclusive;
 
         checkArgument(charLength == edtLength || edtLength == 0);
-        int newEDTOffsetValue = entry.startOffset.edtOffset().value();
+        int newEDTOffsetValue = entry.startOffset.edtOffset().asInt();
         if (edtLength != 0) {
           newEDTOffsetValue += (startIndexInclusive - entry.startPos);
         }
         newStartOffset =
-            OffsetGroup.from(new CharOffset(startIndexInclusive), EDTOffset.asEDTOffset(newEDTOffsetValue));
+            OffsetGroup.from(CharOffset.asCharOffset(startIndexInclusive), EDTOffset.asEDTOffset(newEDTOffsetValue));
       }
       if (entry.endPos > endIndexExclusive) {
         newEndPos = endIndexExclusive;
 
         checkArgument(charLength == edtLength || edtLength == 0);
-        int newEDTOffsetValue = entry.endOffset.edtOffset().value();
+        int newEDTOffsetValue = entry.endOffset.edtOffset().asInt();
         if (edtLength != 0) {
           newEDTOffsetValue -= (entry.endPos - endIndexExclusive);
         }
         newEndOffset = OffsetGroup
-            .from(new CharOffset(endIndexExclusive - 1), EDTOffset.asEDTOffset(newEDTOffsetValue));
+            .from(CharOffset.asCharOffset(endIndexExclusive - 1), EDTOffset.asEDTOffset(newEDTOffsetValue));
       }
       newStartPos -= startIndexInclusive;
       newEndPos -= startIndexInclusive;

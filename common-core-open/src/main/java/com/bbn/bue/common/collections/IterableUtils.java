@@ -317,7 +317,7 @@ public final class IterableUtils {
    */
   public static <T> ImmutableMultimap<T, Integer> itemToIndexMultimap(
       Iterable<T> iterable) {
-    final ImmutableMultimap.Builder ret = ImmutableMultimap.builder();
+    final ImmutableMultimap.Builder<T, Integer> ret = ImmutableMultimap.builder();
     int idx = 0;
     for (final T x : iterable) {
       ret.put(x, idx++);
