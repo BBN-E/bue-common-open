@@ -37,10 +37,34 @@ import static com.google.common.base.Predicates.in;
  * distributed as evenly as possible, starting with the first folds. For example, dividing 11 items
  * into three folds will result in folds of size (4, 4, 3).
  *
- * Normally, cross-validation batches are made such that as much data as possible is used in
- * training. However, if the {@code singleFoldTraining} parameter is set to true, train and test
- * are swapped: a small (single fold) size data is used for the training data for that batch with
- * all other data used for testing, and each data point appears exactly once across test folds.
+ * <p>Normally, cross-validation batches are made such that as much data as possible is used in
+ * training. However, if the {@code singleFoldTraining} parameter is set to true, a single fold
+ * is used in training. Thus, across folds, each document appears exactly once in the training
+ * data and exactly once in the testing data. In a standard cross-validation setup, each data point
+ * appears in the training data {@code k-1} times for {@code k} folds and exactly once in the
+ * testing data.</p>
+ *
+ * <p>
+ * For example, in a normal cross-validation setup with three folds (A, B, C) you have the following
+ * test: train pairs:
+ * <pre>
+ * A: (B, C)
+ * B: (A, C)
+ * C: (A, B)
+ * </pre>
+ *
+ * In single fold training you have:
+ * <pre>
+ * A: B
+ * B: C
+ * C: A
+ * </pre>
+ * </p>
+ *
+ * <p>Note that in the single fold case, each fold is tested by training on the "next" fold. This
+ * is arbitrary, but as documents are shuffled before being placed in folds this is not
+ * problematic.</p>
+ *
  */
 public final class MakeCrossValidationBatches {
 
