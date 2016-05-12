@@ -5,8 +5,10 @@ import com.bbn.bue.common.files.FileUtils;
 import com.bbn.bue.common.parameters.Parameters;
 import com.bbn.bue.common.symbols.Symbol;
 import com.bbn.bue.common.symbols.SymbolUtils;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -15,6 +17,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,17 +36,24 @@ import static com.google.common.base.Predicates.in;
  * cross-validation. When the files cannot be evenly divided across all splits, extra files are
  * distributed as evenly as possible, starting with the first folds. For example, dividing 11 items
  * into three folds will result in folds of size (4, 4, 3).
+ *
+ * Normally, cross-validation batches are made such that as much data as possible is used in
+ * training. However, if the {@code singleFoldTraining} parameter is set to true, train and test
+ * are swapped: a small (single fold) size data is used for the training data for that batch with
+ * all other data used for testing, and each data point appears exactly once across test folds.
  */
 public final class MakeCrossValidationBatches {
 
   private static final Logger log = LoggerFactory.getLogger(MakeCrossValidationBatches.class);
 
-  private static final String PARAM_FILE_LIST = "com.bbn.bue.common.crossValidation.fileList";
-  private static final String PARAM_FILE_MAP = "com.bbn.bue.common.crossValidation.fileMap";
-  private static final String PARAM_NUM_BATCHES = "com.bbn.bue.common.crossValidation.numBatches";
-  private static final String PARAM_RANDOM_SEED = "com.bbn.bue.common.crossValidation.randomSeed";
-  private static final String PARAM_OUTPUT_DIR = "com.bbn.bue.common.crossValidation.outputDir";
-  private static final String PARAM_OUTPUT_NAME = "com.bbn.bue.common.crossValidation.outputName";
+  private static final String PARAM_NAMESPACE = "com.bbn.bue.common.crossValidation.";
+  private static final String PARAM_FILE_LIST = PARAM_NAMESPACE + "fileList";
+  private static final String PARAM_FILE_MAP = PARAM_NAMESPACE + "fileMap";
+  private static final String PARAM_NUM_BATCHES = PARAM_NAMESPACE + "numBatches";
+  private static final String PARAM_RANDOM_SEED = PARAM_NAMESPACE + "randomSeed";
+  private static final String PARAM_OUTPUT_DIR = PARAM_NAMESPACE + "outputDir";
+  private static final String PARAM_OUTPUT_NAME = PARAM_NAMESPACE + "outputName";
+  private static final String PARAM_SINGLE_FOLD_TRAINING = PARAM_NAMESPACE + "singleFoldTraining";
 
   private MakeCrossValidationBatches() {
     throw new UnsupportedOperationException();
@@ -85,6 +95,10 @@ public final class MakeCrossValidationBatches {
       throw new IllegalArgumentException("Impossible state reached");
     }
 
+    // Configure for single fold training.
+    boolean singleFoldTraining =
+        parameters.getOptionalBoolean(PARAM_SINGLE_FOLD_TRAINING).or(false);
+
     final File outputDirectory = parameters.getCreatableDirectory(PARAM_OUTPUT_DIR);
     final String outputName = parameters.getString(PARAM_OUTPUT_NAME);
     final int numBatches = parameters.getPositiveInteger(PARAM_NUM_BATCHES);
@@ -111,25 +125,32 @@ public final class MakeCrossValidationBatches {
 
     // Get the list of docids and shuffle them. In the case of using a file list, these are just
     // paths, not document ids, but they serve the same purpose.
-    final ArrayList<Symbol> docIds = Lists.newArrayList(docIdMap.keySet());
+    final ImmutableList<Symbol> docIds = shuffledDocIds(randomSeed, docIdMap);
     if (numBatches > docIds.size()) {
       errorExit("Bad numBatches value: Cannot create more batches than there are input files");
     }
-    Collections.shuffle(docIds, new Random(randomSeed));
 
     // Divide into folds
-    final ImmutableList<ImmutableList<Symbol>> folds =
+    final ImmutableList<ImmutableList<Symbol>> testFolds =
         CollectionUtils.partitionAlmostEvenly(docIds, numBatches);
 
     // Write out training/test data for each fold
     final ImmutableList.Builder<File> foldLists = ImmutableList.builder();
     final ImmutableList.Builder<File> foldMaps = ImmutableList.builder();
     int batchNum = 0;
-    int totalTest = 0;
-    for (final ImmutableList<Symbol> docIdsForBatch : folds) {
-      final Set<Symbol> testDocIds = ImmutableSet.copyOf(docIdsForBatch);
-      final Set<Symbol> trainDocIds =
-          Sets.difference(ImmutableSet.copyOf(docIds), testDocIds).immutableCopy();
+    int totalDocs = 0;
+
+    // Set up train folds
+    final ImmutableList<ImmutableList<Symbol>> trainFolds =
+        createTrainFolds(testFolds, docIds, singleFoldTraining);
+
+    // Loop over train/test folds
+    Preconditions.checkState(trainFolds.size() == testFolds.size());
+    for (int i = 0; i < testFolds.size(); i++) {
+      final ImmutableList<Symbol> testDocIds = testFolds.get(i);
+      final ImmutableList<Symbol> trainDocIds = trainFolds.get(i);
+      // Track the total test documents across folds to make sure nothing is lost.
+      totalDocs += testDocIds.size();
 
       // Create maps for training and test. These are sorted to avoid arbitrary ordering.
       final SortedMap<Symbol, File> trainDocIdMap =
@@ -169,9 +190,8 @@ public final class MakeCrossValidationBatches {
       foldLists.add(testOutputFile);
 
       ++batchNum;
-      totalTest += testDocIdMap.size();
     }
-    if(totalTest != docIdMap.size()) {
+    if (totalDocs != docIdMap.size()) {
       errorExit("Test files created are not the same length as the input");
     }
 
@@ -184,6 +204,32 @@ public final class MakeCrossValidationBatches {
     }
     log.info("Wrote {} cross validation batches from {} to directory {}", numBatches,
         sourceFiles.getAbsoluteFile(), outputDirectory.getAbsolutePath());
+  }
+
+  private static ImmutableList<Symbol> shuffledDocIds(final int randomSeed,
+      final ImmutableMap<Symbol, File> docIdMap) {
+    final ArrayList<Symbol> docIds = Lists.newArrayList(docIdMap.keySet());
+    Collections.shuffle(docIds, new Random(randomSeed));
+    return ImmutableList.copyOf(docIds);
+  }
+
+  private static ImmutableList<ImmutableList<Symbol>> createTrainFolds(
+      final ImmutableList<ImmutableList<Symbol>> testFolds,
+      final ImmutableList<Symbol> docIds, final boolean singleFoldTraining) {
+    final ImmutableList.Builder<ImmutableList<Symbol>> ret = ImmutableList.builder();
+
+    for (int i = 0; i < testFolds.size(); i++) {
+      final Set<Symbol> testDocIds = ImmutableSet.copyOf(testFolds.get(i));
+      final ImmutableList<Symbol> trainDocIds =
+          singleFoldTraining
+          // In the single fold training case, use the "next" fold as the training data. We use
+          // the modulus to wrap around the list.
+          ? testFolds.get((i + 1) % testFolds.size())
+          // In the normal case, just use all the remaining data for training.
+          : Sets.difference(ImmutableSet.copyOf(docIds), testDocIds).immutableCopy().asList();
+      ret.add(trainDocIds);
+    }
+    return ret.build();
   }
 
   private enum FileToSymbolFunction implements Function<File, Symbol> {
