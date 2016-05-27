@@ -435,11 +435,10 @@ public final class LocatedString {
 
     @Override
     public String toString() {
-      return "start: " + startPos +
-          "\nend: " + endPos +
-          "\nstartOffset: " + startOffset +
-          "\nendOffset: " + endOffset +
-          "\nEDTSkip: " + isEDTSkipRegion;
+      return "OffsetEntry{pos: [" + startPos + ", " + endPos + "]; "
+          + OffsetGroupRange.from(startOffset, endOffset)
+          + (isEDTSkipRegion ? "; skipEDT" : "")
+          + "}";
     }
 
     @Override
