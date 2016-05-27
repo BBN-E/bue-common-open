@@ -568,10 +568,11 @@ public final class LocatedString {
   /**
    * Returns offsets corresponding to substring, in order.
    */
-  private List<OffsetEntry> offsetsOfSubstring(final int startIndexInclusive,
-      final int endIndexExclusive) {
-    checkArgument(startIndexInclusive < endIndexExclusive,
-        "Start Index %s not less than end index %s", startIndexInclusive, endIndexExclusive);
+  private List<OffsetEntry> offsetsOfSubstring(final int substringStartIndexInclusive,
+      final int substringEndIndexExclusive) {
+    checkArgument(substringStartIndexInclusive < substringEndIndexExclusive,
+        "Start Index %s not less than end index %s", substringStartIndexInclusive,
+        substringEndIndexExclusive);
 
     final ImmutableList.Builder<OffsetEntry> ret = ImmutableList.builder();
 
@@ -582,45 +583,41 @@ public final class LocatedString {
     //     To make a new substring, we need to compute its offset entries.  Any entries completely
     // enclosed by the requested bounds can jut be copied, but if the endpoints fall within an entry
     // we need special logic
-    for (int entryNum = lastEntryStartingBefore(startIndexInclusive); entryNum < offsets.size(); ++entryNum) {
+    for (int entryNum = lastEntryStartingBefore(substringStartIndexInclusive);
+         entryNum < offsets.size(); ++entryNum) {
       final OffsetEntry entry = offsets.get(entryNum);
-      checkState(entry.startPos <= endIndexExclusive);
+      checkState(entry.startPos <= substringEndIndexExclusive);
 
       // we initialize the Entry we are building for the substring to match the entry
       // in the parent string, except that the located-string-relative indices need to be
       // adjusted for (potentially) having part of the beginning of the string removed
-      int newStartPos = entry.startPos - startIndexInclusive;
-      int newEndPos = entry.endPos - startIndexInclusive;
+      int newStartPos = entry.startPos - substringStartIndexInclusive;
+      int newEndPos = entry.endPos - substringStartIndexInclusive;
       OffsetGroup newStartOffset = entry.startOffset;
       OffsetGroup newEndOffset = entry.endOffset;
 
-			/* DK: Recalculation of EDT offset assumes that within this OffsetEntry, there is no longer any difference
-			 * between edt chars and actual chars.  The checkArgument call makes this assumption explicit, allowing the
-			 * calculation of a new, correct edt offset.
-			 *
-			 * A special case is when the EDT offset length of this entry is 0, for example, if this entry is a URL in angle brackets.
-			 * In this case, the edt offsets remain the same.
-			 */
-
-      if (entry.startPos < startIndexInclusive) {
+      final boolean entryStartsBeforeSubstringStarts =
+          entry.startPos < substringStartIndexInclusive;
+      if (entryStartsBeforeSubstringStarts) {
         newStartPos = 0;
         int newEDTOffsetValue = entry.startOffset.edtOffset().asInt();
         if (!entry.isEDTSkipRegion()) {
-          newEDTOffsetValue += (startIndexInclusive - entry.startPos);
+          newEDTOffsetValue += (substringStartIndexInclusive - entry.startPos);
         }
         newStartOffset =
-            OffsetGroup.from(CharOffset.asCharOffset(startIndexInclusive), EDTOffset.asEDTOffset(newEDTOffsetValue));
+            OffsetGroup.from(CharOffset.asCharOffset(substringStartIndexInclusive),
+                EDTOffset.asEDTOffset(newEDTOffsetValue));
       }
-      if (entry.endPos > endIndexExclusive) {
+
+      final boolean substringEndsBeforeEntryEnds = entry.endPos > substringEndIndexExclusive;
+      if (substringEndsBeforeEntryEnds) {
         newEndPos = 0;
         int newEDTOffsetValue = entry.endOffset.edtOffset().asInt();
         if (!entry.isEDTSkipRegion()) {
-          newEDTOffsetValue -= (entry.endPos - endIndexExclusive);
+          newEDTOffsetValue -= (entry.endPos - substringEndIndexExclusive);
         }
         int newCharOffsetValue = entry.endOffset.charOffset().asInt();
-        if (!entry.isEDTSkipRegion()) {
-          newCharOffsetValue -= (entry.endPos - endIndexExclusive);
-        }
+        newCharOffsetValue -= (entry.endPos - substringEndIndexExclusive);
         newEndOffset = OffsetGroup
             .from(CharOffset.asCharOffset(newCharOffsetValue),
                 EDTOffset.asEDTOffset(newEDTOffsetValue));
@@ -628,7 +625,7 @@ public final class LocatedString {
       ret.add(new OffsetEntry(newStartPos, newEndPos, newStartOffset, newEndOffset,
           entry.isEDTSkipRegion));
 
-      if (newEndPos >= (endIndexExclusive - startIndexInclusive)) {
+      if (newEndPos >= (substringEndIndexExclusive - substringStartIndexInclusive)) {
         break;
       }
     }
