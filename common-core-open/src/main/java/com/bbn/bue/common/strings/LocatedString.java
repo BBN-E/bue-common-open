@@ -281,7 +281,8 @@ public final class LocatedString {
         return -1;
       }
       if(charOffset.asInt() <= it.endOffset().charOffset().asInt()) {
-        return it.startPos() + (charOffset.asInt() - it.startOffset().charOffset().asInt());
+        return it.startPosInclusive() + (charOffset.asInt() - it.startOffset().charOffset()
+            .asInt());
       }
     }
     return -1;
@@ -289,21 +290,23 @@ public final class LocatedString {
 
   private CharOffset getStartOffset(int pos) {
     final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
-    checkArgument(pos >= oe.startPos() && pos <= oe.endPos() - 1);
-    if(pos == oe.startPos()) {
+    checkArgument(pos >= oe.startPosInclusive() && pos <= oe.endPosExclusive() - 1);
+    if (pos == oe.startPosInclusive()) {
       return oe.startOffset().charOffset();
     } else {
-      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+      return CharOffset
+          .asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPosInclusive()));
     }
   }
 
   private CharOffset getEndOffset(int pos) {
     final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
-    checkArgument(pos >= oe.startPos() && pos <= oe.endPos());
-    if(pos == oe.endPos() -1) {
+    checkArgument(pos >= oe.startPosInclusive() && pos <= oe.endPosExclusive());
+    if (pos == oe.endPosExclusive() - 1) {
       return oe.endOffset().charOffset();
     } else {
-      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+      return CharOffset
+          .asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPosInclusive()));
     }
   }
 
@@ -387,16 +390,17 @@ public final class LocatedString {
 
   public static final class OffsetEntry {
 
-    private final int startPos;
-    private final int endPos;
+    private final int startInclusivePos;
+    private final int endExclusivePos;
     private final OffsetGroup startOffset;
     private final OffsetGroup endOffset;
     private final boolean isEDTSkipRegion;
 
-    public OffsetEntry(final int startPos, final int endPos, final OffsetGroup startOffset,
+    public OffsetEntry(final int startPosInclusive, final int endPosExclusive,
+        final OffsetGroup startOffset,
         final OffsetGroup endOffset, final boolean isEDTSkipRegion) {
-      this.startPos = startPos;
-      this.endPos = endPos;
+      this.startInclusivePos = startPosInclusive;
+      this.endExclusivePos = endPosExclusive;
       this.startOffset = startOffset;
       this.endOffset = endOffset;
       this.isEDTSkipRegion = isEDTSkipRegion;
@@ -405,12 +409,12 @@ public final class LocatedString {
       checkArgument(charLength() == edtLength() || isEDTSkipRegion);
     }
 
-    public int startPos() {
-      return startPos;
+    public int startPosInclusive() {
+      return startInclusivePos;
     }
 
-    public int endPos() {
-      return endPos;
+    public int endPosExclusive() {
+      return endExclusivePos;
     }
 
     public OffsetGroup startOffset() {
@@ -435,7 +439,7 @@ public final class LocatedString {
 
     @Override
     public String toString() {
-      return "OffsetEntry{pos: [" + startPos + ", " + endPos + "]; "
+      return "OffsetEntry{pos: [" + startInclusivePos + ", " + endExclusivePos + "]; "
           + OffsetGroupRange.from(startOffset, endOffset)
           + (isEDTSkipRegion ? "; skipEDT" : "")
           + "}";
@@ -443,7 +447,8 @@ public final class LocatedString {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(startPos, endPos, startOffset, endOffset, isEDTSkipRegion);
+      return Objects
+          .hashCode(startInclusivePos, endExclusivePos, startOffset, endOffset, isEDTSkipRegion);
     }
 
     @Override
@@ -455,8 +460,9 @@ public final class LocatedString {
         return false;
       }
       final OffsetEntry other = (OffsetEntry) obj;
-      return Objects.equal(this.startPos, other.startPos) && Objects
-          .equal(this.endPos, other.endPos) && Objects.equal(this.startOffset, other.startOffset)
+      return Objects.equal(this.startInclusivePos, other.startInclusivePos) && Objects
+          .equal(this.endExclusivePos, other.endExclusivePos) && Objects
+          .equal(this.startOffset, other.startOffset)
           && Objects.equal(this.endOffset, other.endOffset) && Objects
           .equal(this.isEDTSkipRegion, other.isEDTSkipRegion);
     }
@@ -572,11 +578,12 @@ public final class LocatedString {
          entryNum < offsets.size(); ++entryNum) {
       final OffsetEntry entry = offsets.get(entryNum);
       // sanity check
-      checkState(entry.startPos <= substringEndIndexExclusive);
+      checkState(entry.startInclusivePos <= substringEndIndexExclusive);
 
       // this will be negative if the requested substring starts in the middle of the entry
       // positive indicates the entry starts after the requested substring start
-      final int entryStartRelativeToSubstringStart = entry.startPos - substringStartIndexInclusive;
+      final int entryStartRelativeToSubstringStart =
+          entry.startInclusivePos - substringStartIndexInclusive;
 
       // if the entry starts before the substring, the earlier part of the entry will get cut off,
       // hence the max(0, ...)
@@ -585,7 +592,7 @@ public final class LocatedString {
       // however, note that the entry may extend past the end of the substring. In this
       // case we chop off the end of the entry, hence the min()
       final int newEndPos = Math.min(substringEndIndexExclusive,
-          entry.endPos - substringStartIndexInclusive);
+          entry.endExclusivePos - substringStartIndexInclusive);
 
       // if anything was chopped off the entry beginning we need to alter the starting bounds
       final int numPositionsRemovedFromEntryBeginning =
@@ -596,7 +603,7 @@ public final class LocatedString {
 
       // if anything was chopped off the end we need to alter the ending bounds
       final int numPositionsRemovedFromEntryEnd =
-          Math.max(0, entry.endPos - substringEndIndexExclusive);
+          Math.max(0, entry.endExclusivePos - substringEndIndexExclusive);
       OffsetGroup newEndOffset =
           shiftOffsetGroup(entry.endOffset(), -numPositionsRemovedFromEntryEnd,
               entry.isEDTSkipRegion());
@@ -639,7 +646,7 @@ public final class LocatedString {
 
   private int lastEntryStartingBefore(final int pos) {
     int i = 1;
-    while (i < offsets.size() && offsets.get(i).startPos <= pos) {
+    while (i < offsets.size() && offsets.get(i).startInclusivePos <= pos) {
       ++i;
     }
     return i - 1;
