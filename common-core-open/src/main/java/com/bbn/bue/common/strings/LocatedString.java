@@ -559,8 +559,7 @@ public final class LocatedString {
   private List<OffsetEntry> offsetsOfSubstring(final int startIndexInclusive,
       final int endIndexExclusive) {
     checkArgument(startIndexInclusive < endIndexExclusive,
-        String.format("Start Index %d not less than end index %s", startIndexInclusive,
-            endIndexExclusive));
+        "Start Index %s not less than end index %s", startIndexInclusive, endIndexExclusive);
 
     final ImmutableList.Builder<OffsetEntry> ret = ImmutableList.builder();
 
