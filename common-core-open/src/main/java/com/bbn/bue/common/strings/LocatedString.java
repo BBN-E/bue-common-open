@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * * Class for storing and manipulating strings that have been read in from a file, without losing
@@ -563,10 +564,19 @@ public final class LocatedString {
 
     final ImmutableList.Builder<OffsetEntry> ret = ImmutableList.builder();
 
+    // recall that a LocatedString tracks offsets using a sequence of "offset entries".  Each of
+    // these entries is either a region where the EDT and char offsets have the same length
+    // (indicating nothing is skipped for EDT in this region) or it is an "EDT skip region" where
+    // char offsets continue to grow but EDT offsets do not
+    //     To make a new substring, we need to compute its offset entries.  Any entries completely
+    // enclosed by the requested bounds can jut be copied, but if the endpoints fall within an entry
+    // we need special logic
     for (int entryNum = lastEntryStartingBefore(startIndexInclusive); entryNum < offsets.size(); ++entryNum) {
       final OffsetEntry entry = offsets.get(entryNum);
-      checkArgument(entry.startPos <= endIndexExclusive);
+      checkState(entry.startPos <= endIndexExclusive);
 
+      // we initialize the Entry we are building for the substring to match the entry
+      // in the parent string
       int newStartPos = entry.startPos;
       int newEndPos = entry.endPos;
       OffsetGroup newStartOffset = entry.startOffset;
@@ -588,7 +598,7 @@ public final class LocatedString {
       if (entry.startPos < startIndexInclusive) {
         newStartPos = startIndexInclusive;
 
-        checkArgument(charLength == edtLength || edtLength == 0);
+        checkState(charLength == edtLength || edtLength == 0);
         int newEDTOffsetValue = entry.startOffset.edtOffset().asInt();
         if (edtLength != 0) {
           newEDTOffsetValue += (startIndexInclusive - entry.startPos);
@@ -599,13 +609,18 @@ public final class LocatedString {
       if (entry.endPos > endIndexExclusive) {
         newEndPos = endIndexExclusive;
 
-        checkArgument(charLength == edtLength || edtLength == 0);
+        checkState(charLength == edtLength || edtLength == 0);
         int newEDTOffsetValue = entry.endOffset.edtOffset().asInt();
         if (edtLength != 0) {
           newEDTOffsetValue -= (entry.endPos - endIndexExclusive);
         }
+        int newCharOffsetValue = entry.endOffset.charOffset().asInt();
+        if (charLength != 0) {
+          newCharOffsetValue -= (entry.endPos - endIndexExclusive);
+        }
         newEndOffset = OffsetGroup
-            .from(CharOffset.asCharOffset(endIndexExclusive - 1), EDTOffset.asEDTOffset(newEDTOffsetValue));
+            .from(CharOffset.asCharOffset(newCharOffsetValue),
+                EDTOffset.asEDTOffset(newEDTOffsetValue));
       }
       newStartPos -= startIndexInclusive;
       newEndPos -= startIndexInclusive;
