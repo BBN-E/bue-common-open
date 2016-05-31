@@ -39,7 +39,7 @@ public final class BuildRichEREDocIDToFileList {
     outputFile.getParentFile().mkdirs();
 
     final ImmutableMap.Builder<Symbol, File> docIdToFileMapB = ImmutableMap.builder();
-    final ERELoader loader = ERELoader.create();
+    final ERELoader loader = ERELoader.builder().prefixDocIDToAllIDs(false).build();
     for (final File ereFile : ereFiles) {
       docIdToFileMapB.put(Symbol.from(loader.loadFrom(ereFile).getDocId()), ereFile);
     }
