@@ -1,11 +1,11 @@
 package com.bbn.bue.common.strings;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.EDTOffset;
 import com.bbn.bue.common.strings.offsets.OffsetGroup;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
 
@@ -19,7 +19,6 @@ public final class LocatedStringTest {
 
   private final static String partOne = "This is a very silly";
   private final static String partTwo = "look! another string, with new lines this time! \n"
-//      + "\n\r\n"
       + " The quick fox jumped over the lazy brown dog";
   private final static String base =
       "<TAG>" + partOne + "<string with=self closing=tags/> <FNORD/> " + partTwo + " </TAG>";
@@ -59,15 +58,20 @@ public final class LocatedStringTest {
 
     for (final OffsetGroup start : posesInString) {
       for (final OffsetGroup end : posesInString) {
-        if (start.charOffset().value() < end.charOffset().value()) {
-          final LocatedString substring = locatedString.substring(start, end);
-          assertEquals(start.charOffset(), substring.startCharOffset());
-          assertEquals(end.charOffset(), substring.endCharOffset());
-          assertEquals(start.edtOffset(), substring.startEDTOffset());
-          assertEquals(end.edtOffset(), substring.endEDTOffset());
+        if (start.charOffset().asInt() < end.charOffset().asInt()) {
+          substringTestForStartEnd(locatedString, start, end);
         }
       }
     }
+  }
+
+  private void substringTestForStartEnd(final LocatedString locatedString, final OffsetGroup start,
+      final OffsetGroup end) {
+    final LocatedString substring = locatedString.substring(start, end);
+    assertEquals(start.charOffset(), substring.startCharOffset());
+    assertEquals(end.charOffset(), substring.endCharOffset());
+    assertEquals(start.edtOffset(), substring.startEDTOffset());
+    assertEquals(end.edtOffset(), substring.endEDTOffset());
   }
 
   @Test
@@ -90,6 +94,16 @@ public final class LocatedStringTest {
     stringContainsKnownSubStrings(complete);
   }
 
+  @Test
+  public void testSubstringBug() {
+    final String docString = "The quick brown fox jumped over the lazy dog.\nHello world.";
+    final LocatedString wholeDoc = LocatedString.fromStringStartingAtZero(docString);
+    final LocatedString sentString = wholeDoc.substring(46, 58);
+    final LocatedString substring = sentString.substring(0, 5);
+    assertEquals("Hello", substring.text());
+    assertEquals(46, substring.bounds().startInclusive().charOffset().asInt());
+    assertEquals(50, substring.bounds().endInclusive().charOffset().asInt());
+  }
 
   private static Optional<LocatedString> deriveSubstring(final LocatedString base,
       final String component) {
