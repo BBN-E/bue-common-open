@@ -89,8 +89,16 @@ public final class LocatedString {
     return bounds;
   }
 
+  public ImmutableList<OffsetEntry> regions() {
+    return regions;
+  }
+
+  /**
+   * @deprecated Prefer {@link #regions()}
+   */
+  @Deprecated
   public List<OffsetEntry> offsetEntries() {
-    return offsets;
+    return regions();
   }
 
   /**
@@ -256,7 +264,7 @@ public final class LocatedString {
    */
   public OffsetGroup offsetGroupForCharOffset(final CharOffset offset) {
     // if this ever slows us down significantly, we can binary search
-    for (final OffsetEntry entry : offsets) {
+    for (final OffsetEntry entry : regions) {
       final int entryStartCharOffset = entry.startOffsetInclusive.charOffset().asInt();
       final int entryEndCharOffset = entry.endOffsetInclusive.charOffset().asInt();
 
@@ -352,25 +360,24 @@ public final class LocatedString {
 
   private final String content;
   private final OffsetGroupRange bounds;
-  private final List<OffsetEntry> offsets;
+  private final ImmutableList<OffsetEntry> regions;
   private boolean hashCodeInitialized = false;
   private int hashCode = Integer.MIN_VALUE;
 
-  private LocatedString(final String content, final List<OffsetEntry> offsets,
+  private LocatedString(final String content, final List<OffsetEntry> regions,
       final OffsetGroupRange bounds) {
     // we need at least one offset entry for potential future substring calculation
-    checkArgument(!offsets.isEmpty());
+    checkArgument(!regions.isEmpty());
 
-    this.content = content;
-    this.bounds = bounds;
-    // since this is a private constructor, no need to defensively copy to preserve immutability
-    this.offsets = offsets;
+    this.content = checkNotNull(content);
+    this.bounds = checkNotNull(bounds);
+    this.regions = ImmutableList.copyOf(regions);
   }
 
   @Override
   public int hashCode() {
     if (!hashCodeInitialized) {
-      hashCode = Objects.hashCode(content, bounds, offsets);
+      hashCode = Objects.hashCode(content, bounds, regions);
       hashCodeInitialized = true;
     }
     return hashCode;
@@ -395,7 +402,7 @@ public final class LocatedString {
     }
 
     return Objects.equal(this.bounds, other.bounds) && Objects.equal(this.content, other.content)
-        && Objects.equal(this.offsets, other.offsets);
+        && Objects.equal(this.regions, other.regions);
   }
 
   public static final class OffsetEntry {
@@ -603,8 +610,8 @@ public final class LocatedString {
     // char offsets continue to grow but EDT offsets do not
     //     To make a new substring, we need to compute its offset entries.
     for (int entryNum = lastEntryStartingBefore(substringStartIndexInclusive);
-         entryNum < offsets.size(); ++entryNum) {
-      final OffsetEntry entry = offsets.get(entryNum);
+         entryNum < regions.size(); ++entryNum) {
+      final OffsetEntry entry = regions.get(entryNum);
       // sanity check
       checkState(entry.startInclusivePos < substringEndIndexExclusive);
 
@@ -672,7 +679,7 @@ public final class LocatedString {
 
   private int lastEntryStartingBefore(final int pos) {
     int i = 1;
-    while (i < offsets.size() && offsets.get(i).startInclusivePos <= pos) {
+    while (i < regions.size() && regions.get(i).startInclusivePos <= pos) {
       ++i;
     }
     return i - 1;
