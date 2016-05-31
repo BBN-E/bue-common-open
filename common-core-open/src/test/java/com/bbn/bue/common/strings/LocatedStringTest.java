@@ -42,7 +42,8 @@ public final class LocatedStringTest {
   public void substringTest() {
     final String baseString = "H<b>ello</b> world";
     final LocatedString locatedString = LocatedString.forString(baseString);
-    final List<OffsetGroup> posesInString = ImmutableList.of(
+    // inside brackets, char offsets go up but EDT offsets don't
+    final List<OffsetGroup> offsetsByCharacter = ImmutableList.of(
         OffsetGroup.from(CharOffset.asCharOffset(0), EDTOffset.asEDTOffset(0)),
         OffsetGroup.from(CharOffset.asCharOffset(1), EDTOffset.asEDTOffset(0)),
         OffsetGroup.from(CharOffset.asCharOffset(2), EDTOffset.asEDTOffset(0)),
@@ -62,8 +63,8 @@ public final class LocatedStringTest {
         OffsetGroup.from(CharOffset.asCharOffset(16), EDTOffset.asEDTOffset(9)),
         OffsetGroup.from(CharOffset.asCharOffset(17), EDTOffset.asEDTOffset(10)));
 
-    for (final OffsetGroup start : posesInString) {
-      for (final OffsetGroup end : posesInString) {
+    for (final OffsetGroup start : offsetsByCharacter) {
+      for (final OffsetGroup end : offsetsByCharacter) {
         if (start.charOffset().asInt() < end.charOffset().asInt()) {
           substringTestForStartEnd(locatedString, start, end);
         }
