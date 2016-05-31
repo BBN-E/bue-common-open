@@ -15,6 +15,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests for {@link LocatedString}.
+ *
+ * Note we use the deprecated {@link LocatedString#forString(String)} method here because we need
+ * the (evil) EDT offset calculation which has not yet been ported to other code.
+ */
 public final class LocatedStringTest {
 
   private final static String partOne = "This is a very silly";
