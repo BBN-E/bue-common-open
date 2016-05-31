@@ -257,15 +257,17 @@ public final class LocatedString {
   public OffsetGroup offsetGroupForCharOffset(final CharOffset offset) {
     // if this ever slows us down significantly, we can binary search
     for (final OffsetEntry entry : offsets) {
-      if (entry.startOffsetInclusive.charOffset().asInt() <= offset.asInt()
-          && entry.endOffsetInclusive.charOffset().asInt() > offset.asInt()) {
-        // we assume EDT offsets are continuous witihn entries
-        final int offsetWithinEntry =
-            offset.asInt() - entry.startOffsetInclusive.charOffset().asInt();
+      final int entryStartCharOffset = entry.startOffsetInclusive.charOffset().asInt();
+      final int entryEndCharOffset = entry.endOffsetInclusive.charOffset().asInt();
 
-        return OffsetGroup
-            .from(offset, EDTOffset
-                .asEDTOffset(entry.startOffsetInclusive.edtOffset().asInt() + offsetWithinEntry));
+      if (entryStartCharOffset <= offset.asInt() && entryEndCharOffset > offset.asInt()) {
+        // we assume EDT offsets are continuous witihn entries
+        final int offsetWithinEntry = offset.asInt() - entryStartCharOffset;
+
+        return OffsetGroup.from(offset, EDTOffset
+            .asEDTOffset(entry.startOffsetInclusive.edtOffset().asInt()
+                // edt offsets are not incremented in an EDT skip region
+                + (entry.isEDTSkipRegion() ? 0 : offsetWithinEntry)));
       }
     }
     throw new NoSuchElementException();
