@@ -25,6 +25,7 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
   }
 
   private OffsetRange(OffsetType startInclusive, OffsetType endInclusive) {
+    checkArgument(startInclusive.asInt() <= endInclusive.asInt());
     this.startInclusive = checkNotNull(startInclusive);
     this.endInclusive = checkNotNull(endInclusive);
   }
