@@ -261,7 +261,7 @@ public final class LocatedString {
       final int entryEndCharOffset = entry.endOffsetInclusive.charOffset().asInt();
 
       if (entryStartCharOffset <= offset.asInt() && entryEndCharOffset > offset.asInt()) {
-        // we assume EDT offsets are continuous witihn entries
+        // we assume EDT offsets are continuous within entries
         final int offsetWithinEntry = offset.asInt() - entryStartCharOffset;
 
         return OffsetGroup.from(offset, EDTOffset
