@@ -82,4 +82,14 @@ public final class EREEntityArgument implements EREArgument {
   public int hashCode() {
     return Objects.hash(role, realis, entityMention);
   }
+
+  @Override
+  public String toString() {
+    return "EREEntityArgument{" +
+        "role='" + role + '\'' +
+        ", realis=" + realis +
+        ", entityMention=" + entityMention +
+        ", ereEntity=" + ereEntity +
+        '}';
+  }
 }

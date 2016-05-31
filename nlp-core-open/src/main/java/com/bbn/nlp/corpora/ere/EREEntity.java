@@ -4,9 +4,9 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class EREEntity {
   private final String id;
@@ -40,7 +40,7 @@ public final class EREEntity {
   public static Builder builder(final String id, final String type, final String specificity) {
     return new Builder(id, type, specificity);
   }
-  
+
   public static class Builder {
     private final String id;
     private final String type;
@@ -63,7 +63,7 @@ public final class EREEntity {
       return this;
     }
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hashCode(id);
@@ -82,5 +82,15 @@ public final class EREEntity {
     }
     final EREEntity other = (EREEntity) obj;
     return Objects.equal(id, other.id);
+  }
+
+  @Override
+  public String toString() {
+    return "EREEntity{" +
+        "id='" + id + '\'' +
+        ", type='" + type + '\'' +
+        ", specificity='" + specificity + '\'' +
+        ", mentions=" + mentions +
+        '}';
   }
 }

@@ -1,13 +1,13 @@
 package com.bbn.nlp.corpora.ere;
 
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public final class EREEventMention {
@@ -17,7 +17,7 @@ public final class EREEventMention {
   private final String realis;
   private final ERESpan trigger;
   private final ImmutableList<EREArgument> arguments;
-  
+
   private EREEventMention(final String id, final String type, final String subtype, final String realis,
       final ERESpan trigger, final List<EREArgument> arguments) {
     this.id = checkNotNull(id);
@@ -27,7 +27,7 @@ public final class EREEventMention {
     this.trigger = checkNotNull(trigger);
     this.arguments = ImmutableList.copyOf(arguments);
   }
-  
+
   public String getID() {
     return id;
   }
@@ -35,11 +35,11 @@ public final class EREEventMention {
   public String getType() {
     return type;
   }
-    
+
   public String getSubtype() {
     return subtype;
   }
-    
+
   public String getRealis() {
     return realis;
   }
@@ -55,7 +55,7 @@ public final class EREEventMention {
   public static Builder builder(final String id, final String type, final String subtype, final String realis, final ERESpan trigger) {
     return new Builder(id, type, subtype, realis, trigger);
   }
-  
+
   public static class Builder {
     private final String id;
     private final String type;
@@ -83,7 +83,7 @@ public final class EREEventMention {
       return this;
     }
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hashCode(id);
@@ -102,6 +102,18 @@ public final class EREEventMention {
     }
     final EREEventMention other = (EREEventMention) obj;
     return Objects.equal(id, other.id);
+  }
+
+  @Override
+  public String toString() {
+    return "EREEventMention{" +
+        "id='" + id + '\'' +
+        ", type='" + type + '\'' +
+        ", subtype='" + subtype + '\'' +
+        ", realis='" + realis + '\'' +
+        ", trigger=" + trigger +
+        ", arguments=" + arguments +
+        '}';
   }
 }
 
