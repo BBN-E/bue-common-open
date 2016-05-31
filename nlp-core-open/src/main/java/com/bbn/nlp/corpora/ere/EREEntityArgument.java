@@ -12,10 +12,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class EREEntityArgument implements EREArgument {
 
   private final String role;
-  @Nullable private final LinkRealis realis;
+  @Nullable
+  private final LinkRealis realis;
   private final EREEntityMention entityMention;
   // nullable to preserve backwards compatibility
-  @Nullable private final EREEntity ereEntity;
+  @Nullable
+  private final EREEntity ereEntity;
 
   private EREEntityArgument(final String role, @Nullable final LinkRealis realis,
       final EREEntityMention entityMention, @Nullable final EREEntity ereEntity) {

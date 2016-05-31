@@ -94,6 +94,7 @@ public final class ERELoader {
 }
 
 final class ERELoading {
+
   private final Map<String, Object> idMap = Maps.newHashMap();
   private final Map<String, String> mentionToCorefId = Maps.newHashMap();
 
@@ -106,33 +107,33 @@ final class ERELoading {
 
         if (e.getTagName().equals("entities")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("entity")) {
-                builder.withEntity(toEntity((Element)n, docid));
+                builder.withEntity(toEntity((Element) n, docid));
               }
             }
           }
         } else if (e.getTagName().equals("fillers")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("filler")) {
-                builder.withFiller(toFiller((Element)n, docid));
+                builder.withFiller(toFiller((Element) n, docid));
               }
             }
           }
         } else if (e.getTagName().equals("relations")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("relation")) {
-                builder.withRelation(toRelation((Element)n, docid));
+                builder.withRelation(toRelation((Element) n, docid));
               }
             }
           }
         } else if (e.getTagName().equals("hoppers")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("hopper")) {
-                builder.withEvent(toEvent((Element)n, docid));
+                builder.withEvent(toEvent((Element) n, docid));
               }
             }
           }
@@ -148,10 +149,12 @@ final class ERELoading {
   }
 
   private EREEntity toEntity(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");    // ERE ids are not globally unique, so prefix with docid
+    final String id = docid + "-" + XMLUtils
+        .requiredAttribute(xml, "id");    // ERE ids are not globally unique, so prefix with docid
 
     final String type = XMLUtils.requiredAttribute(xml, "type");
-    final String specificity = XMLUtils.requiredAttribute(xml, "specificity");  // specific -> SPC , nonspecific -> GEN
+    final String specificity =
+        XMLUtils.requiredAttribute(xml, "specificity");  // specific -> SPC , nonspecific -> GEN
 
     final EREEntity.Builder builder = EREEntity.builder(id, type, specificity);
 
@@ -175,7 +178,7 @@ final class ERELoading {
     final String type = XMLUtils.requiredAttribute(xml, "noun_type");
 
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
-    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length")-1;
+    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length") - 1;
 
     final ERESpan extent = toSpan(xml, "mention_text", extentStart, extentEnd).get();
     final Optional<ERESpan> head = toSpan(xml, "nom_head");
@@ -190,7 +193,7 @@ final class ERELoading {
     final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
-    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length")-1;
+    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length") - 1;
     final String text = xml.getTextContent();
 
     final ERESpan span = ERESpan.from(extentStart, extentEnd, text);
@@ -204,14 +207,15 @@ final class ERELoading {
     Optional<Element> element = XMLUtils.directChild(xml, name);
     if (element.isPresent()) {
       final int start = XMLUtils.requiredIntegerAttribute(element.get(), "offset");
-      final int end = start + XMLUtils.requiredIntegerAttribute(element.get(), "length")-1;
+      final int end = start + XMLUtils.requiredIntegerAttribute(element.get(), "length") - 1;
       final String content = element.get().getTextContent();
       return Optional.of(ERESpan.from(start, end, content));
     }
     return Optional.absent();
   }
 
-  private static Optional<ERESpan> toSpan(final Element xml, final String name, final int start, final int end) {
+  private static Optional<ERESpan> toSpan(final Element xml, final String name, final int start,
+      final int end) {
     Optional<Element> element = XMLUtils.directChild(xml, name);
     if (element.isPresent()) {
       final String content = element.get().getTextContent();
@@ -254,7 +258,8 @@ final class ERELoading {
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
-        if (((Element) child).getTagName().equals("rel_arg1") || ((Element) child).getTagName().equals("rel_arg2")) {
+        if (((Element) child).getTagName().equals("rel_arg1") || ((Element) child).getTagName()
+            .equals("rel_arg2")) {
           final Element e = (Element) child;
           builder.withArgument(e.getTagName(), getArgument(docid, e));
         }
@@ -277,8 +282,8 @@ final class ERELoading {
     // null if relation_mention argument, populated in event_mention arguments
     final LinkRealis realis;
     final Optional<Boolean> linkRealis = XMLUtils.optionalBooleanAttribute(e, "realis");
-    if(linkRealis.isPresent()) {
-      if(linkRealis.get()) {
+    if (linkRealis.isPresent()) {
+      if (linkRealis.get()) {
         realis = LinkRealis.REALIS;
       } else {
         realis = LinkRealis.IRREALIS;
@@ -288,9 +293,9 @@ final class ERELoading {
     }
 
     String mentionId = docid + "-";
-    if(entityMentionId.isPresent()) {
+    if (entityMentionId.isPresent()) {
       mentionId += entityMentionId.get();
-    } else if(fillerId.isPresent()) {
+    } else if (fillerId.isPresent()) {
       mentionId += fillerId.get();
     } else {
       throw EREException
@@ -298,16 +303,17 @@ final class ERELoading {
     }
 
     Object obj = fetch(mentionId);
-    if(obj instanceof EREEntityMention) {
+    if (obj instanceof EREEntityMention) {
       final EREEntityMention m = (EREEntityMention) obj;
-      final EREEntity ereEntity = entityID.isPresent() ? (EREEntity) fetch(docid + "-" + entityID.get()) : null;
+      final EREEntity ereEntity =
+          entityID.isPresent() ? (EREEntity) fetch(docid + "-" + entityID.get()) : null;
       arg = EREEntityArgument.from(role, realis, m, ereEntity);
-    } else if(obj instanceof EREFiller) {
+    } else if (obj instanceof EREFiller) {
       final EREFiller m = (EREFiller) obj;
       arg = EREFillerArgument.from(role, realis, m);
     } else {
       throw EREException.forElement("Expected either an EREEntityMention or an EREFiller "
-                                    + "but got " + obj.getClass(), e);
+          + "but got " + obj.getClass(), e);
     }
     return arg;
   }
@@ -341,7 +347,8 @@ final class ERELoading {
 
     final ERESpan trigger = toSpan(xml, "trigger").get();
 
-    final EREEventMention.Builder builder = EREEventMention.builder(id, type, subtype, realis, trigger);
+    final EREEventMention.Builder builder =
+        EREEventMention.builder(id, type, subtype, realis, trigger);
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
