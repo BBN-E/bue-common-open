@@ -220,16 +220,22 @@ public final class LocatedString {
   }
 
   /**
-   * Return a String substring of this string.
+   * @deprecated Prefer the more explicit {@link #rawSubstringByCharOffsets(CharOffset, CharOffset)}
    */
+  @Deprecated
   public String rawSubstring(final OffsetGroup start, final OffsetGroup end) {
     return rawSubstring(start.charOffset(), end.charOffset());
   }
 
   /**
-   * Return a String substring of this string.
+   * @deprecated Prefer the more explicit {@link #rawSubstringByCharOffsets(CharOffset, CharOffset)}
    */
+  @Deprecated
   public String rawSubstring(final CharOffset start, final CharOffset end) {
+    return rawSubstringByCharOffsets(start, end);
+  }
+
+  public String rawSubstringByCharOffsets(final CharOffset start, final CharOffset end) {
     final int startOffset = start.asInt() - bounds.startInclusive().charOffset().asInt();
     final int endOffset = end.asInt() - bounds.startInclusive().charOffset().asInt() + 1;
 
