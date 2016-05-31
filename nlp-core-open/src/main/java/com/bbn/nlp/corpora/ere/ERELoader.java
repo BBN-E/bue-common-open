@@ -32,19 +32,28 @@ public final class ERELoader {
 
   private static Logger log = LoggerFactory.getLogger(ERELoader.class);
 
-  private ERELoader() {
-  }
+  // do we prepend the docid to the derived ids
+  private final boolean derivedIDsHaveDocID;
 
-  public static ERELoader create() {
-    return new ERELoader();
+  private ERELoader(final boolean derivedIDsHaveDocID) {
+    this.derivedIDsHaveDocID = derivedIDsHaveDocID;
   }
 
   /**
-   * @deprecated Prefer {@link #create()}.
+   * @deprecated Prefer {@link #builder()}
+   */
+  @Deprecated
+  public static ERELoader create() {
+    return new ERELoader(true);
+  }
+
+
+  /**
+   * @deprecated Prefer {@link #builder()}.
    */
   @Deprecated
   public static ERELoader from(final Parameters params) {
-    return new ERELoader();
+    return create();
   }
 
   public EREDocument loadFrom(final File f) throws IOException {
@@ -85,18 +94,49 @@ public final class ERELoader {
       final String docId = XMLUtils.requiredAttribute(root, "doc_id");
       final String sourceType = XMLUtils.requiredAttribute(root, "source_type");
 
-      return (new ERELoading()).toDocument(root, docId, sourceType);
+      return (new ERELoading(derivedIDsHaveDocID)).toDocument(root, docId, sourceType);
     } else {
       throw new EREException("Rich ERE should have a root of deft_ere");
     }
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+
+    boolean includeDocIDInIDs = false;
+
+    private Builder() {
+
+    }
+
+    /**
+     * Do we want to prefix every ERE id with the docid? Generally no, but doing this does allow
+     * global uniqueness, which is not guaranteed in ERE.
+     */
+    public Builder prefixDocIDToAllIDs(boolean includeDocIDInIDs) {
+      this.includeDocIDInIDs = includeDocIDInIDs;
+      return this;
+    }
+
+    public ERELoader build() {
+      return new ERELoader(includeDocIDInIDs);
+    }
+  }
 }
 
 final class ERELoading {
 
   private final Map<String, Object> idMap = Maps.newHashMap();
   private final Map<String, String> mentionToCorefId = Maps.newHashMap();
+  private final boolean derivedIDsHaveDocID;
+
+  public ERELoading(
+      final boolean derivedIDsHaveDocID) {
+    this.derivedIDsHaveDocID = derivedIDsHaveDocID;
+  }
 
   EREDocument toDocument(final Element xml, final String docid, final String sourceType) {
     final EREDocument.Builder builder = EREDocument.builder(docid, sourceType);
@@ -149,8 +189,7 @@ final class ERELoading {
   }
 
   private EREEntity toEntity(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils
-        .requiredAttribute(xml, "id");    // ERE ids are not globally unique, so prefix with docid
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
 
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String specificity =
@@ -174,7 +213,7 @@ final class ERELoading {
   }
 
   private EREEntityMention toEntityMention(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String type = XMLUtils.requiredAttribute(xml, "noun_type");
 
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
@@ -190,7 +229,7 @@ final class ERELoading {
 
   // ==== Fillers and transforming them to APF entity/value/time ====
   private EREFiller toFiller(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
     final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length") - 1;
@@ -227,7 +266,7 @@ final class ERELoading {
 
   // ==== START Relation ====
   private ERERelation toRelation(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String subtype = XMLUtils.requiredAttribute(xml, "subtype");
 
@@ -249,7 +288,7 @@ final class ERELoading {
   }
 
   private ERERelationMention toRelationMention(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String realis = XMLUtils.requiredAttribute(xml, "realis");
 
     final Optional<ERESpan> trigger = toSpan(xml, "trigger");
@@ -292,11 +331,11 @@ final class ERELoading {
       realis = null;
     }
 
-    String mentionId = docid + "-";
+    String mentionId;
     if (entityMentionId.isPresent()) {
-      mentionId += entityMentionId.get();
+      mentionId = generateID(entityMentionId.get(), docid);
     } else if (fillerId.isPresent()) {
-      mentionId += fillerId.get();
+      mentionId = generateID(fillerId.get(), docid);
     } else {
       throw EREException
           .forElement("Element must have either entity_mention_id or filler_id attribute", e);
@@ -306,7 +345,7 @@ final class ERELoading {
     if (obj instanceof EREEntityMention) {
       final EREEntityMention m = (EREEntityMention) obj;
       final EREEntity ereEntity =
-          entityID.isPresent() ? (EREEntity) fetch(docid + "-" + entityID.get()) : null;
+          entityID.isPresent() ? (EREEntity) fetch(generateID(entityID.get(), docid)) : null;
       arg = EREEntityArgument.from(role, realis, m, ereEntity);
     } else if (obj instanceof EREFiller) {
       final EREFiller m = (EREFiller) obj;
@@ -319,7 +358,7 @@ final class ERELoading {
   }
 
   private EREEvent toEvent(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
 
     final EREEvent.Builder builder = EREEvent.builder(id);
 
@@ -339,7 +378,7 @@ final class ERELoading {
   }
 
   private EREEventMention toEventMention(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
 
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String subtype = XMLUtils.requiredAttribute(xml, "subtype");
@@ -362,6 +401,14 @@ final class ERELoading {
     final EREEventMention eventMention = builder.build();
     idMap.put(id, eventMention);
     return eventMention;
+  }
+
+  private String generateID(final String id, final String docID) {
+    if (derivedIDsHaveDocID) {
+      return docID + "-" + id;
+    } else {
+      return id;
+    }
   }
 
 
