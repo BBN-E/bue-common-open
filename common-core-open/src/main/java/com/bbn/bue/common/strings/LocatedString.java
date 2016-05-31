@@ -411,22 +411,20 @@ public final class LocatedString {
     private final int endExclusivePos;
     private final OffsetGroup startOffsetInclusive;
     private final OffsetGroup endOffsetInclusive;
-    private final boolean isEDTSkipRegion;
 
     public OffsetEntry(final int startPosInclusive, final int endPosExclusive,
         final OffsetGroup startOffset,
-        final OffsetGroup endOffsetInclusive, final boolean isEDTSkipRegion) {
+        final OffsetGroup endOffsetInclusive) {
       this.startInclusivePos = startPosInclusive;
       this.endExclusivePos = endPosExclusive;
       this.startOffsetInclusive = startOffset;
       this.endOffsetInclusive = endOffsetInclusive;
-      this.isEDTSkipRegion = isEDTSkipRegion;
       checkArgument(endExclusivePos > startInclusivePos);
       checkArgument(endOffsetInclusive.charOffset().asInt()
           >= startOffsetInclusive.charOffset().asInt());
       // an entry either covers a span where char and EDT offsets increase in tandem or
       // it is a region where EDT offsets do not increase at all
-      checkArgument(charLength() == edtLength() || isEDTSkipRegion);
+      checkArgument(charLength() == edtLength() || isEDTSkipRegion());
       // the number of positions should always equal the number of character offsets
       // -1 because end is exclusive
       checkArgument(charLength() == posLength(),
@@ -451,7 +449,7 @@ public final class LocatedString {
     }
 
     public boolean isEDTSkipRegion() {
-      return isEDTSkipRegion;
+      return charLength() > 0 && startOffset().edtOffset().equals(endOffset().edtOffset());
     }
 
     public final int posLength() {
@@ -472,15 +470,13 @@ public final class LocatedString {
     public String toString() {
       return "OffsetEntry{pos: [" + startInclusivePos + ", " + endExclusivePos + "]; "
           + OffsetGroupRange.from(startOffsetInclusive, endOffsetInclusive)
-          + (isEDTSkipRegion ? "; skipEDT" : "")
           + "}";
     }
 
     @Override
     public int hashCode() {
       return Objects
-          .hashCode(startInclusivePos, endExclusivePos, startOffsetInclusive, endOffsetInclusive,
-              isEDTSkipRegion);
+          .hashCode(startInclusivePos, endExclusivePos, startOffsetInclusive, endOffsetInclusive);
     }
 
     @Override
@@ -495,8 +491,7 @@ public final class LocatedString {
       return Objects.equal(this.startInclusivePos, other.startInclusivePos) && Objects
           .equal(this.endExclusivePos, other.endExclusivePos) && Objects
           .equal(this.startOffsetInclusive, other.startOffsetInclusive)
-          && Objects.equal(this.endOffsetInclusive, other.endOffsetInclusive) && Objects
-          .equal(this.isEDTSkipRegion, other.isEDTSkipRegion);
+          && Objects.equal(this.endOffsetInclusive, other.endOffsetInclusive);
     }
   }
 
@@ -532,7 +527,8 @@ public final class LocatedString {
         offsets.add(
             new OffsetEntry(startPos, pos, start,
                 OffsetGroup.from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset - 1) : null,
-                CharOffset.asCharOffset(charOffset - 1), EDTOffset.asEDTOffset(prevEDTOffset)), justLeftXMLTag));
+                    CharOffset.asCharOffset(charOffset - 1),
+                    EDTOffset.asEDTOffset(prevEDTOffset))));
         startPos = pos;
         final int startEDTOffset = (c == '<') ? edtOffset - 1 : edtOffset;
         start = OffsetGroup
@@ -563,7 +559,7 @@ public final class LocatedString {
       offsets.add(new OffsetEntry(startPos, pos, start,
           OffsetGroup.from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset - 1) : null,
               CharOffset.asCharOffset(charOffset - 1),
-              EDTOffset.asEDTOffset(prevEDTOffset)), inTag > 0 || justLeftXMLTag));
+              EDTOffset.asEDTOffset(prevEDTOffset))));
     }
     return offsets.build();
   }
@@ -642,7 +638,7 @@ public final class LocatedString {
               entry.isEDTSkipRegion());
 
       ret.add(new OffsetEntry(newStartPosInclusive, newEndPosExclusive, newStartOffsetInclusive,
-          newEndOffsetInclusive, entry.isEDTSkipRegion));
+          newEndOffsetInclusive));
 
       final int requestedSubstringLength =
           substringEndIndexExclusive - substringStartIndexInclusive;
