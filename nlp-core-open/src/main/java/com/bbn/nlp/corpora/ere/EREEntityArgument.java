@@ -14,10 +14,13 @@ public final class EREEntityArgument implements EREArgument {
   private final String role;
   @Nullable private final LinkRealis realis;
   private final EREEntityMention entityMention;
+  // nullable to preserve backwards compatibility
+  @Nullable private final EREEntity ereEntity;
 
   private EREEntityArgument(final String role, @Nullable final LinkRealis realis,
-      final EREEntityMention entityMention) {
+      final EREEntityMention entityMention, @Nullable final EREEntity ereEntity) {
     this.realis = realis;
+    this.ereEntity = ereEntity;
     this.role = checkNotNull(role);
     this.entityMention = checkNotNull(entityMention);
   }
@@ -28,7 +31,12 @@ public final class EREEntityArgument implements EREArgument {
 
   public static EREEntityArgument from(final String role, @Nullable final LinkRealis realis,
       final EREEntityMention entityMention) {
-    return new EREEntityArgument(role, realis, entityMention);
+    return new EREEntityArgument(role, realis, entityMention, null);
+  }
+
+  public static EREEntityArgument from(final String role, @Nullable final LinkRealis realis,
+      final EREEntityMention entityMention, final EREEntity ereEntity) {
+    return new EREEntityArgument(role, realis, entityMention, ereEntity);
   }
 
   public EREEntityMention entityMention() {

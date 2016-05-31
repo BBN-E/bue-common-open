@@ -270,6 +270,7 @@ final class ERELoading {
     final EREArgument arg;
 
     final String role = XMLUtils.requiredAttribute(e, "role");
+    final Optional<String> entityID = XMLUtils.optionalStringAttribute(e, "entity_id");
     final Optional<String>
         entityMentionId = XMLUtils.optionalStringAttribute(e, "entity_mention_id");
     final Optional<String> fillerId = XMLUtils.optionalStringAttribute(e, "filler_id");
@@ -299,7 +300,8 @@ final class ERELoading {
     Object obj = fetch(mentionId);
     if(obj instanceof EREEntityMention) {
       final EREEntityMention m = (EREEntityMention) obj;
-      arg = EREEntityArgument.from(role, realis, m);
+      final EREEntity ereEntity = entityID.isPresent() ? (EREEntity) fetch(docid + "-" + entityID.get()) : null;
+      arg = EREEntityArgument.from(role, realis, m, ereEntity);
     } else if(obj instanceof EREFiller) {
       final EREFiller m = (EREFiller) obj;
       arg = EREFillerArgument.from(role, realis, m);
