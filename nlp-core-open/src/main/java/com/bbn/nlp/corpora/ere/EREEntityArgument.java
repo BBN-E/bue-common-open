@@ -45,6 +45,10 @@ public final class EREEntityArgument implements EREArgument {
     return entityMention;
   }
 
+  public Optional<EREEntity> ereEntity() {
+    return Optional.fromNullable(ereEntity);
+  }
+
   @Override
   public String getID() {
     return entityMention.getID();
