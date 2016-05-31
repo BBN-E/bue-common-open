@@ -2,6 +2,7 @@ package com.bbn.bue.common.strings.offsets;
 
 import com.google.common.base.Objects;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class OffsetGroupRange {
@@ -29,6 +30,12 @@ public final class OffsetGroupRange {
   private OffsetGroupRange(final OffsetGroup startInclusive, final OffsetGroup endInclusive) {
     this.startInclusive = checkNotNull(startInclusive);
     this.endInclusive = checkNotNull(endInclusive);
+    checkArgument(startInclusive.charOffset().asInt() <= endInclusive.charOffset().asInt(),
+        "Starting char offset %s of OffsetGroupRange exceeds ending char offset %s",
+        startInclusive.charOffset().asInt(), endInclusive.charOffset().asInt());
+    checkArgument(startInclusive.edtOffset().asInt() <= endInclusive.edtOffset().asInt(),
+        "Starting EDT offset %s of OffsetGroupRange exceeds ending EDT offset %s",
+        startInclusive.edtOffset().asInt(), endInclusive.edtOffset().asInt());
   }
 
   @Override

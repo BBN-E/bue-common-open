@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * * Class for storing and manipulating strings that have been read in from a file, without losing
@@ -88,8 +89,16 @@ public final class LocatedString {
     return bounds;
   }
 
+  public ImmutableList<OffsetEntry> regions() {
+    return regions;
+  }
+
+  /**
+   * @deprecated Prefer {@link #regions()}
+   */
+  @Deprecated
   public List<OffsetEntry> offsetEntries() {
-    return offsets;
+    return regions();
   }
 
   /**
@@ -99,7 +108,8 @@ public final class LocatedString {
    */
   @Deprecated
   public static LocatedString forString(final String text) {
-    final OffsetGroup initialOffsets = OffsetGroup.from(new ByteOffset(0), new CharOffset(0),
+    final OffsetGroup initialOffsets =
+        OffsetGroup.from(ByteOffset.asByteOffset(0), CharOffset.asCharOffset(0),
         EDTOffset.asEDTOffset(0));
     return forString(text, initialOffsets);
   }
@@ -218,24 +228,22 @@ public final class LocatedString {
   }
 
   /**
-   * Return a String substring of this string.
-   *
-   * @param start
-   * @param end
-   * @return
+   * @deprecated Prefer the more explicit {@link #rawSubstringByCharOffsets(CharOffset, CharOffset)}
    */
+  @Deprecated
   public String rawSubstring(final OffsetGroup start, final OffsetGroup end) {
     return rawSubstring(start.charOffset(), end.charOffset());
   }
 
   /**
-   * Return a String substring of this string.
-   *
-   * @param start
-   * @param end
-   * @return
+   * @deprecated Prefer the more explicit {@link #rawSubstringByCharOffsets(CharOffset, CharOffset)}
    */
+  @Deprecated
   public String rawSubstring(final CharOffset start, final CharOffset end) {
+    return rawSubstringByCharOffsets(start, end);
+  }
+
+  public String rawSubstringByCharOffsets(final CharOffset start, final CharOffset end) {
     final int startOffset = start.asInt() - bounds.startInclusive().charOffset().asInt();
     final int endOffset = end.asInt() - bounds.startInclusive().charOffset().asInt() + 1;
 
@@ -244,10 +252,6 @@ public final class LocatedString {
 
   /**
    * Return a String substring of this string.
-   *
-   * @param startIndexInclusive
-   * @param endIndexExclusive
-   * @return
    */
   public String rawSubstring(final int startIndexInclusive, final int endIndexExclusive) {
     return content.substring(startIndexInclusive, endIndexExclusive);
@@ -260,14 +264,18 @@ public final class LocatedString {
    */
   public OffsetGroup offsetGroupForCharOffset(final CharOffset offset) {
     // if this ever slows us down significantly, we can binary search
-    for (final OffsetEntry entry : offsets) {
-      if (entry.startOffset.charOffset().asInt() <= offset.asInt()
-          && entry.endOffset.charOffset().asInt() > offset.asInt()) {
-        // we assume EDT offsets are continuous witihn entries
-        final int offsetWithinEntry = offset.asInt() - entry.startOffset.charOffset().asInt();
+    for (final OffsetEntry entry : regions) {
+      final int entryStartCharOffset = entry.startOffsetInclusive.charOffset().asInt();
+      final int entryEndCharOffset = entry.endOffsetInclusive.charOffset().asInt();
 
-        return OffsetGroup
-            .from(offset, EDTOffset.asEDTOffset(entry.startOffset.edtOffset().asInt() + offsetWithinEntry));
+      if (entryStartCharOffset <= offset.asInt() && entryEndCharOffset > offset.asInt()) {
+        // we assume EDT offsets are continuous within entries
+        final int offsetWithinEntry = offset.asInt() - entryStartCharOffset;
+
+        return OffsetGroup.from(offset, EDTOffset
+            .asEDTOffset(entry.startOffsetInclusive.edtOffset().asInt()
+                // edt offsets are not incremented in an EDT skip region
+                + (entry.isEDTSkipRegion() ? 0 : offsetWithinEntry)));
       }
     }
     throw new NoSuchElementException();
@@ -284,8 +292,6 @@ public final class LocatedString {
    * finds the position of the first offset entry of this object which has an identical char offset to oe
    *
    * preserves the CPP interface, more or less
-   * @param charOffset
-   * @return
    */
   private int positionOfStartOffsetChar(final CharOffset charOffset) {
     for(final OffsetEntry it: offsetEntries()) {
@@ -293,7 +299,8 @@ public final class LocatedString {
         return -1;
       }
       if(charOffset.asInt() <= it.endOffset().charOffset().asInt()) {
-        return it.startPos() + (charOffset.asInt() - it.startOffset().charOffset().asInt());
+        return it.startPosInclusive() + (charOffset.asInt() - it.startOffset().charOffset()
+            .asInt());
       }
     }
     return -1;
@@ -301,21 +308,23 @@ public final class LocatedString {
 
   private CharOffset getStartOffset(int pos) {
     final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
-    checkArgument(pos >= oe.startPos() && pos <= oe.endPos() - 1);
-    if(pos == oe.startPos()) {
+    checkArgument(pos >= oe.startPosInclusive() && pos <= oe.endPosExclusive() - 1);
+    if (pos == oe.startPosInclusive()) {
       return oe.startOffset().charOffset();
     } else {
-      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+      return CharOffset
+          .asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPosInclusive()));
     }
   }
 
   private CharOffset getEndOffset(int pos) {
     final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
-    checkArgument(pos >= oe.startPos() && pos <= oe.endPos());
-    if(pos == oe.endPos() -1) {
+    checkArgument(pos >= oe.startPosInclusive() && pos <= oe.endPosExclusive());
+    if (pos == oe.endPosExclusive() - 1) {
       return oe.endOffset().charOffset();
     } else {
-      return CharOffset.asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPos()));
+      return CharOffset
+          .asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPosInclusive()));
     }
   }
 
@@ -351,25 +360,24 @@ public final class LocatedString {
 
   private final String content;
   private final OffsetGroupRange bounds;
-  private final List<OffsetEntry> offsets;
+  private final ImmutableList<OffsetEntry> regions;
   private boolean hashCodeInitialized = false;
   private int hashCode = Integer.MIN_VALUE;
 
-  private LocatedString(final String content, final List<OffsetEntry> offsets,
+  private LocatedString(final String content, final List<OffsetEntry> regions,
       final OffsetGroupRange bounds) {
     // we need at least one offset entry for potential future substring calculation
-    checkArgument(!offsets.isEmpty());
+    checkArgument(!regions.isEmpty());
 
-    this.content = content;
-    this.bounds = bounds;
-    // since this is a private constructor, no need to defensively copy to preserve immutability
-    this.offsets = offsets;
+    this.content = checkNotNull(content);
+    this.bounds = checkNotNull(bounds);
+    this.regions = ImmutableList.copyOf(regions);
   }
 
   @Override
   public int hashCode() {
     if (!hashCodeInitialized) {
-      hashCode = Objects.hashCode(content, bounds, offsets);
+      hashCode = Objects.hashCode(content, bounds, regions);
       hashCodeInitialized = true;
     }
     return hashCode;
@@ -394,58 +402,85 @@ public final class LocatedString {
     }
 
     return Objects.equal(this.bounds, other.bounds) && Objects.equal(this.content, other.content)
-        && Objects.equal(this.offsets, other.offsets);
+        && Objects.equal(this.regions, other.regions);
   }
 
-  public static class OffsetEntry {
+  public static final class OffsetEntry {
 
-    private final int startPos;
-    private final int endPos;
-    private final OffsetGroup startOffset;
-    private final OffsetGroup endOffset;
+    private final int startInclusivePos;
+    private final int endExclusivePos;
+    private final OffsetGroup startOffsetInclusive;
+    private final OffsetGroup endOffsetInclusive;
     private final boolean isEDTSkipRegion;
 
-    public OffsetEntry(final int startPos, final int endPos, final OffsetGroup startOffset,
-        final OffsetGroup endOffset, final boolean isEDTSkipRegion) {
-      this.startPos = startPos;
-      this.endPos = endPos;
-      this.startOffset = startOffset;
-      this.endOffset = endOffset;
+    public OffsetEntry(final int startPosInclusive, final int endPosExclusive,
+        final OffsetGroup startOffset,
+        final OffsetGroup endOffsetInclusive, final boolean isEDTSkipRegion) {
+      this.startInclusivePos = startPosInclusive;
+      this.endExclusivePos = endPosExclusive;
+      this.startOffsetInclusive = startOffset;
+      this.endOffsetInclusive = endOffsetInclusive;
       this.isEDTSkipRegion = isEDTSkipRegion;
+      checkArgument(endExclusivePos > startInclusivePos);
+      checkArgument(endOffsetInclusive.charOffset().asInt()
+          >= startOffsetInclusive.charOffset().asInt());
+      // an entry either covers a span where char and EDT offsets increase in tandem or
+      // it is a region where EDT offsets do not increase at all
+      checkArgument(charLength() == edtLength() || isEDTSkipRegion);
+      // the number of positions should always equal the number of character offsets
+      // -1 because end is exclusive
+      checkArgument(charLength() == posLength(),
+          "Character length %s does not equal number of positions %s for %s",
+          charLength(), posLength(), this);
     }
 
-    public int startPos() {
-      return startPos;
+    public int startPosInclusive() {
+      return startInclusivePos;
     }
 
-    public int endPos() {
-      return endPos;
+    public int endPosExclusive() {
+      return endExclusivePos;
     }
 
     public OffsetGroup startOffset() {
-      return startOffset;
+      return startOffsetInclusive;
     }
 
     public OffsetGroup endOffset() {
-      return endOffset;
+      return endOffsetInclusive;
     }
 
     public boolean isEDTSkipRegion() {
       return isEDTSkipRegion;
     }
 
+    public final int posLength() {
+      return endExclusivePos - startInclusivePos;
+    }
+
+    public final int charLength() {
+      // +1 because offsets are inclusive
+      return endOffset().charOffset().asInt() - startOffset().charOffset().asInt() + 1;
+    }
+
+    public final int edtLength() {
+      // +1 because offsets are inclusive
+      return endOffset().edtOffset().asInt() - startOffset().edtOffset().asInt() + 1;
+    }
+
     @Override
     public String toString() {
-      return "start: " + startPos +
-          "\nend: " + endPos +
-          "\nstartOffset: " + startOffset +
-          "\nendOffset: " + endOffset +
-          "\nEDTSkip: " + isEDTSkipRegion;
+      return "OffsetEntry{pos: [" + startInclusivePos + ", " + endExclusivePos + "]; "
+          + OffsetGroupRange.from(startOffsetInclusive, endOffsetInclusive)
+          + (isEDTSkipRegion ? "; skipEDT" : "")
+          + "}";
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(startPos, endPos, startOffset, endOffset, isEDTSkipRegion);
+      return Objects
+          .hashCode(startInclusivePos, endExclusivePos, startOffsetInclusive, endOffsetInclusive,
+              isEDTSkipRegion);
     }
 
     @Override
@@ -457,13 +492,15 @@ public final class LocatedString {
         return false;
       }
       final OffsetEntry other = (OffsetEntry) obj;
-      return Objects.equal(this.startPos, other.startPos) && Objects
-          .equal(this.endPos, other.endPos) && Objects.equal(this.startOffset, other.startOffset)
-          && Objects.equal(this.endOffset, other.endOffset) && Objects
+      return Objects.equal(this.startInclusivePos, other.startInclusivePos) && Objects
+          .equal(this.endExclusivePos, other.endExclusivePos) && Objects
+          .equal(this.startOffsetInclusive, other.startOffsetInclusive)
+          && Objects.equal(this.endOffsetInclusive, other.endOffsetInclusive) && Objects
           .equal(this.isEDTSkipRegion, other.isEDTSkipRegion);
     }
   }
 
+  @Deprecated
   private static List<OffsetEntry> calculateOffsets(final String text,
       final OffsetGroup initialOffsets, final boolean EDTOffsetsAreCharOffsets) {
     checkNotNull(text);
@@ -534,7 +571,8 @@ public final class LocatedString {
   private static OffsetGroupRange boundsFromOffsets(final List<OffsetEntry> offsets) {
     checkArgument(!offsets.isEmpty());
     return OffsetGroupRange
-        .from(offsets.get(0).startOffset, offsets.get(offsets.size() - 1).endOffset);
+        .from(offsets.get(0).startOffsetInclusive,
+            offsets.get(offsets.size() - 1).endOffsetInclusive);
   }
 
   private static final char ONE_BYTE = 0x007f;
@@ -556,64 +594,59 @@ public final class LocatedString {
   /**
    * Returns offsets corresponding to substring, in order.
    */
-  private List<OffsetEntry> offsetsOfSubstring(final int startIndexInclusive,
-      final int endIndexExclusive) {
-    checkArgument(startIndexInclusive < endIndexExclusive,
-        String.format("Start Index %d not less than end index %s", startIndexInclusive,
-            endIndexExclusive));
+  private List<OffsetEntry> offsetsOfSubstring(final int substringStartIndexInclusive,
+      final int substringEndIndexExclusive) {
+    checkArgument(substringStartIndexInclusive >= 0);
+    checkArgument(substringEndIndexExclusive <= length());
+    checkArgument(substringStartIndexInclusive < substringEndIndexExclusive,
+        "Start Index %s not less than end index %s", substringStartIndexInclusive,
+        substringEndIndexExclusive);
 
     final ImmutableList.Builder<OffsetEntry> ret = ImmutableList.builder();
 
-    for (int entryNum = lastEntryStartingBefore(startIndexInclusive); entryNum < offsets.size(); ++entryNum) {
-      final OffsetEntry entry = offsets.get(entryNum);
-      checkArgument(entry.startPos <= endIndexExclusive);
+    // recall that a LocatedString tracks offsets using a sequence of "offset entries".  Each of
+    // these entries is either a region where the EDT and char offsets have the same length
+    // (indicating nothing is skipped for EDT in this region) or it is an "EDT skip region" where
+    // char offsets continue to grow but EDT offsets do not
+    //     To make a new substring, we need to compute its offset entries.
+    for (int entryNum = lastEntryStartingBefore(substringStartIndexInclusive);
+         entryNum < regions.size(); ++entryNum) {
+      final OffsetEntry entry = regions.get(entryNum);
+      // sanity check
+      checkState(entry.startInclusivePos < substringEndIndexExclusive);
 
-      int newStartPos = entry.startPos;
-      int newEndPos = entry.endPos;
-      OffsetGroup newStartOffset = entry.startOffset;
-      OffsetGroup newEndOffset = entry.endOffset;
+      // this will be negative if the requested substring starts in the middle of the entry
+      // positive indicates the entry starts after the requested substring start
+      final int entryStartRelativeToSubstringStart =
+          entry.startInclusivePos - substringStartIndexInclusive;
 
-      final int charLength =
-          entry.endOffset.charOffset().asInt() - entry.startOffset.charOffset().asInt();
-      final int edtLength =
-          entry.endOffset.edtOffset().asInt() - entry.startOffset.edtOffset().asInt();
+      // if the entry starts before the substring, the earlier part of the entry will get cut off,
+      // hence the max(0, ...)
+      final int newStartPosInclusive = Math.max(0, entryStartRelativeToSubstringStart);
+      final int newEndPosExclusive = Math.min(
+          substringEndIndexExclusive - substringStartIndexInclusive,
+          entry.endExclusivePos - substringStartIndexInclusive);
 
-			/* DK: Recalculation of EDT offset assumes that within this OffsetEntry, there is no longer any difference
-			 * between edt chars and actual chars.  The checkArgument call makes this assumption explicit, allowing the
-			 * calculation of a new, correct edt offset.
-			 *
-			 * A special case is when the EDT offset length of this entry is 0, for example, if this entry is a URL in angle brackets.
-			 * In this case, the edt offsets remain the same.
-			 */
+      // if anything was chopped off the entry beginning we need to alter the starting bounds
+      final int numPositionsRemovedFromEntryBeginning =
+          Math.max(0, -entryStartRelativeToSubstringStart);
+      OffsetGroup newStartOffsetInclusive =
+          shiftOffsetGroup(entry.startOffset(), numPositionsRemovedFromEntryBeginning,
+              entry.isEDTSkipRegion());
 
-      if (entry.startPos < startIndexInclusive) {
-        newStartPos = startIndexInclusive;
+      // if anything was chopped off the end we need to alter the ending bounds
+      final int numPositionsRemovedFromEntryEnd =
+          Math.max(0, entry.endExclusivePos - substringEndIndexExclusive);
+      OffsetGroup newEndOffsetInclusive =
+          shiftOffsetGroup(entry.endOffset(), -numPositionsRemovedFromEntryEnd,
+              entry.isEDTSkipRegion());
 
-        checkArgument(charLength == edtLength || edtLength == 0);
-        int newEDTOffsetValue = entry.startOffset.edtOffset().asInt();
-        if (edtLength != 0) {
-          newEDTOffsetValue += (startIndexInclusive - entry.startPos);
-        }
-        newStartOffset =
-            OffsetGroup.from(CharOffset.asCharOffset(startIndexInclusive), EDTOffset.asEDTOffset(newEDTOffsetValue));
-      }
-      if (entry.endPos > endIndexExclusive) {
-        newEndPos = endIndexExclusive;
+      ret.add(new OffsetEntry(newStartPosInclusive, newEndPosExclusive, newStartOffsetInclusive,
+          newEndOffsetInclusive, entry.isEDTSkipRegion));
 
-        checkArgument(charLength == edtLength || edtLength == 0);
-        int newEDTOffsetValue = entry.endOffset.edtOffset().asInt();
-        if (edtLength != 0) {
-          newEDTOffsetValue -= (entry.endPos - endIndexExclusive);
-        }
-        newEndOffset = OffsetGroup
-            .from(CharOffset.asCharOffset(endIndexExclusive - 1), EDTOffset.asEDTOffset(newEDTOffsetValue));
-      }
-      newStartPos -= startIndexInclusive;
-      newEndPos -= startIndexInclusive;
-      ret.add(new OffsetEntry(newStartPos, newEndPos, newStartOffset, newEndOffset,
-          entry.isEDTSkipRegion));
-
-      if (newEndPos >= (endIndexExclusive - startIndexInclusive)) {
+      final int requestedSubstringLength =
+          substringEndIndexExclusive - substringStartIndexInclusive;
+      if (newEndPosExclusive >= requestedSubstringLength) {
         break;
       }
     }
@@ -621,9 +654,32 @@ public final class LocatedString {
     return ret.build();
   }
 
+  // shifts an OffsetEntry boundary the specified amount, taking into account whether or not
+  // it is an EDT skip entry. Used by offsetsOfSubstring
+  private static OffsetGroup shiftOffsetGroup(OffsetGroup entryBoundary, int shift,
+      boolean isEDTSkipRegion) {
+    if (shift == 0) {
+      // save a little memory by reusing the immutable OffsetGroup object
+      // if we aren't actually going to change it
+      return entryBoundary;
+    }
+
+    final CharOffset newCharOffsetValue = CharOffset.asCharOffset(
+        entryBoundary.charOffset().asInt() + shift);
+    final EDTOffset newEDTOffsetValue;
+    if (!isEDTSkipRegion) {
+      newEDTOffsetValue = EDTOffset.asEDTOffset(entryBoundary.edtOffset().asInt() + shift);
+    } else {
+      // if it was an EDT skip entry, the EDT counts were not being incremented within
+      // this entry anyway, so they don't need adjusting
+      newEDTOffsetValue = EDTOffset.asEDTOffset(entryBoundary.edtOffset().asInt());
+    }
+    return OffsetGroup.from(newCharOffsetValue, newEDTOffsetValue);
+  }
+
   private int lastEntryStartingBefore(final int pos) {
     int i = 1;
-    while (i < offsets.size() && offsets.get(i).startPos <= pos) {
+    while (i < regions.size() && regions.get(i).startInclusivePos <= pos) {
       ++i;
     }
     return i - 1;
