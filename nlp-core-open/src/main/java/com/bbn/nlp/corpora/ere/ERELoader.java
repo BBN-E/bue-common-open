@@ -44,6 +44,10 @@ public final class ERELoader {
    *
    * This returns an ERELoader preserving the old behavior, which would mangle the ERE ids by
    * prefixing them with the docID. New behavior does not do this by default.
+   *
+   * The old behavior is preserved here because this class is used to produce sexp output for
+   * CASerif, and rather than trying to fix CASerif or track every reference, it's easier just to
+   * leave this default. It should be removed in the future.
    */
   @Deprecated
   public static ERELoader create() {
