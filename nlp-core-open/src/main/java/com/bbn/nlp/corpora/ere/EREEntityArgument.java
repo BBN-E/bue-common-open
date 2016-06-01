@@ -73,14 +73,15 @@ public final class EREEntityArgument implements EREArgument {
       return false;
     }
     final EREEntityArgument that = (EREEntityArgument) o;
-    return realis == that.realis &&
-        Objects.equals(role, that.role) &&
-        Objects.equals(entityMention, that.entityMention);
+    return Objects.equals(role, that.role) &&
+        realis == that.realis &&
+        Objects.equals(entityMention, that.entityMention) &&
+        Objects.equals(ereEntity, that.ereEntity);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(role, realis, entityMention);
+    return Objects.hash(role, realis, entityMention, ereEntity);
   }
 
   @Override
