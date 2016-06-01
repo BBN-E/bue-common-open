@@ -32,19 +32,35 @@ public final class ERELoader {
 
   private static Logger log = LoggerFactory.getLogger(ERELoader.class);
 
-  private ERELoader() {
-  }
+  // do we prepend the docid to the derived ids
+  private final boolean derivedIDsHaveDocID;
 
-  public static ERELoader create() {
-    return new ERELoader();
+  private ERELoader(final boolean derivedIDsHaveDocID) {
+    this.derivedIDsHaveDocID = derivedIDsHaveDocID;
   }
 
   /**
-   * @deprecated Prefer {@link #create()}.
+   * @deprecated Prefer {@link #builder()}
+   *
+   * This returns an ERELoader preserving the old behavior, which would mangle the ERE ids by
+   * prefixing them with the docID. New behavior does not do this by default.
+   *
+   * The old behavior is preserved here because this class is used to produce sexp output for
+   * CASerif, and rather than trying to fix CASerif or track every reference, it's easier just to
+   * leave this default. It should be removed in the future.
+   */
+  @Deprecated
+  public static ERELoader create() {
+    return new ERELoader(true);
+  }
+
+
+  /**
+   * @deprecated Prefer {@link #builder()}.
    */
   @Deprecated
   public static ERELoader from(final Parameters params) {
-    return new ERELoader();
+    return create();
   }
 
   public EREDocument loadFrom(final File f) throws IOException {
@@ -85,17 +101,49 @@ public final class ERELoader {
       final String docId = XMLUtils.requiredAttribute(root, "doc_id");
       final String sourceType = XMLUtils.requiredAttribute(root, "source_type");
 
-      return (new ERELoading()).toDocument(root, docId, sourceType);
+      return (new ERELoading(derivedIDsHaveDocID)).toDocument(root, docId, sourceType);
     } else {
       throw new EREException("Rich ERE should have a root of deft_ere");
     }
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+
+    boolean includeDocIDInIDs = false;
+
+    private Builder() {
+
+    }
+
+    /**
+     * Do we want to prefix every ERE id with the docid? Generally no, but doing this does allow
+     * global uniqueness, which is not guaranteed in ERE.
+     */
+    public Builder prefixDocIDToAllIDs(boolean includeDocIDInIDs) {
+      this.includeDocIDInIDs = includeDocIDInIDs;
+      return this;
+    }
+
+    public ERELoader build() {
+      return new ERELoader(includeDocIDInIDs);
+    }
+  }
 }
 
 final class ERELoading {
+
   private final Map<String, Object> idMap = Maps.newHashMap();
   private final Map<String, String> mentionToCorefId = Maps.newHashMap();
+  private final boolean derivedIDsHaveDocID;
+
+  public ERELoading(
+      final boolean derivedIDsHaveDocID) {
+    this.derivedIDsHaveDocID = derivedIDsHaveDocID;
+  }
 
   EREDocument toDocument(final Element xml, final String docid, final String sourceType) {
     final EREDocument.Builder builder = EREDocument.builder(docid, sourceType);
@@ -106,33 +154,33 @@ final class ERELoading {
 
         if (e.getTagName().equals("entities")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("entity")) {
-                builder.withEntity(toEntity((Element)n, docid));
+                builder.withEntity(toEntity((Element) n, docid));
               }
             }
           }
         } else if (e.getTagName().equals("fillers")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("filler")) {
-                builder.withFiller(toFiller((Element)n, docid));
+                builder.withFiller(toFiller((Element) n, docid));
               }
             }
           }
         } else if (e.getTagName().equals("relations")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("relation")) {
-                builder.withRelation(toRelation((Element)n, docid));
+                builder.withRelation(toRelation((Element) n, docid));
               }
             }
           }
         } else if (e.getTagName().equals("hoppers")) {
           for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-            if(n instanceof Element) {
+            if (n instanceof Element) {
               if (((Element) n).getTagName().equals("hopper")) {
-                builder.withEvent(toEvent((Element)n, docid));
+                builder.withEvent(toEvent((Element) n, docid));
               }
             }
           }
@@ -148,10 +196,11 @@ final class ERELoading {
   }
 
   private EREEntity toEntity(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");    // ERE ids are not globally unique, so prefix with docid
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
 
     final String type = XMLUtils.requiredAttribute(xml, "type");
-    final String specificity = XMLUtils.requiredAttribute(xml, "specificity");  // specific -> SPC , nonspecific -> GEN
+    final String specificity =
+        XMLUtils.requiredAttribute(xml, "specificity");  // specific -> SPC , nonspecific -> GEN
 
     final EREEntity.Builder builder = EREEntity.builder(id, type, specificity);
 
@@ -171,11 +220,11 @@ final class ERELoading {
   }
 
   private EREEntityMention toEntityMention(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String type = XMLUtils.requiredAttribute(xml, "noun_type");
 
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
-    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length")-1;
+    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length") - 1;
 
     final ERESpan extent = toSpan(xml, "mention_text", extentStart, extentEnd).get();
     final Optional<ERESpan> head = toSpan(xml, "nom_head");
@@ -187,10 +236,10 @@ final class ERELoading {
 
   // ==== Fillers and transforming them to APF entity/value/time ====
   private EREFiller toFiller(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final int extentStart = XMLUtils.requiredIntegerAttribute(xml, "offset");
-    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length")-1;
+    final int extentEnd = extentStart + XMLUtils.requiredIntegerAttribute(xml, "length") - 1;
     final String text = xml.getTextContent();
 
     final ERESpan span = ERESpan.from(extentStart, extentEnd, text);
@@ -204,14 +253,15 @@ final class ERELoading {
     Optional<Element> element = XMLUtils.directChild(xml, name);
     if (element.isPresent()) {
       final int start = XMLUtils.requiredIntegerAttribute(element.get(), "offset");
-      final int end = start + XMLUtils.requiredIntegerAttribute(element.get(), "length")-1;
+      final int end = start + XMLUtils.requiredIntegerAttribute(element.get(), "length") - 1;
       final String content = element.get().getTextContent();
       return Optional.of(ERESpan.from(start, end, content));
     }
     return Optional.absent();
   }
 
-  private static Optional<ERESpan> toSpan(final Element xml, final String name, final int start, final int end) {
+  private static Optional<ERESpan> toSpan(final Element xml, final String name, final int start,
+      final int end) {
     Optional<Element> element = XMLUtils.directChild(xml, name);
     if (element.isPresent()) {
       final String content = element.get().getTextContent();
@@ -223,7 +273,7 @@ final class ERELoading {
 
   // ==== START Relation ====
   private ERERelation toRelation(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String subtype = XMLUtils.requiredAttribute(xml, "subtype");
 
@@ -245,7 +295,7 @@ final class ERELoading {
   }
 
   private ERERelationMention toRelationMention(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
     final String realis = XMLUtils.requiredAttribute(xml, "realis");
 
     final Optional<ERESpan> trigger = toSpan(xml, "trigger");
@@ -254,7 +304,8 @@ final class ERELoading {
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
-        if (((Element) child).getTagName().equals("rel_arg1") || ((Element) child).getTagName().equals("rel_arg2")) {
+        if (((Element) child).getTagName().equals("rel_arg1") || ((Element) child).getTagName()
+            .equals("rel_arg2")) {
           final Element e = (Element) child;
           builder.withArgument(e.getTagName(), getArgument(docid, e));
         }
@@ -270,14 +321,15 @@ final class ERELoading {
     final EREArgument arg;
 
     final String role = XMLUtils.requiredAttribute(e, "role");
+    final Optional<String> entityID = XMLUtils.optionalStringAttribute(e, "entity_id");
     final Optional<String>
         entityMentionId = XMLUtils.optionalStringAttribute(e, "entity_mention_id");
     final Optional<String> fillerId = XMLUtils.optionalStringAttribute(e, "filler_id");
     // null if relation_mention argument, populated in event_mention arguments
     final LinkRealis realis;
     final Optional<Boolean> linkRealis = XMLUtils.optionalBooleanAttribute(e, "realis");
-    if(linkRealis.isPresent()) {
-      if(linkRealis.get()) {
+    if (linkRealis.isPresent()) {
+      if (linkRealis.get()) {
         realis = LinkRealis.REALIS;
       } else {
         realis = LinkRealis.IRREALIS;
@@ -286,32 +338,34 @@ final class ERELoading {
       realis = null;
     }
 
-    String mentionId = docid + "-";
-    if(entityMentionId.isPresent()) {
-      mentionId += entityMentionId.get();
-    } else if(fillerId.isPresent()) {
-      mentionId += fillerId.get();
+    String mentionId;
+    if (entityMentionId.isPresent()) {
+      mentionId = generateID(entityMentionId.get(), docid);
+    } else if (fillerId.isPresent()) {
+      mentionId = generateID(fillerId.get(), docid);
     } else {
       throw EREException
           .forElement("Element must have either entity_mention_id or filler_id attribute", e);
     }
 
     Object obj = fetch(mentionId);
-    if(obj instanceof EREEntityMention) {
+    if (obj instanceof EREEntityMention) {
       final EREEntityMention m = (EREEntityMention) obj;
-      arg = EREEntityArgument.from(role, realis, m);
-    } else if(obj instanceof EREFiller) {
+      final EREEntity ereEntity =
+          entityID.isPresent() ? (EREEntity) fetch(generateID(entityID.get(), docid)) : null;
+      arg = EREEntityArgument.from(role, realis, m, ereEntity);
+    } else if (obj instanceof EREFiller) {
       final EREFiller m = (EREFiller) obj;
       arg = EREFillerArgument.from(role, realis, m);
     } else {
       throw EREException.forElement("Expected either an EREEntityMention or an EREFiller "
-                                    + "but got " + obj.getClass(), e);
+          + "but got " + obj.getClass(), e);
     }
     return arg;
   }
 
   private EREEvent toEvent(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
 
     final EREEvent.Builder builder = EREEvent.builder(id);
 
@@ -331,7 +385,7 @@ final class ERELoading {
   }
 
   private EREEventMention toEventMention(final Element xml, final String docid) {
-    final String id = docid + "-" + XMLUtils.requiredAttribute(xml, "id");
+    final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
 
     final String type = XMLUtils.requiredAttribute(xml, "type");
     final String subtype = XMLUtils.requiredAttribute(xml, "subtype");
@@ -339,7 +393,8 @@ final class ERELoading {
 
     final ERESpan trigger = toSpan(xml, "trigger").get();
 
-    final EREEventMention.Builder builder = EREEventMention.builder(id, type, subtype, realis, trigger);
+    final EREEventMention.Builder builder =
+        EREEventMention.builder(id, type, subtype, realis, trigger);
 
     for (Node child = xml.getFirstChild(); child != null; child = child.getNextSibling()) {
       if (child instanceof Element) {
@@ -353,6 +408,14 @@ final class ERELoading {
     final EREEventMention eventMention = builder.build();
     idMap.put(id, eventMention);
     return eventMention;
+  }
+
+  private String generateID(final String id, final String docID) {
+    if (derivedIDsHaveDocID) {
+      return docID + "-" + id;
+    } else {
+      return id;
+    }
   }
 
 
