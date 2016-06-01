@@ -435,14 +435,6 @@ public final class LocatedString {
       checkArgument(endExclusivePos > startInclusivePos);
       checkArgument(endOffsetInclusive.charOffset().asInt()
           >= startOffsetInclusive.charOffset().asInt());
-      // an entry either covers a span where char and EDT offsets increase in tandem or
-      // it is a region where EDT offsets do not increase at all
-      checkArgument(charLength() == edtLength() || isEDTSkipRegion());
-      // the number of positions should always equal the number of character offsets
-      // -1 because end is exclusive
-      checkArgument(charLength() == posLength(),
-          "Character length %s does not equal number of positions %s for %s",
-          charLength(), posLength(), this);
     }
 
     public int startPosInclusive() {
