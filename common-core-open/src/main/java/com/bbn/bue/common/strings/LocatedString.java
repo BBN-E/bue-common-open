@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.getLast;
 
 /**
  * * Class for storing and manipulating strings that have been read in from a file, without losing
@@ -53,6 +54,52 @@ import static com.google.common.base.Preconditions.checkState;
  * @author rgabbard
  */
 public final class LocatedString {
+
+  /**
+   * The string represented by this LocatedString. This may or may not match the original text it
+   * came from.
+   */
+  private final String content;
+  /**
+   * The offsets in the source that this LocatedString corresponds to.
+   */
+  private final OffsetGroupRange bounds;
+  /**
+   * OffsetEntrys track the relationship between offsets and indices in the LocatedString. What this
+   * relationship is, exactly, can vary between different parts of a string. Examples: (a) inside an
+   * XML tag, LocatedString indices and character offsets will be incremented, but EDT offsets will
+   * not. (b) When text is inserted, many LocatedString offsets will correspond to the same
+   * character offset.
+   */
+  private final ImmutableList<OffsetEntry> regions;
+  private boolean hashCodeInitialized = false;
+  /**
+   * We cache the hash code for performance reasons.
+   */
+  private int hashCode = Integer.MIN_VALUE;
+
+  private LocatedString(final String content, final List<OffsetEntry> regions,
+      final OffsetGroupRange bounds) {
+    this.content = checkNotNull(content);
+    this.bounds = checkNotNull(bounds);
+    this.regions = ImmutableList.copyOf(regions);
+    checkValidity();
+  }
+
+  private void checkValidity() {
+    checkArgument(!regions.isEmpty(), "LocatedString for %s with bounds %s lacks regions",
+        content, bounds);
+    final int boundsStartCharOffset = bounds.startInclusive().charOffset().asInt();
+    final int regionsStartCharOffset = regions.get(0).startOffsetInclusive.charOffset().asInt();
+    checkArgument(boundsStartCharOffset <= regionsStartCharOffset,
+        "Bounds and regions have inconsistent start char offset",
+        boundsStartCharOffset, regionsStartCharOffset);
+    final int boundsEndCharOffset = bounds.endInclusive().charOffset().asInt();
+    final int regionsEndCharOffset = getLast(regions).endOffsetInclusive.charOffset().asInt();
+    checkArgument(boundsEndCharOffset <= regionsEndCharOffset,
+        "Bounds and regions have inconsistent end char offset",
+        boundsEndCharOffset, regionsStartCharOffset);
+  }
 
   public String text() {
     return content;
@@ -351,25 +398,9 @@ public final class LocatedString {
   }
 
   /**
-   * ***************************************************************************** Private
-   * implementation
+   * *****************************************************************************
+   * Private implementation
    */
-
-  private final String content;
-  private final OffsetGroupRange bounds;
-  private final ImmutableList<OffsetEntry> regions;
-  private boolean hashCodeInitialized = false;
-  private int hashCode = Integer.MIN_VALUE;
-
-  private LocatedString(final String content, final List<OffsetEntry> regions,
-      final OffsetGroupRange bounds) {
-    // we need at least one offset entry for potential future substring calculation
-    checkArgument(!regions.isEmpty());
-
-    this.content = checkNotNull(content);
-    this.bounds = checkNotNull(bounds);
-    this.regions = ImmutableList.copyOf(regions);
-  }
 
   @Override
   public int hashCode() {
