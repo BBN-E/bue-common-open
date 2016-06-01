@@ -110,7 +110,8 @@ public final class LocatedString {
   }
 
   /**
-   * ****************************************************************** Offset accessors
+   * ******************************************************************
+   * Offset accessors
    * *******************************************************************
    */
   public EDTOffset startEDTOffset() {
@@ -239,22 +240,6 @@ public final class LocatedString {
   public LocatedString substring(final OffsetRange<CharOffset> characterOffsetsInclusive) {
     return substring(characterOffsetsInclusive.startInclusive(), characterOffsetsInclusive.endInclusive());
   }
-
-	/*public LocatedString substringConvertP(OffsetGroup start, OffsetGroup end) {
-                final int startOffset = start.charOffset().value() - bounds.start.charOffset().value();
-		final int endOffset = end.charOffset().value() - bounds.start.charOffset().value() + 1;
-
-		return substringConvertP(startOffset, endOffset);
-	}
-
-	public LocatedString substringConvertP(int startIndexInclusive, int endIndexExclusive) {
-		final String text = content.substring(startIndexInclusive, endIndexExclusive);
-		final String text2 = text.replace("</P>", "");
-		final List<OffsetEntry> offsets = offsetsOfSubstring(startIndexInclusive, endIndexExclusive);
-		final OffsetRange bounds = boundsFromOffsets(offsets);
-		System.out.println(new LocatedString(text2, offsets, bounds));
-		return new LocatedString(text2, offsets, bounds);
-	}*/
 
   /**
    * Return a LocatedString substring of this string.
