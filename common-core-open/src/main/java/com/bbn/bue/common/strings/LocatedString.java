@@ -39,17 +39,14 @@ import static com.google.common.base.Preconditions.checkState;
  *
  * - CharOffset.  More accurately, this is a unicode code point offset.
  *
- * - ByteOffset.  Currently, we assume that the source string was UTF-8, and calculate byte offsets
- * by checking how many bytes it would take to encode each character.  In the future, if we did our
- * own unicode encoding, we could directly read byte offsets for other encodings.
+ * - ByteOffset.
  *
- * - EDTOffset.  EDT offsets are similra to character offsets, except that (i) any substrings
+ * - EDTOffset.  EDT offsets are similar to character offsets, except that (i) any substrings
  * starting with "<" and extending to the matching ">" are skipped when counting offsets; and (ii)
  * the character "\r" is skipped when counting offsets. Note that condition (i) is *not* always
  * identical to skipping XML/SGML tags and comments.
  *
- * - ASRTime.  The start and end time of the speech signal that corresponds to a character.  ASRTime
- * must be set after a LocatedString is constructed, using setAsrStartTime() and setAsrEndTime().
+ * - ASRTime.  The start and end time of the speech signal that corresponds to a character.
  *
  * @author originally by David A. Herman, refactored by Edward Loper; translated to Java by Ryan
  *         Gabbard
