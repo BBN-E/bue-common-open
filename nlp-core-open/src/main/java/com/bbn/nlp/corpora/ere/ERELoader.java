@@ -41,6 +41,9 @@ public final class ERELoader {
 
   /**
    * @deprecated Prefer {@link #builder()}
+   *
+   * This returns an ERELoader preserving the old behavior, which would mangle the ERE ids by
+   * prefixing them with the docID. New behavior does not do this by default.
    */
   @Deprecated
   public static ERELoader create() {
