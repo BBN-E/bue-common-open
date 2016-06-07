@@ -85,6 +85,12 @@
             <version>1.7.5</version>
         </dependency>
 
+          <dependency>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-lang3</artifactId>
+              <version>3.3.1</version>
+          </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -337,6 +343,6 @@
       </profile>-->
 
 
-  </profiles> 
+  </profiles>
 
 </project>

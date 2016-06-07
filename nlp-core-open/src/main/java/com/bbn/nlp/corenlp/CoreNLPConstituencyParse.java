@@ -19,10 +19,13 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.Collection;
 import java.util.Stack;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Iterables.getFirst;
 
 @Beta
 public final class CoreNLPConstituencyParse {
@@ -131,11 +134,12 @@ public final class CoreNLPConstituencyParse {
       final CoreNLPParseNode.CoreNLPParseNodeBuilder builder =
           CoreNLPParseNode.buildForTerminal();
       builder.withTag(extractTag(r, parse, stripFunctionTags));
-      final String text = rangeToText(parse).apply(r);
+      // it looks like Stanford double escapes XML in their parse output.
+      final String text = StringEscapeUtils.unescapeXml(rangeToText(parse).apply(r));
       builder.withText(Optional.fromNullable(text));
       // find token, we know the first token is the one that matches since our ranges are ordered,
       // and the keys and the associated values of the FluentIterable produced map have their order preserved.
-      final CoreNLPToken matching = Iterables.getFirst(textToToken.get(text), null);
+      final CoreNLPToken matching = checkNotNull(getFirst(textToToken.get(text), null));
       textToToken.remove(text, matching);
       builder.withToken(Optional.fromNullable(matching));
       ret.put(r, builder.build());
