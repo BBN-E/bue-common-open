@@ -24,3 +24,4 @@ public final class CharOffset extends AbstractOffset<CharOffset> {
     return CharOffset.asCharOffset(asInt() + shiftAmount);
   }
 }
+
