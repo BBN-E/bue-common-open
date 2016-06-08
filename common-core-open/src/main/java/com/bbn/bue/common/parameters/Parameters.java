@@ -449,7 +449,11 @@ public final class Parameters {
   }
 
   public Class<?> getClassObjectForString(final String className) throws ClassNotFoundException {
-    return Class.forName(className);
+    if (!className.contains(" ")) {
+      return Class.forName(className);
+    } else {
+      throw new ParameterException("Class names cannot contain spaces: " + className);
+    }
   }
 
   public Class<?> getClassObject(final String param) {
