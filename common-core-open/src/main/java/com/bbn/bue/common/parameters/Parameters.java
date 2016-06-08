@@ -461,7 +461,7 @@ public final class Parameters {
     try {
       return getClassObjectForString(className);
     } catch (final ClassNotFoundException e) {
-      throw new ParameterConversionException(fullString(param), className, e, "class");
+      throw new ParameterConversionException(fullString(param), className, e, "existing class");
     }
   }
 
