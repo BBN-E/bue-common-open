@@ -13,7 +13,7 @@ public abstract class PatternMixin {
   @JsonCreator
   public static Pattern compile(@JsonProperty("regexString") String regexString,
       @JsonProperty("flags") int flags) {
-    return null;
+    throw new UnsupportedOperationException("Mixin methods are never called!");
   }
 
   @JsonProperty("regexString")
