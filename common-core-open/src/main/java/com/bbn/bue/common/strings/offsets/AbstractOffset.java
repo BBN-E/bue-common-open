@@ -54,3 +54,4 @@ public abstract class AbstractOffset<SelfType extends Offset<SelfType>>
     return Ints.compare(asInt(), o.asInt());
   }
 }
+
