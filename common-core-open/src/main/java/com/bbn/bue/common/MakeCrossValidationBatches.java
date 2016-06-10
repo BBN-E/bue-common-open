@@ -1,6 +1,7 @@
 package com.bbn.bue.common;
 
 import com.bbn.bue.common.collections.CollectionUtils;
+import com.bbn.bue.common.collections.ListUtils;
 import com.bbn.bue.common.files.FileUtils;
 import com.bbn.bue.common.parameters.Parameters;
 import com.bbn.bue.common.symbols.Symbol;
@@ -149,7 +150,8 @@ public final class MakeCrossValidationBatches {
 
     // Get the list of docids and shuffle them. In the case of using a file list, these are just
     // paths, not document ids, but they serve the same purpose.
-    final ImmutableList<Symbol> docIds = shuffledDocIds(randomSeed, docIdMap);
+    final ImmutableList<Symbol> docIds =
+        ListUtils.shuffledCopy(docIdMap.keySet().asList(), new Random(randomSeed));
     if (numBatches > docIds.size()) {
       errorExit("Bad numBatches value: Cannot create more batches than there are input files");
     }
@@ -256,12 +258,12 @@ public final class MakeCrossValidationBatches {
     return ret.build();
   }
 
-  private enum FileToSymbolFunction implements Function<File, Symbol> {
+  enum FileToSymbolFunction implements Function<File, Symbol> {
     INSTANCE;
 
     @Override
     public Symbol apply(final File input) {
-      return Symbol.from(input.getAbsolutePath());
+      return Symbol.from(input.getPath());
     }
   }
 }

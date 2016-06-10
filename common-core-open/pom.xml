@@ -35,6 +35,10 @@
                   <id>MakeCrossValidationBatches</id>
               </program>
               <program>
+                  <mainClass>com.bbn.bue.common.PartitionData</mainClass>
+                  <id>PartitionData</id>
+              </program>
+              <program>
                   <mainClass>com.bbn.bue.common.files.MergeFileLists</mainClass>
                   <id>MergeFileLists</id>
               </program>
