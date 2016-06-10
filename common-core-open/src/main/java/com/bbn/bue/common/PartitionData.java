@@ -32,7 +32,7 @@ import static com.google.common.base.Preconditions.checkState;
  * Divides a data set into almost equally-sized partitions after optionally holding out a portion
  * of the data. For example, this could be used to divide into three equal partitions (33.3% of the
  * data each), to hold out 10% of the data and then split into three partitions (10% held out,
- * 30% in each partition), or do a simple train/test split (by specifying zero partitions).
+ * 30% in each partition), or do a simple train/test split (by specifying one partition).
  *
  * This uses the following parameters in the com.bbn.bue.common.partitionData namespace:
  *
