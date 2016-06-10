@@ -32,12 +32,12 @@ public final class ListUtils {
    * Returns a shuffled copy of the provided list.
    *
    * @param list the list to shuffle
-   * @param seed the random seed to use when shuffling
+   * @param rng random number generator to use
    * @return a shuffled copy of the list
    */
-  public static <E> ImmutableList<E> shuffledCopy(List<? extends E> list, int seed) {
+  public static <E> ImmutableList<E> shuffledCopy(List<? extends E> list, Random rng) {
     final ArrayList<E> shuffled = Lists.newArrayList(list);
-    Collections.shuffle(shuffled, new Random(seed));
+    Collections.shuffle(shuffled, rng);
     return ImmutableList.copyOf(shuffled);
   }
 

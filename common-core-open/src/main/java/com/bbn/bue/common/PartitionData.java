@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.math.RoundingMode;
+import java.util.Random;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -168,7 +169,7 @@ public final class PartitionData {
     log.info("Dividing {} documents into {} partitions", nRemaining, nPartitions);
 
     // Shuffle and replace the original to avoid incorrect references.
-    documents = ListUtils.shuffledCopy(documents, randomSeed);
+    documents = ListUtils.shuffledCopy(documents, new Random(randomSeed));
 
     // Hold out beginning of list
     final ImmutableSet<Symbol> heldOut = ImmutableSet.copyOf(documents.subList(0, nHeldOut));

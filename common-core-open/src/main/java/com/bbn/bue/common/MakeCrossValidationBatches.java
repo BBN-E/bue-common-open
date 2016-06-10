@@ -151,7 +151,7 @@ public final class MakeCrossValidationBatches {
     // Get the list of docids and shuffle them. In the case of using a file list, these are just
     // paths, not document ids, but they serve the same purpose.
     final ImmutableList<Symbol> docIds =
-        ListUtils.shuffledCopy(docIdMap.keySet().asList(), randomSeed);
+        ListUtils.shuffledCopy(docIdMap.keySet().asList(), new Random(randomSeed));
     if (numBatches > docIds.size()) {
       errorExit("Bad numBatches value: Cannot create more batches than there are input files");
     }
