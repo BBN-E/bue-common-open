@@ -30,8 +30,8 @@ import static com.google.common.base.Preconditions.checkState;
 /**
  * Divides a data set into almost equally-sized partitions after optionally holding out a portion
  * of the data. For example, this could be used to divide into three equal partitions (33.3% of the
- * data each), or to hold out 10% of the data, then split into three partitions (10% held out,
- * 30% in each partition).
+ * data each), to hold out 10% of the data and then split into three partitions (10% held out,
+ * 30% in each partition), or do a simple train/test split (by specifying zero partitions).
  *
  * This uses the following parameters in the com.bbn.bue.common.partitionData namespace:
  *
@@ -44,7 +44,8 @@ import static com.google.common.base.Preconditions.checkState;
  * zero.
  *
  * numPartitions: The number of partitions to create. Partitions are created after any held out
- * data is removed.
+ * data is removed. This can be one to allow for a simple train/test split that is defined using
+ * holdOutProportion.
  * randomSeed: The random seed to use when shuffling the data before data is held out and
  * partitioned.
  *
@@ -139,7 +140,7 @@ public final class PartitionData {
     final Optional<File> holdOutFile = parameters.getOptionalCreatableFile(PARAM_HOLD_OUT_PATH);
     final String partitionPrefix = parameters.getString(PARAM_PARTITION_PREFIX);
 
-    final int nPartitions = parameters.getNonNegativeInteger(PARAM_PARTITIONS);
+    final int nPartitions = parameters.getPositiveInteger(PARAM_PARTITIONS);
     final int randomSeed = parameters.getInteger(PARAM_RANDOM_SEED);
     final double holdOut = parameters.getProbability(PARAM_HOLD_OUT);
 
@@ -147,6 +148,8 @@ public final class PartitionData {
     checkArgument(holdOut != 1.0, "Hold out proportion must be less than all of the data");
     checkArgument(holdOutFile.isPresent() == (holdOut > 0.0),
         PARAM_HOLD_OUT + " must be specified if and only if hold out amount is greater than zero");
+    checkArgument(holdOut > 0.0 || nPartitions > 1,
+        "Neither hold out nor more than one partition specified. Nothing to do.");
 
     // Figure out how much is held out
     final int nDocuments = documents.size();
