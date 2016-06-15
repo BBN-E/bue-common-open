@@ -108,6 +108,7 @@ public final class PartitionData {
       errorExit("Usage: PartitionData params");
     }
     final Parameters parameters = Parameters.loadSerifStyle(new File(argv[0]));
+    log.info("Running with parameters:\n" + parameters.dump());
     // Can run on map or list, but only one of the two.
     parameters.assertExactlyOneDefined(PARAM_FILE_LIST, PARAM_FILE_MAP);
 
