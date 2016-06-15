@@ -37,6 +37,11 @@ public final class EREFillerArgument implements EREArgument {
   }
 
   @Override
+  public ERESpan getExtent() {
+    return filler().getExtent();
+  }
+
+  @Override
   public String getID() {
     return filler.getID();
   }

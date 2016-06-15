@@ -1,5 +1,8 @@
 package com.bbn.nlp.corpora.ere;
 
+import com.bbn.bue.common.strings.offsets.CharOffset;
+import com.bbn.bue.common.strings.offsets.OffsetRange;
+
 import com.google.common.base.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -29,6 +32,10 @@ public final class ERESpan {
 
   public String getText() {
     return text;
+  }
+
+  public OffsetRange<CharOffset> asCharOffsets() {
+    return OffsetRange.charOffsetRange(getStart(), getEnd());
   }
 
   @Override
