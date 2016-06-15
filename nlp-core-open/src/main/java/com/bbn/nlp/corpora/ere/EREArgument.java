@@ -5,9 +5,11 @@ import com.google.common.base.Optional;
 
 public interface EREArgument {
 
-  public String getID();
+  String getID();
 
-  public String getRole();
+  String getRole();
 
-  public Optional<LinkRealis> getRealis();
+  ERESpan getExtent();
+
+  Optional<LinkRealis> getRealis();
 }

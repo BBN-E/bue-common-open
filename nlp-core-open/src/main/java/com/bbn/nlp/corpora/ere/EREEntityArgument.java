@@ -65,6 +65,11 @@ public final class EREEntityArgument implements EREArgument {
   }
 
   @Override
+  public ERESpan getExtent() {
+    return entityMention.getExtent();
+  }
+
+  @Override
   public boolean equals(final Object o) {
     if (this == o) {
       return true;
