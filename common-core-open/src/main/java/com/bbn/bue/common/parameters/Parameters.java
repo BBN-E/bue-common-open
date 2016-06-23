@@ -1261,7 +1261,13 @@ public final class Parameters {
     final Parameters subNamespace = copyNamespace(baseNamespace);
     final ImmutableSet.Builder<T> ret = ImmutableSet.builder();
     for (final String activeNamespace : subNamespace.getStringList(activeNamespacesFeature)) {
-      ret.add(nameSpaceToObjectMapper.fromNameSpace(subNamespace.copyNamespace(activeNamespace)));
+      if (subNamespace.isNamespacePresent(activeNamespace)) {
+        ret.add(nameSpaceToObjectMapper.fromNameSpace(subNamespace.copyNamespace(activeNamespace)));
+      } else {
+        throw new ParameterException("Expected namespace " + baseNamespace + "." + activeNamespace
+            + "to exist because of value of " + activeNamespacesFeature + " but "
+            + "it did not");
+      }
     }
     return ret.build();
   }
