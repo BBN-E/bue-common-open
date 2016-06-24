@@ -105,10 +105,12 @@ public final class Parameters {
   /**
    * Creates a new set of parameters with only those parameters in the specified namespace (that is,
    * prefixed by "namespace.". The namespace prefix and period will be removed from parameter names
-   * in the new {@code Parameters}.
+   * in the new {@code Parameters}.  The name space name should *not* have a
+   * trailing ".".
    */
   public Parameters copyNamespace(final String requestedNamespace) {
     checkArgument(!requestedNamespace.isEmpty());
+    checkArgument(!requestedNamespace.endsWith("."));
     final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
     final String dottedNamespace = requestedNamespace + ".";
     for (final Map.Entry<String, String> param : params.entrySet()) {
@@ -129,9 +131,13 @@ public final class Parameters {
 
   /**
    * If the specified namespace is present, return a copy of that namespace as a parameter set.
-   * Otherwise, return a copy of this parameter set.
+   * Otherwise, return a copy of this parameter set. The name space name should *not* have a
+   * trailing ".".
    */
   public Parameters copyNamespaceIfPresent(final String requestedNamespace) {
+    // checkArgument ensures namespaces are specified consistently
+    checkArgument(!requestedNamespace.isEmpty());
+    checkArgument(!requestedNamespace.endsWith("."));
     if (isNamespacePresent(requestedNamespace)) {
       return copyNamespace(requestedNamespace);
     } else {
@@ -141,10 +147,12 @@ public final class Parameters {
 
   /**
    * Returns if any parameter in this parameter set begins the the specified string, followed by a
-   * dot. The argument may not be empty.
+   * dot. The argument may not be empty.  The name space name should *not* have a
+   * trailing ".".
    */
   public boolean isNamespacePresent(final String requestedNamespace) {
     checkArgument(requestedNamespace.length() > 0);
+    checkArgument(!requestedNamespace.endsWith("."));
     final String probe = requestedNamespace + ".";
     return Iterables.any(params.keySet(), StringUtils.startsWith(probe));
   }
