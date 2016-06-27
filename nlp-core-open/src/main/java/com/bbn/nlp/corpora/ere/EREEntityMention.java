@@ -1,9 +1,9 @@
 package com.bbn.nlp.corpora.ere;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class EREEntityMention implements ERESpanning {
   private final String id;
@@ -25,7 +25,7 @@ public final class EREEntityMention implements ERESpanning {
   public String getType() {
     return type;
   }
-  
+
   @Override
   public String getID() {
     return id;
@@ -39,7 +39,7 @@ public final class EREEntityMention implements ERESpanning {
   public Optional<ERESpan> getHead() {
     return head;
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hashCode(id);
@@ -59,5 +59,14 @@ public final class EREEntityMention implements ERESpanning {
     final EREEntityMention other = (EREEntityMention) obj;
     return Objects.equal(id, other.id);
   }
-  
+
+
+  @Override
+  public String toString() {
+    String s = extent + "/" + id + "/" + type;
+    if (head.isPresent()) {
+      s += "/head=" + head;
+    }
+    return s;
+  }
 }

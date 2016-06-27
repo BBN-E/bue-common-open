@@ -40,11 +40,7 @@ public final class ERESpan {
 
   @Override
   public String toString() {
-    return "ERESpan{" +
-        "start=" + start +
-        ", end=" + end +
-        ", text='" + text + '\'' +
-        '}';
+    return text + "[" + start + ":" + end + "]";
   }
 
   @Override
