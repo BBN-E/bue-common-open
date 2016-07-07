@@ -372,13 +372,12 @@ public final class StringUtils {
     return earliestIdx;
   }
 
-  public static final Function<String, Integer> ToLength = new Function<String, Integer>() {
-    @Override
-    public Integer apply(String input) {
-      checkNotNull(input);
-      return input.length();
-    }
-  };
+  /**
+   * Returns a function that computes the number of code points in a string.
+   */
+  public static Function<String, Integer> codepointCount() {
+    return CodepointCountFunction.INSTANCE;
+  }
 
   public static String substring(String s, OffsetRange<CharOffset> substringBounds) {
     return s.substring(substringBounds.startInclusive().asInt(),
@@ -448,6 +447,16 @@ public final class StringUtils {
       ret.add(new String(Character.toChars(codePoint)));
     }
     return ret.build();
+  }
+
+  private enum CodepointCountFunction implements Function<String, Integer> {
+    INSTANCE;
+
+    @Nullable
+    @Override
+    public Integer apply(final String input) {
+      return input.codePointCount(0, input.length());
+    }
   }
 
   /******************************** Deprecated code ************************************/
@@ -534,4 +543,19 @@ public final class StringUtils {
       }
     };
   }
+
+  /**
+   * Computes the length of a string in the naive, non-Unicode safe fashion. Use with extreme
+   * caution, and prefer {@link #codepointCount()} for almost every use case.
+   *
+   * @deprecated Prefer {@link #codepointCount()}, which is Unicode-safe.
+   */
+  @Deprecated
+  public static final Function<String, Integer> ToLength = new Function<String, Integer>() {
+    @Override
+    public Integer apply(String input) {
+      checkNotNull(input);
+      return input.length();
+    }
+  };
 }
