@@ -373,9 +373,16 @@ public final class StringUtils {
   }
 
   /**
+   * Returns the number of codepoints in a string.
+   */
+  public static int codepointCount(final String input) {
+    return CodepointCountFunction.INSTANCE.apply(input);
+  }
+
+  /**
    * Returns a function that computes the number of code points in a string.
    */
-  public static Function<String, Integer> codepointCount() {
+  public static Function<String, Integer> codepointCountFunction() {
     return CodepointCountFunction.INSTANCE;
   }
 
@@ -452,7 +459,6 @@ public final class StringUtils {
   private enum CodepointCountFunction implements Function<String, Integer> {
     INSTANCE;
 
-    @Nullable
     @Override
     public Integer apply(final String input) {
       return input.codePointCount(0, input.length());
