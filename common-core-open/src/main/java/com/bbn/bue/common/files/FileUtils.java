@@ -563,6 +563,23 @@ public final class FileUtils {
    * Skips empty lines and allows comment-lines with {@code #} in the first position.
    */
   public static ImmutableMap<String, String> loadStringMap(CharSource source) throws IOException {
+    return loadStringMap(source, false);
+  }
+
+  /**
+   * Like {@link #loadStringMap(CharSource)}, but differs in that lines can contain only
+   * a key and no value and will be treated as having a value of empty string in the resulting
+   * map. This is useful for specifying absent values for a specific key.
+   *
+   * @see FileUtils#loadStringMap(CharSource)
+   */
+  public static ImmutableMap<String, String> loadStringMapAllowingEmptyValues(CharSource source)
+      throws IOException {
+    return loadStringMap(source, true);
+  }
+
+  private static ImmutableMap<String, String> loadStringMap(CharSource source,
+      final boolean allowEmptyValues) throws IOException {
     final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
 
     int count = 0;
@@ -577,6 +594,8 @@ public final class FileUtils {
       }
       if (parts.size() == 2) {
         ret.put(parts.get(0), parts.get(1));
+      } else if (allowEmptyValues && parts.size() == 1) {
+        ret.put(parts.get(0), "");
       } else {
         throw new RuntimeException(
             "When reading a map from " + source + ", line " + count + " is invalid: "
