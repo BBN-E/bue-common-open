@@ -49,6 +49,13 @@ public final class CollectionUtilsTest {
             ImmutableList.of(4, 5, 6),
             ImmutableList.of(7, 8, 9)),
         partitionAlmostEvenly(ImmutableList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), 3));
+    // Test case where there is more than one extra preliminary partition
+    assertEquals(
+        ImmutableList.of(
+            ImmutableList.of(1, 4),
+            ImmutableList.of(2, 5),
+            ImmutableList.of(3)),
+        partitionAlmostEvenly(ImmutableList.of(1, 2, 3, 4, 5), 3));
   }
 
   @Test(expected = NullPointerException.class)

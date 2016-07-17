@@ -28,6 +28,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Utilities for collections.
@@ -260,7 +261,7 @@ public final class CollectionUtils {
     checkArgument(partitions <= list.size(),
         "Cannot request more partitions than there are list items");
 
-    // Divide into partitions, with the remainder falling into the last partition
+    // Divide into partitions, with the remainder falling into the extra partitions
     final List<List<E>> prelimPartitions =
         Lists.partition(list, IntMath.divide(list.size(), partitions, RoundingMode.DOWN));
     // Create output
@@ -274,16 +275,22 @@ public final class CollectionUtils {
       }
     } else {
       // Otherwise, distribute the extras
+
+      // Make a builder for each output partition and the extras. The extras are anything in the
+      // preliminary partitions after the number of partitions we actually want. Thus, the
+      // first index of extras is the same as the number of partitions.
       final ImmutableList.Builder<ImmutableList.Builder<E>> builderOfBuilders =
           ImmutableList.builder();
-
-      // Make new builder for all but the extras, which come from the last index
-      final int lastIdx = prelimPartitions.size() - 1;
-      final List<E> extras = prelimPartitions.get(lastIdx);
-      for (int i = 0; i < lastIdx; i++) {
-        builderOfBuilders.add(ImmutableList.<E>builder().addAll(prelimPartitions.get(i)));
+      final ImmutableList.Builder<E> extrasBuilder = ImmutableList.builder();
+      for (int i = 0; i < prelimPartitions.size(); i++) {
+        if (i < partitions) {
+          builderOfBuilders.add(ImmutableList.<E>builder().addAll(prelimPartitions.get(i)));
+        } else {
+          extrasBuilder.addAll(prelimPartitions.get(i));
+        }
       }
       final ImmutableList<ImmutableList.Builder<E>> builders = builderOfBuilders.build();
+      final ImmutableList<E> extras = extrasBuilder.build();
 
       // Distribute the extra elements. We cannot overrun the bounds of builders because the number
       // of extras is always at least one less than the number of builders (otherwise, we would've
@@ -298,7 +305,13 @@ public final class CollectionUtils {
         ret.add(builder.build());
       }
     }
-    return ret.build();
+
+    final ImmutableList<ImmutableList<E>> finalPartitions = ret.build();
+    checkState(finalPartitions.size() == partitions,
+        "Partitioning failed: number of output partitions (" + finalPartitions.size()
+            + ") does not match requested number (" + partitions + ")");
+
+    return finalPartitions;
   }
 
   /**
