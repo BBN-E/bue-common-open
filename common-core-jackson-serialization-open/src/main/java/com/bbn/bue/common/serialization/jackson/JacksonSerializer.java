@@ -1,7 +1,6 @@
 package com.bbn.bue.common.serialization.jackson;
 
-import com.google.common.io.ByteSink;
-import com.google.common.io.ByteSource;
+import com.bbn.bue.common.annotations.MoveToBUECommon;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,10 +9,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
+import com.google.common.io.ByteSink;
+import com.google.common.io.ByteSource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,6 +138,9 @@ public final class JacksonSerializer {
     // using values provided by a dependency-injection framework
     private AnnotationIntrospector annotationIntrospector = null;
     private InjectableValues injectableValues = null;
+    // we order modules by name for determinism
+    private ImmutableSet.Builder<Module> modules = ImmutableSortedSet.<Module>orderedBy(
+        Ordering.natural().onResultOf(ModuleNameFunction.INSTANCE));
 
     private Builder copy() {
       final Builder ret = new Builder();
@@ -186,6 +195,11 @@ public final class JacksonSerializer {
       return ret;
     }
 
+    public Builder registerModule(final Module jacksonModule) {
+      modules.add(jacksonModule);
+      return this;
+    }
+
     public JacksonSerializer build() {
       final ObjectMapper objectMapper = mapperFromJSONFactory(jsonFactory);
 
@@ -219,10 +233,14 @@ public final class JacksonSerializer {
       return new JacksonSerializer(objectMapper);
     }
 
-    private static ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
+    private ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
       final ObjectMapper mapper = new ObjectMapper(jsonFactory);
       mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
       mapper.findAndRegisterModules();
+      // modules are ordered by name for determinism, see field declaration
+      for (final Module module : modules.build()) {
+        mapper.registerModule(module);
+      }
       return mapper;
     }
   }
@@ -246,3 +264,14 @@ public final class JacksonSerializer {
     private final Object obj;
   }
 }
+
+@MoveToBUECommon
+enum ModuleNameFunction implements Function<Module, String> {
+  INSTANCE;
+
+  @Override
+  public String apply(final Module input) {
+    return input.getModuleName();
+  }
+}
+
