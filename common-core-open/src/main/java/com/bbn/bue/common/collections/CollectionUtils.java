@@ -1,5 +1,7 @@
 package com.bbn.bue.common.collections;
 
+import com.bbn.bue.common.annotations.MoveToBUECommon;
+
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
@@ -413,5 +415,19 @@ public final class CollectionUtils {
       exceptionMessage = Optional.absent();
     }
     return exceptionMessage;
+  }
+
+  /**
+   * Acts like {@code items.toString()} unless {@code items} has more elements than {@code limit},
+   * in which case it simply prints the number of excess items. This is useful for making toStrings
+   * for objects which may contain large collections.
+   */
+  @MoveToBUECommon
+  public static String toStringLimited(ImmutableSet<?> items, int limit) {
+    if (items.size() <= limit) {
+      return items.toString();
+    } else {
+      return items.asList().subList(0, limit).toString() + "... (" + (items.size() - limit) + " more)";
+    }
   }
 }
