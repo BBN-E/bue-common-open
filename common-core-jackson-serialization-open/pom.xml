@@ -40,19 +40,16 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.3.1</version>
     </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-smile</artifactId>
-      <version>2.3.1</version>
     </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-guava</artifactId>
-      <version>2.2.0</version>
     </dependency>
 
       <!-- Guice stuff is optional because it's only used by the JacksonSerializationM,
@@ -60,7 +57,6 @@
       <dependency>
           <groupId>com.fasterxml.jackson.module</groupId>
           <artifactId>jackson-module-guice</artifactId>
-          <version>2.5.2</version>
           <optional>true</optional>
       </dependency>
 
