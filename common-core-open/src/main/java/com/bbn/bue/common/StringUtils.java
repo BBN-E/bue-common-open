@@ -20,6 +20,7 @@ import com.google.common.io.LineProcessor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -265,12 +266,19 @@ public final class StringUtils {
   public static final Function<String, String> WrapInAngleBrackets = WrapFunction("<", ">");
   public static final Function<String, String> WrapInParens = WrapFunction("(", ")");
 
-  public static final Function<String, String> ToLowerCase = new Function<String, String>() {
-    @Override
-    public String apply(final String s) {
-      return s.toLowerCase();
-    }
-  };
+  /**
+   * A Guava function for converting strings to lowercase.
+   * @param locale
+   * @return
+   */
+  public static Function<String, String> toLowerCaseFunction(final Locale locale) {
+    return new Function<String, String>() {
+      @Override
+      public String apply(final String s) {
+        return s.toLowerCase(locale);
+      }
+    };
+  }
 
   public static final Predicate<String> ContainsLetterOrDigit = new Predicate<String>() {
     @Override
@@ -562,6 +570,18 @@ public final class StringUtils {
     public Integer apply(String input) {
       checkNotNull(input);
       return input.length();
+    }
+  };
+
+
+  /**
+   * Prefer {@link #toLowerCaseFunction(Locale)}, which requires specifying a {@link Locale}.
+   */
+  @Deprecated
+  public static final Function<String, String> ToLowerCase = new Function<String, String>() {
+    @Override
+    public String apply(final String s) {
+      return s.toLowerCase();
     }
   };
 }
