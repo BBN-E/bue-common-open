@@ -234,6 +234,7 @@ final class ERELoading {
     return mention;
   }
 
+  private static final String NORMALIZED_TIME_ATTR = "nom_time";
   // ==== Fillers and transforming them to APF entity/value/time ====
   private EREFiller toFiller(final Element xml, final String docid) {
     final String id = generateID(XMLUtils.requiredAttribute(xml, "id"), docid);
@@ -244,7 +245,12 @@ final class ERELoading {
 
     final ERESpan span = ERESpan.from(extentStart, extentEnd, text);
 
-    final EREFiller ereFiller = EREFiller.from(id, type, span);
+    final EREFiller ereFiller;
+    if (xml.hasAttribute(NORMALIZED_TIME_ATTR)) {
+     ereFiller = EREFiller.fromTime(id, type, xml.getAttribute(NORMALIZED_TIME_ATTR), span);
+    } else {
+      ereFiller = EREFiller.from(id, type, span);
+    }
     idMap.put(id, ereFiller);
     return ereFiller;
   }
