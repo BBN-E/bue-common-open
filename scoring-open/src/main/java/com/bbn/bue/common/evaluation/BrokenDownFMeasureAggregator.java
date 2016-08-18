@@ -92,9 +92,9 @@ public final class BrokenDownFMeasureAggregator
 
     for (final Map.Entry<String, Collection<FMeasureCounts>> aggregate : allCountsB.build().asMap().entrySet()) {
       final FMeasureCounts fMeasureInfo = FMeasureCounts.combineToMicroFMeasure(aggregate.getValue());
-      f1sB.put(aggregate.getKey(), (double) fMeasureInfo.F1());
-      precisionsB.put(aggregate.getKey(), (double) fMeasureInfo.precision());
-      recallsB.put(aggregate.getKey(), (double) fMeasureInfo.recall());
+      f1sB.put(aggregate.getKey(), fMeasureInfo.F1());
+      precisionsB.put(aggregate.getKey(), fMeasureInfo.precision());
+      recallsB.put(aggregate.getKey(), fMeasureInfo.recall());
     }
   }
 
