@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 
 import java.util.Comparator;
@@ -77,6 +78,7 @@ public final class MapUtils {
     return ret.build();
   }
 
+
   public static class PairedMapValues<V> {
 
     public PairedMapValues(final List<ZipPair<V, V>> pairedValues, final List<V> leftOnly,
@@ -112,6 +114,19 @@ public final class MapUtils {
 
     for (final Map<K, V> map : maps) {
       builder.addAll(map.keySet());
+    }
+
+    return builder.build();
+  }
+
+  /**
+   * Gets the union of the {@code keySet()}s of all provided {@link Multimap}s.
+   */
+  public static <K> ImmutableSet<K> allMultimapKeys(final Iterable<? extends Multimap<K, ?>> multimaps) {
+    final ImmutableSet.Builder<K> builder = ImmutableSet.builder();
+
+    for (final Multimap<K, ?> multimap : multimaps) {
+      builder.addAll(multimap.keySet());
     }
 
     return builder.build();
