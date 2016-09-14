@@ -1,6 +1,6 @@
 package com.bbn.bue.common.evaluation;
 
-import com.bbn.bue.common.TextGroupPublicImmutable;
+import com.bbn.bue.common.TextGroupImmutable;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -24,12 +24,12 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-@TextGroupPublicImmutable
+@TextGroupImmutable
 @Value.Immutable
 @Functional
-@JsonSerialize(as=FMeasureCounts.class)
-@JsonDeserialize(as=FMeasureCounts.class)
-abstract class _FMeasureCounts extends FMeasureInfo {
+@JsonSerialize(as=ImmutableFMeasureCounts.class)
+@JsonDeserialize(as=ImmutableFMeasureCounts.class)
+public abstract class FMeasureCounts extends FMeasureInfo {
   public abstract double falsePositives();
   public abstract double falseNegatives();
   public abstract double numPredicted();
@@ -61,7 +61,7 @@ abstract class _FMeasureCounts extends FMeasureInfo {
    */
   public static FMeasureCounts fromFPFNKeyCountSysCount(final double falsePositives,
       final double falseNegatives, final double keyCount, final double sysCount) {
-    return FMeasureCounts.builder()
+    return new Builder()
       .falsePositives(falsePositives)
       .falseNegatives(falseNegatives)
       .numItemsInKey(keyCount)
@@ -212,4 +212,6 @@ abstract class _FMeasureCounts extends FMeasureInfo {
     return String.format("TP=%.3f;FP=%.3f;#Key=%.3f;#Sys=%.3F", truePositives(), falsePositives(),
         numItemsInKey(), numPredicted());
   }
+
+  public static class Builder extends ImmutableFMeasureCounts.Builder {}
 }

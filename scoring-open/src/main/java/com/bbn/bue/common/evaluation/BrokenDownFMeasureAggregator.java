@@ -52,7 +52,7 @@ public final class BrokenDownFMeasureAggregator
   private static final String RECALL = "Recall";
   private static final String ACCURACY = "Accuracy";
 
-  private final BootstrapWriter writer = BootstrapWriter.builder()
+  private final BootstrapWriter writer = new BootstrapWriter.Builder()
       .measures(ImmutableList.of(F1, PRECISION, RECALL, ACCURACY))
       .percentilesToPrint(ImmutableList.of(0.005, 0.025, 0.05, 0.25, 0.5, 0.75, 0.95, 0.975, 0.995))
       .percentileComputer(PercentileComputer.nistPercentileComputer())

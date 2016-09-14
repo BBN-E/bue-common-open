@@ -94,14 +94,14 @@
       <dependency>
           <groupId>org.immutables</groupId>
           <artifactId>value</artifactId>
-          <version>2.1.7</version>
+          <version>2.3</version>
           <scope>provided</scope>
       </dependency>
 
       <dependency>
           <groupId>org.immutables</groupId>
           <artifactId>func</artifactId>
-          <version>2.1.7</version>
+          <version>2.3</version>
           <scope>provided</scope>
       </dependency>
 
@@ -121,7 +121,7 @@
           <!-- this is just for some annotations, don't need it at runtime unless you
           are using Jackson -->
           <optional>true</optional>
-      </dependency> 
+      </dependency>
   </dependencies>
 
 
