@@ -439,12 +439,25 @@ public final class FileUtils {
         .toList();
   }
 
-  public static final Function<File, String> ToName = new Function<File, String>() {
+  /**
+   * @deprecated Prefer {@link #toNameFunction()}
+   */
+  @Deprecated
+  public static final Function<File, String> ToName = ToNameEnum.INSTANCE;
+
+  public static Function<File, String> toNameFunction() {
+    return ToNameEnum.INSTANCE;
+  }
+
+  private enum ToNameEnum implements Function<File, String> {
+    INSTANCE;
+
     @Override
     public String apply(final File f) {
       return f.getName();
     }
-  };
+  }
+
 
   public static final Function<File, String> toAbsolutePathFunction() {
     return ToAbsolutePathFunction.INSTANCE;
