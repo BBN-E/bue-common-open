@@ -27,8 +27,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 @TextGroupImmutable
 @Value.Immutable
 @Functional
-@JsonSerialize(as=FMeasureCounts.class)
-@JsonDeserialize(as=FMeasureCounts.class)
+@JsonSerialize(as=ImmutableFMeasureCounts.class)
+@JsonDeserialize(as=ImmutableFMeasureCounts.class)
 public abstract class FMeasureCounts extends FMeasureInfo {
   public abstract double falsePositives();
   public abstract double falseNegatives();
