@@ -1,7 +1,7 @@
 package com.bbn.bue.common.evaluation;
 
 import com.bbn.bue.common.OptionalUtils;
-import com.bbn.bue.common.TextGroupPublicImmutable;
+import com.bbn.bue.common.TextGroupImmutable;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.math.PercentileComputer;
 
@@ -30,9 +30,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * Writes files describing some scoring metric which has been bootstrapped.
  */
-@TextGroupPublicImmutable
+@TextGroupImmutable
 @Value.Immutable
-abstract class _BootstrapWriter {
+abstract class BootstrapWriter {
   /**
    * The names of the scoring measures to output. For example, {@code ["Precision", "Recall", "F1"}.
    * In charts, the order given will be preserved.
@@ -256,4 +256,6 @@ abstract class _BootstrapWriter {
     }
     return ret.toString();
   }
+
+  public static class Builder extends ImmutableBootstrapWriter.Builder {}
 }

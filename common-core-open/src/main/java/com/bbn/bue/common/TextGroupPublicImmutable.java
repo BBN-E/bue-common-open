@@ -10,9 +10,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This is the text group's default style for immutable objects generated using
- * the "Immutables.org" library. Use this whenever you use {@link org.immutables.value.Value.Immutable}
- * for objects intended to be public unless you have a strong reason to do otherwise.
+ * This used to be the text group's default style for immutable objects generated using
+ * the "Immutables.org" library. Nowadays prefer {@link TextGroupImmutable}.
+ * @deprecated Prefer {@link TextGroupImmutable}
  */
 @Beta
 @Target({ElementType.PACKAGE, ElementType.TYPE})
@@ -30,7 +30,9 @@ import java.lang.annotation.Target;
     // so API users only see the generated implementation, not
     // the template
     visibility = Value.Style.ImplementationVisibility.PUBLIC)
+@Deprecated
 public @interface TextGroupPublicImmutable {
 }
+
 
 
