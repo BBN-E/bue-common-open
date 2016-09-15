@@ -1,5 +1,6 @@
 package com.bbn.bue.common.math;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -110,9 +111,10 @@ public final class PercentileComputer {
    */
   public final class Percentiles {
 
-    private final double[] data;
+    @JsonProperty("data")
+    final double[] data;
 
-    private Percentiles(double[] data) {
+    Percentiles(@JsonProperty("data") double[] data) {
       this.data = data;
       Arrays.sort(data);
     }
