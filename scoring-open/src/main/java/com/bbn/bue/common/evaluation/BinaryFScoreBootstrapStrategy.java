@@ -15,18 +15,10 @@ import static com.bbn.bue.common.evaluation.EvaluationConstants.PRESENT;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * A bootstrap sampling strategy for precision, recall, F-score, and accuracy.  This also supports
- * breaking down the output based on the results of some provided function.
- *
- * An item is consider a true positive if it has an alignment in the key.  Each unaligned test item
- * is considered to be a false positive and each unaligned key item is considered to be a false
- * negative.
- *
- * If a breakdown function is specified, separate results will be produced for each output of that
- * function where the alignment is filtered to include only items with the same value from the
- * function (e.g. to break down results by event type).
+ * Prefer {@link BinaryConfusionMatrixBootstrapStrategy} with a {@link BrokenDownPRFAggregator}.
  */
 @Beta
+@Deprecated
 public final class BinaryFScoreBootstrapStrategy<T>
     implements
     BootstrapInspector.BootstrapStrategy<Alignment<? extends T, ? extends T>, Map<String, SummaryConfusionMatrix>> {

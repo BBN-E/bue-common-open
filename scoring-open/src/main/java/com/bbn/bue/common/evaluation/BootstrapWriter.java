@@ -4,6 +4,7 @@ import com.bbn.bue.common.OptionalUtils;
 import com.bbn.bue.common.TextGroupImmutable;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.math.PercentileComputer;
+import com.bbn.bue.common.serialization.jackson.JacksonSerializer;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Functions;
@@ -32,7 +33,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 @TextGroupImmutable
 @Value.Immutable
-abstract class BootstrapWriter {
+public abstract class BootstrapWriter {
   /**
    * The names of the scoring measures to output. For example, {@code ["Precision", "Recall", "F1"}.
    * In charts, the order given will be preserved.
@@ -101,6 +102,9 @@ abstract class BootstrapWriter {
     final ImmutableMap.Builder<String, ImmutableMap<String, ImmutableList<Double>>> samples =
         ImmutableMap.builder();
 
+    final File argScoresDir = new File(outputDir, "argScores");
+    argScoresDir.mkdirs();
+
     // all four multimaps have the same keyset
     for (final String breakdownKey : breakdownKeys) {
       final ImmutableMap.Builder<String, Double> mediansMapBuilder =
@@ -130,6 +134,10 @@ abstract class BootstrapWriter {
       final ImmutableMap<String, PercentileComputer.Percentiles> percentilesMap = percentileMapB.build();
       dumpPercentilesForMetric(breakdownKey, percentilesMap, chart);
       chart.append("\n");
+
+      final JacksonSerializer serializer = JacksonSerializer.builder().forJson().prettyOutput().build();
+      serializer.serializeTo(percentilesMap, Files.asByteSink(new File(argScoresDir,
+          breakdownKey + ".percentile.json")));
 
       // Write to delim
       addDelimPercentilesForMetric(breakdownKey, percentilesMap, delim);

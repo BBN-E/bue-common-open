@@ -33,10 +33,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class BrokenDownPRFAggregator
     implements BootstrapInspector.SummaryAggregator<Map<String, SummaryConfusionMatrix>> {
   // BrokenDownFMeasureAggregator does all the work
-  private final BrokenDownFMeasureAggregator innerAggregator;
+  private final BootstrapInspector.SummaryAggregator<Map<String, FMeasureCounts>> innerAggregator;
 
   private BrokenDownPRFAggregator(
-      final BrokenDownFMeasureAggregator innerAggregator) {
+      final BootstrapInspector.SummaryAggregator<Map<String, FMeasureCounts>> innerAggregator) {
     this.innerAggregator = checkNotNull(innerAggregator);
   }
 
