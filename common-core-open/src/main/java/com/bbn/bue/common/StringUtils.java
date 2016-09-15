@@ -299,11 +299,20 @@ public final class StringUtils {
     }
   };
 
-  public static final Function<String, String> PrefixWith(final String prefix) {
+  public static final Function<String, String> prefixWithFunction(final String prefix) {
     return new Function<String, String>() {
       @Override
       public String apply(final String s) {
         return prefix + s;
+      }
+    };
+  }
+
+  public static final Function<String, String> suffixWithFunction(final String suffix) {
+    return new Function<String, String>() {
+      @Override
+      public String apply(final String s) {
+        return s + suffix;
       }
     };
   }
@@ -560,9 +569,9 @@ public final class StringUtils {
 
   /**
    * Computes the length of a string in the naive, non-Unicode safe fashion. Use with extreme
-   * caution, and prefer {@link #codepointCount()} for almost every use case.
+   * caution, and prefer {@link #codepointCountFunction()}  ()} for almost every use case.
    *
-   * @deprecated Prefer {@link #codepointCount()}, which is Unicode-safe.
+   * @deprecated Prefer {@link #codepointCountFunction()}, which is Unicode-safe.
    */
   @Deprecated
   public static final Function<String, Integer> ToLength = new Function<String, Integer>() {
@@ -584,4 +593,13 @@ public final class StringUtils {
       return s.toLowerCase();
     }
   };
+
+  /**
+   * @deprecated Prefer {@link #prefixWithFunction(String)}
+   */
+  @Deprecated
+  public static final Function<String, String> PrefixWith(final String prefix) {
+    return prefixWithFunction(prefix);
+  }
+
 }
