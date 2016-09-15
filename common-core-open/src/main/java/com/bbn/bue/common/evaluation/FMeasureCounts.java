@@ -209,7 +209,7 @@ public abstract class FMeasureCounts extends FMeasureInfo {
 
   @Override
   public String toString() {
-    return String.format("TP=%.3f;FP=%.3f;#Key=%.3f;#Sys=%.3F", truePositives(), falsePositives(),
+    return String.format("TP=%.3f;FP=%.3f;#Key=%.3f;#Sys=%.3f", truePositives(), falsePositives(),
         numItemsInKey(), numPredicted());
   }
 

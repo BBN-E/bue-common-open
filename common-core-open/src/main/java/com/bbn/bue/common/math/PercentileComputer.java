@@ -1,9 +1,11 @@
 package com.bbn.bue.common.math;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Doubles;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,11 +51,11 @@ public final class PercentileComputer {
   }
 
   public Percentiles calculatePercentilesAdoptingData(double[] data) {
-    return new Percentiles(data);
+    return new Percentiles(algorithm, data);
   }
 
   public Percentiles calculatePercentilesCopyingData(double[] data) {
-    return new Percentiles(data.clone());
+    return new Percentiles(algorithm, data.clone());
   }
 
   // these may assume percentile is valid and data non-empty
@@ -109,12 +111,17 @@ public final class PercentileComputer {
    * Most things returned are {@link Optional} to force the user to deal with the case of empty
    * data.
    */
-  public final class Percentiles {
+  public static final class Percentiles {
+
+    @JsonProperty("algorithm")
+    private final Algorithm algorithm;
 
     @JsonProperty("data")
     final double[] data;
 
-    Percentiles(@JsonProperty("data") double[] data) {
+    @JsonCreator
+    Percentiles(@JsonProperty("algorithm") Algorithm algorithm, @JsonProperty("data") double[] data) {
+      this.algorithm = checkNotNull(algorithm);
       this.data = data;
       Arrays.sort(data);
     }
@@ -176,6 +183,10 @@ public final class PercentileComputer {
         ret.add(percentile(percentile));
       }
       return ret.build();
+    }
+
+    public List<Double> rawData() {
+      return Doubles.asList(data);
     }
   }
 }
