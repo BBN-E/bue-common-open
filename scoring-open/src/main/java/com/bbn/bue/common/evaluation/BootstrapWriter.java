@@ -6,6 +6,8 @@ import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.math.PercentileComputer;
 import com.bbn.bue.common.serialization.jackson.JacksonSerializer;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Charsets;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
@@ -102,8 +104,8 @@ public abstract class BootstrapWriter {
     final ImmutableMap.Builder<String, ImmutableMap<String, ImmutableList<Double>>> samples =
         ImmutableMap.builder();
 
-    final File argScoresDir = new File(outputDir, "argScores");
-    argScoresDir.mkdirs();
+    final File bootstrapDataDir = new File(outputDir, "bootstrapData");
+    bootstrapDataDir.mkdirs();
 
     // all four multimaps have the same keyset
     for (final String breakdownKey : breakdownKeys) {
@@ -136,7 +138,8 @@ public abstract class BootstrapWriter {
       chart.append("\n");
 
       final JacksonSerializer serializer = JacksonSerializer.builder().forJson().prettyOutput().build();
-      serializer.serializeTo(percentilesMap, Files.asByteSink(new File(argScoresDir,
+      serializer.serializeTo(new SerializedBootstrapResults.Builder()
+          .percentilesMap(percentilesMap).build(), Files.asByteSink(new File(bootstrapDataDir,
           breakdownKey + ".percentile.json")));
 
       // Write to delim
@@ -266,4 +269,15 @@ public abstract class BootstrapWriter {
   }
 
   public static class Builder extends ImmutableBootstrapWriter.Builder {}
+
+  @TextGroupImmutable
+  @Value.Immutable
+  @JsonSerialize(as=ImmutableSerializedBootstrapResults.class)
+  @JsonDeserialize(as=ImmutableSerializedBootstrapResults.class)
+  public static abstract class SerializedBootstrapResults {
+    public abstract ImmutableMap<String, PercentileComputer.Percentiles> percentilesMap();
+
+    public static class Builder extends ImmutableSerializedBootstrapResults.Builder {}
+  }
 }
+
