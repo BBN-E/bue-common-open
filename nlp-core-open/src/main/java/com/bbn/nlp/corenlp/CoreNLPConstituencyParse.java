@@ -63,6 +63,9 @@ public final class CoreNLPConstituencyParse {
   static CoreNLPConstituencyParse create(final HeadFinder<CoreNLPParseNode> headFinder,
       final ImmutableList<CoreNLPToken> tokens,
       final String rawParse, final boolean stripFunctionTags) {
+    final int openParens = rawParse.length() - rawParse.replaceAll("\\(","").length();
+    final int closeParens = rawParse.length() - rawParse.replaceAll("\\)","").length();
+    checkArgument(openParens == closeParens, "Found " + openParens + " open parens but have " + closeParens + " close parens");
     // remove empty nodes so they are recognized as children.
     final String parse = rawParse.replaceAll("\\(\\)", "");
     // TODO: consider refactoring this cruft into a PTBParseParser

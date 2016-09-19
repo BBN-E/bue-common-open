@@ -52,9 +52,8 @@ final class MapHeadFinder<NodeT extends ConstituentNode<NodeT, ?>>
     checkNotNull(tag);
     if (!rules.containsKey(tag)) {
       // TODO: What behavior do we really want here?
-      throw new HeadException("Failed to find a rule for " + tag + ", have " + rules);
-
+      return Optional.absent();
     }
-    return Optional.of(rules.get(tag));
+    return Optional.fromNullable(rules.get(tag));
   }
 }

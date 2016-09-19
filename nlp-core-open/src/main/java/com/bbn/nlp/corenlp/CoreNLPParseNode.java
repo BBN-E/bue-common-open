@@ -34,7 +34,7 @@ public final class CoreNLPParseNode
   private Optional<CoreNLPParseNode> parent = Optional.absent();
   private final Optional<CoreNLPParseNode> head;
   private final Optional<CoreNLPParseNodeData> data = Optional.absent();
-  private final OffsetRange<CharOffset> span;
+  private final Optional<OffsetRange<CharOffset>> span;
   private final Optional<CoreNLPToken> token;
 
   private CoreNLPParseNode(final Symbol tag, final List<CoreNLPParseNode> children,
@@ -43,18 +43,36 @@ public final class CoreNLPParseNode
     this.token = checkNotNull(token);
     this.tag = checkNotNull(tag);
     this.children = ImmutableList.copyOf(children);
-    checkArgument(token.isPresent() == children.isEmpty(), "cannot be both a terminal node and have children!");
-    if (token.isPresent()) {
-      checkState(children.isEmpty(), "if we have a data we must be a terminal node!");
-      span = token.get().offsets();
+    if (children.isEmpty()) {
+        checkState(children.isEmpty(), "if we have a data we must be a terminal node!");
+        if (token.isPresent()) {
+            span = Optional.of(token.get().offsets());
+        } else {
+            span = Optional.absent();
+        }
     } else {
-      final CharOffset start = children.get(0).span().startInclusive();
-      final CharOffset end = children.get(children.size() - 1).span().endInclusive();
-      span = OffsetRange.charOffsetRange(start.asInt(), end.asInt());
+        // we have to have a span if we're a non-terminal node, and we're sticking to that.
+        CharOffset start = null;
+        for (final CoreNLPParseNode child : children) {
+            if (child.span().isPresent()) {
+                start = child.span().get().startInclusive();
+                break;
+            }
+        }
+        CharOffset end = null;
+        for (final CoreNLPParseNode child : ImmutableList.copyOf(children).reverse()) {
+            if (child.span.isPresent()) {
+                end = child.span().get().endInclusive();
+                break;
+            }
+        }
+        // if your parser outputs a non-terminal that is composed entirely of hallucinated nodes, it's wrong, and this should crash, and then you should fix it.
+        checkNotNull(start, "Start CharOffset must be populated for non-terminal nodes!");
+        checkNotNull(end, "End CharOffset must be populated for non-terminal nodes!");
+        span = Optional.of(OffsetRange.charOffsetRange(start.asInt(), end.asInt()));
     }
-    checkArgument(span.startInclusive().asInt() <= span.endInclusive().asInt(),
-        "Span lengths inconsistent!");
-
+      checkArgument(!span.isPresent() || span.get().startInclusive().asInt() <= span.get().endInclusive().asInt(),
+              "Span lengths inconsistent!");
   }
 
   public static CoreNLPParseNode create(final Symbol tag, final List<CoreNLPParseNode> children,
@@ -132,7 +150,7 @@ public final class CoreNLPParseNode
    * If terminal: span of the CoreNLPToken; else: span from the start of the first child to the end
    * of the last.
    */
-  public OffsetRange<CharOffset> span() {
+  public Optional<OffsetRange<CharOffset>> span() {
     return span;
   }
 
@@ -186,6 +204,7 @@ public final class CoreNLPParseNode
     }
 
     public CoreNLPParseNode build() {
+      // we impose no requirement that text or token is present; verbs, noun phrases, etc., can all get dropped and parsers may find where they belonged.
       if (text.isPresent() && token.isPresent()) {
         checkState(text.get().equals(token.get().content()),
             "if we have both text and a data they must be the same, but instead we have " + text
