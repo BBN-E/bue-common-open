@@ -20,15 +20,20 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Stack;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getFirst;
 
 @Beta
 public final class CoreNLPConstituencyParse {
+
+  private static final Logger log = LoggerFactory.getLogger(CoreNLPConstituencyParse.class);
 
   private final ImmutableList<CoreNLPToken> tokens;
   private final CoreNLPParseNode root;
@@ -140,6 +145,10 @@ public final class CoreNLPConstituencyParse {
       // it looks like Stanford double escapes XML in their parse output.
       final String text = StringEscapeUtils.unescapeXml(rangeToText(parse).apply(r));
       builder.withText(Optional.fromNullable(text));
+      if(text.isEmpty()) {
+        log.warn("Found an empty token for parse {}, range {}, likely a bug", parse, r);
+        continue;
+      }
       // find token, we know the first token is the one that matches since our ranges are ordered,
       // and the keys and the associated values of the FluentIterable produced map have their order preserved.
       final CoreNLPToken matching = checkNotNull(getFirst(textToToken.get(text), null));
