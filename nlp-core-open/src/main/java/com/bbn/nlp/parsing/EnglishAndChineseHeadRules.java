@@ -71,28 +71,24 @@ final class EnglishAndChineseHeadRules {
     return MapHeadFinder.create(ruleB.build());
   }
 
-//  /**
-//   * Head finder using English NP rules and the Chinese head table as defined in
-//   *
-//   * Honglin Sun and Daniel Jurafsky. 2004. Shallow Semantic Parsing of Chinese. In North American
-//   * Chapter of the ACL: Human Language Technologies (NAACL-HLT), pages 249256, Boston, MA.
-//   */
-//  public static <NodeT extends ConstituentNode<NodeT, ?>> HeadFinder<NodeT> createChinesePTBFromResources()
-//      throws IOException {
-//    final boolean headInitial = true;
-//    final File headRuleFile =
-//        new File(EnglishAndChineseHeadRules.class.getResource("ch_heads.sun.txt").getFile());
-//    final HeadRule<NodeT> englishNPHandling = EnglishNPHeadRules();
-//    final ImmutableMap<Symbol, HeadRule<NodeT>> headRules =
-//        headRulesFromResources(headInitial, headRuleFile.toPath());
-//    final ImmutableMap.Builder<Symbol, HeadRule<NodeT>> ruleB = ImmutableMap.builder();
-//    ruleB.putAll(headRules);
-//    // english NP rules get an NP key...
-//    ruleB.put(NP, englishNPHandling);
-//    // add the UNK rule
-//    ruleB.put(CollinsStyleHeadRule.UNKNOWN, CollinsStyleHeadRule.UNKHeadRule.<NodeT>create(headInitial));
-//    return MapHeadFinder.create(ruleB.build());
-//  }
+  /**
+   * Head finder using English NP rules and the Chinese head table as defined in
+   *
+   * Honglin Sun and Daniel Jurafsky. 2004. Shallow Semantic Parsing of Chinese. In North American
+   * Chapter of the ACL: Human Language Technologies (NAACL-HLT), pages 249256, Boston, MA.
+   */
+  public static <NodeT extends ConstituentNode<NodeT, ?>> HeadFinder<NodeT> createChinesePTBFromResources()
+      throws IOException {
+    final boolean headInitial = true;
+    final CharSource resource = Resources
+        .asCharSource(EnglishAndChineseHeadRules.class.getResource("ch_heads.sun.txt"),
+            Charsets.UTF_8);
+    final ImmutableMap<Symbol, HeadRule<NodeT>> headRules =
+        headRulesFromResources(headInitial, resource);
+    final ImmutableMap.Builder<Symbol, HeadRule<NodeT>> ruleB = ImmutableMap.builder();
+    ruleB.putAll(headRules);
+    return MapHeadFinder.create(ruleB.build());
+  }
 
   public static <NodeT extends ConstituentNode<NodeT, ?>> ImmutableMap<Symbol, HeadRule<NodeT>> headRulesFromResources(
       final boolean headInitial,

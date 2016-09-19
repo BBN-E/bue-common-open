@@ -13,11 +13,10 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.CharSource;
+import com.google.common.io.Resources;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -53,10 +52,11 @@ import java.util.Map;
   static <NodeT extends ConstituentNode<NodeT, ?>> HeadFinder<NodeT> createFromResources()
       throws IOException {
     final boolean headInitial = true;
-    final File headRuleFile =
-        new File(SpanishHeadRules.class.getResource("es_heads.opennlp.txt").getFile());
+    final CharSource resource = Resources
+        .asCharSource(EnglishAndChineseHeadRules.class.getResource("es_heads.opennlp.txt"),
+            Charsets.UTF_8);
     final ImmutableMap<Symbol, HeadRule<NodeT>>
-        headRules = headRulesFromResources(headRuleFile.toPath());
+        headRules = headRulesFromResources(resource);
     final ImmutableMap.Builder<Symbol, HeadRule<NodeT>> rules = ImmutableMap.builder();
     rules.putAll(headRules);
     for (final Symbol tag : new Symbol[]{GRUP_NOM, SN}) {
@@ -73,10 +73,10 @@ import java.util.Map;
   }
 
   private static <NodeT extends ConstituentNode<NodeT, ?>> ImmutableMap<Symbol, HeadRule<NodeT>> headRulesFromResources(
-      final Path path) throws IOException {
+      final CharSource charSource) throws IOException {
     final ImmutableMap.Builder<Symbol, HeadRule<NodeT>> ret = ImmutableMap.builder();
     for (final Map.Entry<Symbol, HeadRule<NodeT>> e : FluentIterable
-        .from(Files.readAllLines(path, Charsets.UTF_8))
+        .from(charSource.readLines())
         .transform(StringUtils.Trim)
         .filter(Predicates.not(StringUtils.startsWith("#")))
         .filter(Predicates.not(StringUtils.isEmpty()))
@@ -186,7 +186,9 @@ import java.util.Map;
         final Iterable<NodeT> children) {
       for (final NodeT child : childrenInOrder(children)) {
         for (final String tag : moreAdjs) {
-          if (child.tag().asString().matches(tag)) {
+          // corenlp output seems undecided about capitalization
+          if (child.tag().asString().matches(tag) || child.tag().asString()
+              .matches(tag.toLowerCase())) {
             return Optional.of(child);
           }
         }
