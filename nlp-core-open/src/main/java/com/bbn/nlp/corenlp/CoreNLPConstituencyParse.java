@@ -5,6 +5,7 @@ import com.bbn.bue.common.symbols.Symbol;
 import com.bbn.nlp.parsing.HeadFinder;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ArrayListMultimap;
@@ -70,8 +71,8 @@ public final class CoreNLPConstituencyParse {
       final String rawParse, final boolean stripFunctionTags) {
     // remove empty nodes so they are recognized as children.
     final String parse = rawParse.replaceAll("\\(\\)", "");
-    final int openParens = parse.length() - parse.replaceAll("\\(","").length();
-    final int closeParens = parse.length() - parse.replaceAll("\\)","").length();
+    final int openParens = CharMatcher.is('(').countIn(parse);
+    final int closeParens = CharMatcher.is(')').countIn(parse);
     checkArgument(openParens == closeParens, "Found " + openParens + " open parens but have " + closeParens + " close parens");
 
     // TODO: consider refactoring this cruft into a PTBParseParser
