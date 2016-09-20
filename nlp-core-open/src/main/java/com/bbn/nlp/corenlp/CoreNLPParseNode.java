@@ -38,11 +38,24 @@ public final class CoreNLPParseNode
     private final Optional<CoreNLPToken> token;
 
     private CoreNLPParseNode(final Symbol tag, final List<CoreNLPParseNode> children,
-                             final Optional<CoreNLPParseNode> head, final Optional<CoreNLPToken> token) {
+                             final Optional<CoreNLPParseNode> head, final Optional<CoreNLPToken> token,
+                             final Optional<OffsetRange<CharOffset>> span) {
         this.head = checkNotNull(head);
         this.token = checkNotNull(token);
         this.tag = checkNotNull(tag);
         this.children = ImmutableList.copyOf(children);
+        this.span = span;
+    }
+
+    private static CoreNLPParseNode create(final Symbol tag, final List<CoreNLPParseNode> children,
+                                          final Optional<CoreNLPParseNode> head, final Optional<CoreNLPToken> token,
+                                          final Optional<OffsetRange<CharOffset>> span) {
+        return new CoreNLPParseNode(tag, children, head, token, span);
+    }
+
+    public static CoreNLPParseNode create(final Symbol tag, final List<CoreNLPParseNode> children,
+                                          final Optional<CoreNLPParseNode> head, final Optional<CoreNLPToken> token) {
+        final Optional<OffsetRange<CharOffset>> span;
         if (children.isEmpty()) {
             checkState(children.isEmpty(), "if we have a data we must be a terminal node!");
             if (token.isPresent()) {
@@ -74,11 +87,7 @@ public final class CoreNLPParseNode
         }
         checkArgument(!span.isPresent() || span.get().startInclusive().asInt() <= span.get().endInclusive().asInt(),
                 "Span lengths inconsistent!");
-    }
-
-    public static CoreNLPParseNode create(final Symbol tag, final List<CoreNLPParseNode> children,
-                                          final Optional<CoreNLPParseNode> head, final Optional<CoreNLPToken> token) {
-        return new CoreNLPParseNode(tag, children, head, token);
+        return create(tag, children, head, token, span);
     }
 
     @Override
@@ -218,7 +227,7 @@ public final class CoreNLPParseNode
                 head = headFinder.findHead(tag,
                         ImmutableList.copyOf(children));
             }
-            final CoreNLPParseNode ret = new CoreNLPParseNode(tag, children, head, token);
+            final CoreNLPParseNode ret = create(tag, children, head, token);
             for (CoreNLPParseNode child : children) {
                 child.setParent(ret);
             }
