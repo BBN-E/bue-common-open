@@ -68,11 +68,12 @@ public final class CoreNLPConstituencyParse {
   static CoreNLPConstituencyParse create(final HeadFinder<CoreNLPParseNode> headFinder,
       final ImmutableList<CoreNLPToken> tokens,
       final String rawParse, final boolean stripFunctionTags) {
-    final int openParens = rawParse.length() - rawParse.replaceAll("\\(","").length();
-    final int closeParens = rawParse.length() - rawParse.replaceAll("\\)","").length();
-    checkArgument(openParens == closeParens, "Found " + openParens + " open parens but have " + closeParens + " close parens");
     // remove empty nodes so they are recognized as children.
     final String parse = rawParse.replaceAll("\\(\\)", "");
+    final int openParens = parse.length() - parse.replaceAll("\\(","").length();
+    final int closeParens = parse.length() - parse.replaceAll("\\)","").length();
+    checkArgument(openParens == closeParens, "Found " + openParens + " open parens but have " + closeParens + " close parens");
+
     // TODO: consider refactoring this cruft into a PTBParseParser
     // find all open and close boundaries
     final ImmutableList<Range<Integer>> ranges = findAllOpenCloseParens(parse);
