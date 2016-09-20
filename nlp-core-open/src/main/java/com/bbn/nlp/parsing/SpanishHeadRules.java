@@ -53,7 +53,7 @@ import java.util.Map;
       throws IOException {
     final boolean headInitial = true;
     final CharSource resource = Resources
-        .asCharSource(EnglishAndChineseHeadRules.class.getResource("es_heads.opennlp.txt"),
+        .asCharSource(SpanishHeadRules.class.getResource("es_heads.opennlp.txt"),
             Charsets.UTF_8);
     final ImmutableMap<Symbol, HeadRule<NodeT>>
         headRules = headRulesFromResources(resource);
