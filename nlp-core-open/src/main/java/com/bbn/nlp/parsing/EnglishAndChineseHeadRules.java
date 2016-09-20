@@ -84,10 +84,8 @@ final class EnglishAndChineseHeadRules {
         .asCharSource(EnglishAndChineseHeadRules.class.getResource("ch_heads.sun.txt"),
             Charsets.UTF_8);
     final ImmutableMap<Symbol, HeadRule<NodeT>> headRules =
-        headRulesFromResources(headInitial, resource);
-    final ImmutableMap.Builder<Symbol, HeadRule<NodeT>> ruleB = ImmutableMap.builder();
-    ruleB.putAll(headRules);
-    return MapHeadFinder.create(ruleB.build());
+            headRulesFromResources(headInitial, resource);
+    return MapHeadFinder.create(headRules);
   }
 
   public static <NodeT extends ConstituentNode<NodeT, ?>> ImmutableMap<Symbol, HeadRule<NodeT>> headRulesFromResources(
