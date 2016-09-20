@@ -52,24 +52,25 @@ public final class CoreNLPParseNode
             }
         } else {
             // we have to have a span if we're a non-terminal node, and we're sticking to that.
-            CharOffset start = null;
+            Optional<CharOffset> start = Optional.absent();
             for (final CoreNLPParseNode child : children) {
                 if (child.span().isPresent()) {
-                    start = child.span().get().startInclusive();
+                    start = Optional.of(child.span().get().startInclusive());
                     break;
                 }
             }
-            CharOffset end = null;
+            Optional<CharOffset> end = Optional.absent();
             for (final CoreNLPParseNode child : ImmutableList.copyOf(children).reverse()) {
                 if (child.span.isPresent()) {
-                    end = child.span().get().endInclusive();
+                    end = Optional.of(child.span().get().endInclusive());
                     break;
                 }
             }
-            // if your parser outputs a non-terminal that is composed entirely of hallucinated nodes, it's wrong, and this should crash, and then you should fix it.
-            checkNotNull(start, "Start CharOffset must be populated for non-terminal nodes!");
-            checkNotNull(end, "End CharOffset must be populated for non-terminal nodes!");
-            span = Optional.of(OffsetRange.charOffsetRange(start.asInt(), end.asInt()));
+            if (start.isPresent()) {
+                span = Optional.of(OffsetRange.charOffsetRange(start.get().asInt(), end.get().asInt()));
+            } else {
+                span = Optional.absent();
+            }
         }
         checkArgument(!span.isPresent() || span.get().startInclusive().asInt() <= span.get().endInclusive().asInt(),
                 "Span lengths inconsistent!");
