@@ -48,7 +48,7 @@ public final class CoreNLPSentence {
     // before any of their parents, preferring the smallest node that contains these offsets.
     for (final CoreNLPParseNode n : ImmutableList.copyOf(parse.get().root().preorderDFSTraversal())
         .reverse()) {
-      if (n.span().contains(offsets)) {
+      if (n.span().isPresent() && n.span().get().contains(offsets)) {
         return Optional.of(n);
       }
     }

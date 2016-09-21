@@ -25,21 +25,21 @@ public final class HeadFinders {
     return EnglishAndChineseHeadRules.createEnglishPTBFromResources();
   }
 
-//  /**
-//   * Gets a head finder for Chinese parses in Penn Treebank format using rules from Honglin Sun and
-//   * Daniel Jurafsky. 2004. Shallow Semantic Parsing of Chinese.
-//   */
-//  public static <NodeT extends ConstituentNode<NodeT, ?>> HeadFinder<NodeT> getChinesePTBHeadFinder()
-//      throws IOException {
-//    return EnglishAndChineseHeadRules.createChinesePTBFromResources();
-//  }
-//
-//  /**
-//   * Gets a head finder for Spanish parses in ANCORA format. Borrows heavily from OpenNLP's Spanish
-//   * head finder.
-//   */
-//  public static <NodeT extends ConstituentNode<NodeT, ?>> HeadFinder<NodeT> getSpanishAncoraHeadFinder()
-//      throws IOException {
-//    return SpanishHeadRules.<NodeT>createFromResources();
-//  }
+  /**
+   * Gets a head finder for Chinese parses in Penn Treebank format using rules from Honglin Sun and
+   * Daniel Jurafsky. 2004. Shallow Semantic Parsing of Chinese.
+   */
+  public static <NodeT extends ConstituentNode<NodeT, ?>> HeadFinder<NodeT> getChinesePTBHeadFinder()
+      throws IOException {
+    return EnglishAndChineseHeadRules.createChinesePTBFromResources();
+  }
+
+  /**
+   * Gets a head finder for Spanish parses in ANCORA format. Borrows heavily from OpenNLP's Spanish
+   * head finder.
+   */
+  public static <NodeT extends ConstituentNode<NodeT, ?>> HeadFinder<NodeT> getSpanishAncoraHeadFinder()
+      throws IOException {
+    return SpanishHeadRules.createFromResources();
+  }
 }

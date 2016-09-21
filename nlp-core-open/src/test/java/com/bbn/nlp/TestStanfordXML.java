@@ -142,30 +142,40 @@ public final class TestStanfordXML {
     }
   }
 
-  private void printNodeAndHead(final CoreNLPParseNode n, final StringBuilder sb, final String prefix, final int i) {
+  private void printNodeAndHead(final CoreNLPParseNode n, final StringBuilder sb,
+      final String prefix, final int i) {
 
     if (n.terminal()) {
       // tag, start, end
       final String nodeFormat = "%s: %d-%d ";
       sb.append(Strings.repeat("\t", i));
       sb.append(prefix);
-      sb.append(String.format(nodeFormat, n.tag(), n.span().startInclusive().asInt(), n.span().endInclusive().asInt()));
-      sb.append(" ");
-      sb.append(n.token().get().content());
+      if(n.span().isPresent()) {
+        sb.append(String.format(nodeFormat, n.tag(), n.span().get().startInclusive().asInt(),
+                n.span().get().endInclusive().asInt()));
+      } else {
+        sb.append(n.tag());
+        sb.append(":Hallucinated");
+      }
+      if(n.token().isPresent()) {
+        sb.append(" ");
+        sb.append(n.token().get().content());
+      }
       sb.append("\n");
     } else {
       final String nodeFormat = "%s: %d-%d ";
       sb.append(Strings.repeat("\t", i));
       sb.append(prefix);
-      sb.append(String.format(nodeFormat, n.tag(), n.span().startInclusive().asInt(), n.span().endInclusive().asInt()));
+      sb.append(String.format(nodeFormat, n.tag(), n.span().get().startInclusive().asInt(),
+          n.span().get().endInclusive().asInt()));
       sb.append("\n");
 
       final CoreNLPParseNode head = n.immediateHead().get();
-      for(final CoreNLPParseNode child: n.children()) {
-        if(child.equals(head)) {
-          printNodeAndHead(child, sb, "*", i+1);
+      for (final CoreNLPParseNode child : n.children()) {
+        if (child.equals(head)) {
+          printNodeAndHead(child, sb, "*", i + 1);
         } else {
-          printNodeAndHead(child, sb, "", i+1);
+          printNodeAndHead(child, sb, "", i + 1);
         }
       }
     }
