@@ -59,8 +59,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import static com.bbn.bue.common.StringUtils.startsWith;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.skip;
 import static com.google.common.collect.Iterables.transform;
 
@@ -434,8 +436,13 @@ public final class FileUtils {
     return loadSymbolList(Files.asCharSource(symbolListFile, Charsets.UTF_8));
   }
 
+  /**
+   * Loads a list of {@link Symbol}s from a file, one-per-line, skipping lines starting with "#" as
+   * comments.
+   */
   public static ImmutableList<Symbol> loadSymbolList(final CharSource source) throws IOException {
     return FluentIterable.from(source.readLines())
+        .filter(not(startsWith("#")))
         .transform(Symbol.FromString)
         .toList();
   }
@@ -755,7 +762,8 @@ public final class FileUtils {
   }
 
   /**
-   * Returns a set consisting of the lines of the provided {@link CharSource}.
+   * Loads a list of {@link Symbol}s from a file, one-per-line, skipping lines starting with "#"
+   * as comments.
    */
   public static ImmutableSet<Symbol> loadSymbolSet(final CharSource source) throws IOException {
     return ImmutableSet.copyOf(loadSymbolList(source));
@@ -772,7 +780,8 @@ public final class FileUtils {
   }
 
   /**
-   * Returns a set consisting of the lines of the provided {@link CharSource}.
+   * Loads a list of {@link String}s from a file, one-per-line, skipping lines starting with "#"
+   * as comments.
    */
   public static ImmutableSet<String> loadStringSet(final CharSource source) throws IOException {
     return ImmutableSet.copyOf(loadStringList(source));
