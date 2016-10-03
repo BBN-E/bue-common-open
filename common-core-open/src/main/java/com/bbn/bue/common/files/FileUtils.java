@@ -7,6 +7,7 @@ import com.bbn.bue.common.collections.MultimapUtils;
 import com.bbn.bue.common.io.GZIPByteSink;
 import com.bbn.bue.common.io.GZIPByteSource;
 import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
@@ -758,6 +759,23 @@ public final class FileUtils {
    */
   public static ImmutableSet<Symbol> loadSymbolSet(final CharSource source) throws IOException {
     return ImmutableSet.copyOf(loadSymbolList(source));
+  }
+
+  /**
+   * Returns a {@link List} consisting of the lines of the provided {@link CharSource} in the
+   * order given.
+   */
+  public static ImmutableList<String> loadStringList(final CharSource source) throws IOException {
+    return FluentIterable.from(loadSymbolList(source))
+        .transform(SymbolUtils.desymbolizeFunction())
+        .toList();
+  }
+
+  /**
+   * Returns a set consisting of the lines of the provided {@link CharSource}.
+   */
+  public static ImmutableSet<String> loadStringSet(final CharSource source) throws IOException {
+    return ImmutableSet.copyOf(loadStringList(source));
   }
 
   /**
