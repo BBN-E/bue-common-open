@@ -12,6 +12,7 @@ import com.bbn.bue.common.converters.StringToStringList;
 import com.bbn.bue.common.converters.StringToStringSet;
 import com.bbn.bue.common.converters.StringToSymbolList;
 import com.bbn.bue.common.converters.StringToSymbolSet;
+import com.bbn.bue.common.files.FileUtils;
 import com.bbn.bue.common.parameters.exceptions.InvalidEnumeratedPropertyException;
 import com.bbn.bue.common.parameters.exceptions.MissingRequiredParameter;
 import com.bbn.bue.common.parameters.exceptions.ParameterConversionException;
@@ -32,6 +33,7 @@ import com.bbn.bue.common.validators.ValidationException;
 import com.bbn.bue.common.validators.Validator;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -42,6 +44,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.io.CharSource;
+import com.google.common.io.Files;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -928,7 +932,9 @@ public final class Parameters {
   }
 
   /**
-   * Gets a file, with no requirements about whether it exists or not.
+   * Gets a file, with no requirements about whether it exists or not. if you intend to write to
+   * this file, you may prefer {@link #getCreatableFile(String)}, which will create its parent
+   * directories.
    */
   public File getPossiblyNonexistentFile(final String param) {
     return new File(getString(param));
@@ -961,6 +967,105 @@ public final class Parameters {
               numFilesContained));
     }
     return dir;
+  }
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadSymbolSet(CharSource)} on it.
+   */
+  public ImmutableSet<Symbol> getFileAsSymbolSet(String param) throws IOException {
+    return FileUtils.loadSymbolSet(Files.asCharSource(getExistingFile(param), Charsets.UTF_8));
+  }
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadSymbolSet(CharSource)} on it, if the param is present. If the param is missing,
+   * {@link Optional#absent()} is returned.
+   */
+  public Optional<ImmutableSet<Symbol>> getOptionalFileAsSymbolSet(String param)
+      throws IOException {
+    if (isPresent(param)) {
+      return Optional
+          .of(FileUtils.loadSymbolSet(Files.asCharSource(getExistingFile(param), Charsets.UTF_8)));
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadSymbolList(CharSource)} on it.
+   */
+  public ImmutableList<Symbol> getFileAsSymbolList(String param) throws IOException {
+    return FileUtils.loadSymbolList(Files.asCharSource(getExistingFile(param), Charsets.UTF_8));
+  }
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadSymbolList(CharSource)} on it, if the param is present. If the param is missing,
+   * {@link Optional#absent()} is returned.
+   */
+  public Optional<ImmutableList<Symbol>> getOptionalFileAsSymbolList(String param)
+      throws IOException {
+    if (isPresent(param)) {
+      return Optional
+          .of(FileUtils.loadSymbolList(Files.asCharSource(getExistingFile(param), Charsets.UTF_8)));
+    } else {
+      return Optional.absent();
+    }
+  }
+
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadStringSet(CharSource)} on it.
+   */
+  public ImmutableSet<String> getFileAsStringSet(String param) throws IOException {
+    return FileUtils.loadStringSet(Files.asCharSource(getExistingFile(param), Charsets.UTF_8));
+  }
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadStringSet(CharSource)} on it, if the param is present. If the param is missing,
+   * {@link Optional#absent()} is returned.
+   */
+  public Optional<ImmutableSet<String>> getOptionalFileAsStringSet(String param)
+      throws IOException {
+    if (isPresent(param)) {
+      return Optional
+          .of(FileUtils.loadStringSet(Files.asCharSource(getExistingFile(param), Charsets.UTF_8)));
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadStringList(CharSource)} on it.
+   */
+  public ImmutableList<String> getFileAsStringList(String param) throws IOException {
+    return FileUtils.loadStringList(Files.asCharSource(getExistingFile(param), Charsets.UTF_8));
+  }
+
+
+  /**
+   * Convenience method to call {@link #getExistingFile(String)} and then apply {@link
+   * FileUtils#loadStringList(CharSource)} on it, if the param is present. If the param is missing,
+   * {@link Optional#absent()} is returned.
+   */
+  public Optional<ImmutableList<String>> getOptionalFileAsStringList(String param)
+      throws IOException {
+    if (isPresent(param)) {
+      return Optional
+          .of(FileUtils.loadStringList(Files.asCharSource(getExistingFile(param), Charsets.UTF_8)));
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  public ImmutableMap<Symbol, File> getFileAsSymbolToFileMap(String param) throws IOException {
+    return FileUtils
+        .loadSymbolToFileMap(Files.asCharSource(getExistingFile(param), Charsets.UTF_8));
   }
 
   public Parameters getSubParameters(final String param) throws IOException {

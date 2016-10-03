@@ -7,6 +7,7 @@ import com.bbn.bue.common.collections.MultimapUtils;
 import com.bbn.bue.common.io.GZIPByteSink;
 import com.bbn.bue.common.io.GZIPByteSource;
 import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
@@ -58,8 +59,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import static com.bbn.bue.common.StringUtils.startsWith;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.skip;
 import static com.google.common.collect.Iterables.transform;
 
@@ -433,10 +436,12 @@ public final class FileUtils {
     return loadSymbolList(Files.asCharSource(symbolListFile, Charsets.UTF_8));
   }
 
+  /**
+   * Loads a list of {@link Symbol}s from a file, one-per-line, skipping lines starting with "#" as
+   * comments.
+   */
   public static ImmutableList<Symbol> loadSymbolList(final CharSource source) throws IOException {
-    return FluentIterable.from(source.readLines())
-        .transform(Symbol.FromString)
-        .toList();
+    return SymbolUtils.listFrom(loadStringList(source));
   }
 
   /**
@@ -754,10 +759,29 @@ public final class FileUtils {
   }
 
   /**
-   * Returns a set consisting of the lines of the provided {@link CharSource}.
+   * Loads a list of {@link Symbol}s from a file, one-per-line, skipping lines starting with "#"
+   * as comments.
    */
   public static ImmutableSet<Symbol> loadSymbolSet(final CharSource source) throws IOException {
     return ImmutableSet.copyOf(loadSymbolList(source));
+  }
+
+  /**
+   * Returns a {@link List} consisting of the lines of the provided {@link CharSource} in the
+   * order given.
+   */
+  public static ImmutableList<String> loadStringList(final CharSource source) throws IOException {
+    return FluentIterable.from(source.readLines())
+        .filter(not(startsWith("#")))
+        .toList();
+  }
+
+  /**
+   * Loads a list of {@link String}s from a file, one-per-line, skipping lines starting with "#"
+   * as comments.
+   */
+  public static ImmutableSet<String> loadStringSet(final CharSource source) throws IOException {
+    return ImmutableSet.copyOf(loadStringList(source));
   }
 
   /**
