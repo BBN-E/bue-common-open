@@ -441,10 +441,7 @@ public final class FileUtils {
    * comments.
    */
   public static ImmutableList<Symbol> loadSymbolList(final CharSource source) throws IOException {
-    return FluentIterable.from(source.readLines())
-        .filter(not(startsWith("#")))
-        .transform(Symbol.FromString)
-        .toList();
+    return SymbolUtils.listFrom(loadStringList(source));
   }
 
   /**
@@ -774,8 +771,8 @@ public final class FileUtils {
    * order given.
    */
   public static ImmutableList<String> loadStringList(final CharSource source) throws IOException {
-    return FluentIterable.from(loadSymbolList(source))
-        .transform(SymbolUtils.desymbolizeFunction())
+    return FluentIterable.from(source.readLines())
+        .filter(not(startsWith("#")))
         .toList();
   }
 
