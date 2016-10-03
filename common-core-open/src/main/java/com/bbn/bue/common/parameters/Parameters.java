@@ -928,7 +928,9 @@ public final class Parameters {
   }
 
   /**
-   * Gets a file, with no requirements about whether it exists or not.
+   * Gets a file, with no requirements about whether it exists or not. if you intend to write to
+   * this file, you may prefer {@link #getCreatableFile(String)}, which will create its parent
+   * directories.
    */
   public File getPossiblyNonexistentFile(final String param) {
     return new File(getString(param));
