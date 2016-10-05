@@ -32,6 +32,7 @@ import com.google.common.io.CharSink;
 import com.google.common.io.CharSource;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
+import com.google.common.io.LineProcessor;
 import com.google.common.primitives.Ints;
 
 import java.io.BufferedInputStream;
@@ -285,47 +286,63 @@ public final class FileUtils {
   }
 
   private static void loadStringToFileMapToSink(final CharSource source,
-      KeyValueSink<String, File> mapSink)
+      final KeyValueSink<String, File> mapSink)
       throws IOException {
     final Splitter onTab = Splitter.on("\t").trimResults();
     int lineNo = 0;
-    for (final String line : source.readLines()) {
-      if (line.isEmpty()) {
-        continue;
+    // using a LineProcessor saves memory by not loading the whole file into memory
+    // this can matter for multi-gigabyte Gigaword-scale maps
+    source.readLines(new LineProcessor<Void>() {
+      int lineNo = 1;
+
+      @Override
+      public boolean processLine(final String line) throws IOException {
+        if (line.isEmpty()) {
+          // skip this line and go to the next one
+          return true;
+        }
+
+        final Iterator<String> parts = onTab.split(line).iterator();
+
+        final String key;
+        final File value;
+        boolean good = true;
+
+        if (parts.hasNext()) {
+          key = parts.next();
+        } else {
+          key = null;
+          good = false;
+        }
+
+        if (parts.hasNext()) {
+          value = new File(parts.next());
+        } else {
+          value = null;
+          good = false;
+        }
+
+        if (!good || parts.hasNext()) {
+          throw new RuntimeException(String.format("Corrupt line #%d: %s", lineNo, line));
+        }
+
+        try {
+          mapSink.put(key, value);
+        } catch (IllegalArgumentException iae) {
+          throw new IOException(String.format("Error processing line %d of file map: %s",
+              lineNo, line), iae);
+        }
+        ++lineNo;
+        // all lines should be processed
+        return true;
       }
 
-      final Iterator<String> parts = onTab.split(line).iterator();
-
-      final String key;
-      final File value;
-      boolean good = true;
-
-      if (parts.hasNext()) {
-        key = parts.next();
-      } else {
-        key = null;
-        good = false;
+      @Override
+      public Void getResult() {
+        // we don't produce a result; we just write to mapSink as a side-effect
+        return null;
       }
-
-      if (parts.hasNext()) {
-        value = new File(parts.next());
-      } else {
-        value = null;
-        good = false;
-      }
-
-      if (!good || parts.hasNext()) {
-        throw new RuntimeException(String.format("Corrupt line #%d: %s", lineNo, line));
-      }
-
-      try {
-        mapSink.put(key, value);
-      } catch (IllegalArgumentException iae) {
-        throw new IOException(String.format("Error processing line %d of file map: %s",
-            lineNo, line), iae);
-      }
-      ++lineNo;
-    }
+    });
   }
 
   /**
