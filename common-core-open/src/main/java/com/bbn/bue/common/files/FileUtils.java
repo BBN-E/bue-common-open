@@ -293,10 +293,11 @@ public final class FileUtils {
     // using a LineProcessor saves memory by not loading the whole file into memory
     // this can matter for multi-gigabyte Gigaword-scale maps
     source.readLines(new LineProcessor<Void>() {
-      int lineNo = 1;
+      int lineNo = 0;
 
       @Override
       public boolean processLine(final String line) throws IOException {
+        ++lineNo;
         if (line.isEmpty()) {
           // skip this line and go to the next one
           return true;
@@ -332,7 +333,6 @@ public final class FileUtils {
           throw new IOException(String.format("Error processing line %d of file map: %s",
               lineNo, line), iae);
         }
-        ++lineNo;
         // all lines should be processed
         return true;
       }
