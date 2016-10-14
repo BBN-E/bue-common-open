@@ -6,6 +6,11 @@ import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Allow Jackson serialization of {@link OffsetRange} without modifying {@code OffsetRange} class
+ *
+ * @author rgabbard
+ */
 public abstract class OffsetRangeMixin<T extends Offset<T>> {
   @JsonCreator
   public static <T extends Offset<T>> OffsetRange<T> fromInclusiveEndpoints(@JsonProperty("start") T start,
