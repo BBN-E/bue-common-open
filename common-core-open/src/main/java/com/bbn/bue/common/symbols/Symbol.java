@@ -2,6 +2,8 @@ package com.bbn.bue.common.symbols;
 
 import com.bbn.bue.common.HasStableHashCode;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 
 import java.io.ObjectStreamException;
@@ -47,7 +49,8 @@ public final class Symbol implements Serializable, HasStableHashCode {
    *
    * @param string Must be non-null.
    */
-  public static synchronized Symbol from(final String string) {
+  @JsonCreator
+  public static synchronized Symbol from(@JsonProperty("string") final String string) {
     final WeakReference<Symbol> ref = symbols.get(checkNotNull(string));
 
     if (ref != null) {
@@ -65,6 +68,7 @@ public final class Symbol implements Serializable, HasStableHashCode {
   /**
    * Returns the string this Symbol represents. Will never be {@code null}.
    */
+  @JsonProperty("string")
   public String asString() {
     return string;
   }

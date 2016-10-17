@@ -1,5 +1,7 @@
 package com.bbn.bue.common.strings.offsets;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
@@ -18,8 +20,10 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
   private final OffsetType startInclusive;
   private final OffsetType endInclusive;
 
+  @JsonCreator
   public static <OffsetType extends Offset<OffsetType>> OffsetRange<OffsetType> fromInclusiveEndpoints(
-      OffsetType startInclusive, OffsetType endInclusive) {
+      @JsonProperty("start") OffsetType startInclusive,
+      @JsonProperty("end") OffsetType endInclusive) {
     checkArgument(startInclusive.asInt() <= endInclusive.asInt());
     return new OffsetRange<OffsetType>(startInclusive, endInclusive);
   }
@@ -30,10 +34,12 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     this.endInclusive = checkNotNull(endInclusive);
   }
 
+  @JsonProperty("start")
   public OffsetType startInclusive() {
     return startInclusive;
   }
 
+  @JsonProperty("end")
   public OffsetType endInclusive() {
     return endInclusive;
   }
