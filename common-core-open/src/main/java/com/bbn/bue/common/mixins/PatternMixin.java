@@ -1,4 +1,4 @@
-package com.bbn.bue.common.serialization.jackson.mixins;
+package com.bbn.bue.common.mixins;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.regex.Pattern;
 
 /**
- * Fix that Java's regex Pattern is not Jackson-serializable
+ * Fix that Java's regex Pattern is not Jackson-serializable.
  */
 public abstract class PatternMixin {
 

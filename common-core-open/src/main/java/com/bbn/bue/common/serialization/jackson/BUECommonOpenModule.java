@@ -1,7 +1,7 @@
 package com.bbn.bue.common.serialization.jackson;
 
 
-import com.bbn.bue.common.serialization.jackson.mixins.PatternMixin;
+import com.bbn.bue.common.mixins.PatternMixin;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;

@@ -83,6 +83,15 @@
             <artifactId>func</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <!-- this is just for some annotations, don't need it at runtime unless you
+            are using Jackson -->
+            <optional>true</optional>
+        </dependency>
+
     </dependencies>
 
 </project>
