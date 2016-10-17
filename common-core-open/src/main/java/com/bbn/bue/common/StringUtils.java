@@ -403,21 +403,81 @@ public final class StringUtils {
     return CodepointCountFunction.INSTANCE;
   }
 
-  public static String substring(String s, OffsetRange<CharOffset> substringBounds) {
-    return s.substring(substringBounds.startInclusive().asInt(),
-        substringBounds.endInclusive().asInt() + 1);
+  /**
+   * Returns the substring of {@code s} which starts at the Unicode codepoint offset at
+   * {@code startIndexInclusive} and ends before the Unicode codepoint offset at
+   * {@code endIndexExclusive}. You should typically use this instead
+   * of {@link String#substring(int)} because the latter will fail badly in the presence of
+   * non-BMP characters.
+   *
+   * Beware this takes linear time according to the end index of the substring, rather than the
+   * substring's length, like for {@link String#substring(int)}
+   */
+  public static String substringByCodepoints(String s, int startIndexInclusive,
+      int endIndexExclusive) {
+    return substringByCodepoints(s, startIndexInclusive, endIndexExclusive, false);
   }
 
   /**
-   * Acts just like {@link String#substring(int, int)} except that if either index is out-of-bounds,
-   * it is clipped to the most extreme legal value.  This guarantees that as long as {@code s} is
-   * non-null and {@code endIndexExclusive>=startIndexInclusive}, no exception will be thrown when
+   * Returns the substring of {@code s} indicated by {@code substringBounds}, where the character
+   * offsets are interpreted as Unicode code point offsets.  You should typically use this instead
+   * of {@link String#substring(int)} because the latter will fail badly in the presence of
+   * non-BMP characters.
+   *
+   * Beware this takes linear time according to the end index of the substring, rather than the
+   * substring's length, like for {@link String#substring(int)}
+   */
+  public static String substringByCodepoints(String s, OffsetRange<CharOffset> substringBounds) {
+    return substringByCodepoints(s, substringBounds.startInclusive().asInt(),
+        // +1 because called method takes exclusive end offset like String#substring
+        substringBounds.endInclusive().asInt() + 1 );
+  }
+
+  /**
+   * Acts just like {@link #laxSubstringByCodepoints(String, int, int)} except that if either
+   * index is out-of-bounds, it is clipped to the most extreme legal value.
+   * This guarantees that as long as {@code s} is non-null and
+   * {@code endIndexExclusive>=startIndexInclusive}, no exception will be thrown when
    * calling this method.
    */
-  public static String safeSubstring(String s, int startIndexInclusive, int endIndexExclusive) {
-    final int trueStartIndex = Math.max(0, startIndexInclusive);
-    final int trueEndIndex = Math.min(endIndexExclusive, s.length());
-    return s.substring(trueStartIndex, trueEndIndex);
+  public static String laxSubstringByCodepoints(String s, int startIndexInclusive,
+      int endIndexExclusive) {
+    return substringByCodepoints(s, startIndexInclusive, endIndexExclusive, true);
+  }
+
+  private static String substringByCodepoints(String s, int startIndexInclusive,
+      int endIndexExclusive, boolean lax) {
+    checkArgument(startIndexInclusive <= endIndexExclusive);
+    if (lax) {
+      startIndexInclusive = Math.max(startIndexInclusive, 0);
+    }
+    checkArgument(startIndexInclusive >= 0);
+
+    final int startCharIdx = s.offsetByCodePoints(0, startIndexInclusive);
+
+    final int substringCodePointLength = endIndexExclusive - startIndexInclusive;
+    final int endCharIdxInclusive;
+    try {
+      endCharIdxInclusive = s.offsetByCodePoints(startCharIdx, substringCodePointLength - 1);
+    } catch (IndexOutOfBoundsException ibe) {
+      if (lax) {
+        // handle clipping at the end in lax mode
+        return s.substring(startCharIdx, s.length());
+      } else {
+        throw ibe;
+      }
+    }
+
+    // we want an exclusive character offset for toString below, so we need to go one more codepoint.
+    // However, that may be one or two characters depending on exactly what the last code point is
+    final int lastCodePoint = s.codePointAt(endCharIdxInclusive);
+    int endCharIdxExclusive = endCharIdxInclusive + Character.charCount(lastCodePoint);
+
+    if (lax && endCharIdxExclusive > s.length()) {
+      // if we are requested to substring "safely", clip the substring to the end of the string
+      endCharIdxExclusive = s.length();
+    }
+    return s.substring(startCharIdx, endCharIdxExclusive);
   }
 
   /**
@@ -602,4 +662,22 @@ public final class StringUtils {
     return prefixWithFunction(prefix);
   }
 
+  /**
+   * @deprecated Prefer {@link #substringByCodepoints(String, OffsetRange)} for most NLP uses.
+   */
+  @Deprecated
+  public static String substring(String s, OffsetRange<CharOffset> substringBounds) {
+    return s.substring(substringBounds.startInclusive().asInt(),
+        substringBounds.endInclusive().asInt() + 1);
+  }
+
+  /**
+   * @deprecated Prefer {@link #laxSubstringByCodepoints(String, int, int)}
+   */
+  @Deprecated
+  public static String safeSubstring(String s, int startIndexInclusive, int endIndexExclusive) {
+    final int trueStartIndex = Math.max(0, startIndexInclusive);
+    final int trueEndIndex = Math.min(endIndexExclusive, s.length());
+    return s.substring(trueStartIndex, trueEndIndex);
+  }
 }
