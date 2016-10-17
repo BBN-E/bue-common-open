@@ -122,6 +122,49 @@
           are using Jackson -->
           <optional>true</optional>
       </dependency>
+
+      <dependency>
+          <groupId>com.fasterxml.jackson.dataformat</groupId>
+          <artifactId>jackson-dataformat-smile</artifactId>
+          <optional>true</optional>
+      </dependency>
+
+      <dependency>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
+          <artifactId>jackson-datatype-guava</artifactId>
+          <optional>true</optional>
+      </dependency>
+
+      <!-- Guice stuff is optional because it's only used by the JacksonSerializationM,
+-      and if you are using that, you are already using Guice -->
+      <dependency>
+          <groupId>com.fasterxml.jackson.module</groupId>
+          <artifactId>jackson-module-guice</artifactId>
+          <optional>true</optional>
+      </dependency>
+
+
+      <!-- The Guice dependencies are not propagated and should be specified by your
+      application if you wish to use Guice modules at runtime -->
+      <dependency>
+          <groupId>com.google.inject</groupId>
+          <artifactId>guice</artifactId>
+          <version>4.0</version>
+          <optional>true</optional>
+      </dependency>
+      <dependency>
+          <groupId>com.google.inject.extensions</groupId>
+          <artifactId>guice-multibindings</artifactId>
+          <version>4.0</version>
+          <optional>true</optional>
+      </dependency>
+      <dependency>
+          <groupId>javax.inject</groupId>
+          <artifactId>javax.inject</artifactId>
+          <version>1</version>
+          <optional>true</optional>
+      </dependency>
+
   </dependencies>
 
 

@@ -1,5 +1,6 @@
 package com.bbn.bue.common.strings.offsets;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.primitives.Ints;
 
@@ -25,6 +26,7 @@ public abstract class AbstractOffset<SelfType extends Offset<SelfType>>
     return value;
   }
 
+  @JsonProperty("value")
   @Override
   public final int asInt() {
     return value;

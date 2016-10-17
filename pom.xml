@@ -19,7 +19,6 @@
 
   <modules>
       <module>common-core-open</module>
-      <module>common-core-jackson-serialization-open</module>
       <module>nlp-core-open</module>
       <module>scoring-open</module>
   </modules>
