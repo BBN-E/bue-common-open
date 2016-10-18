@@ -26,7 +26,7 @@ references.
 
 <sub>**Legal notes**</sub>
 
-<sub>Distribution Statement "A" (Approved for Public Release, Distribution Unlimited)</sub>
+<sub>Distribution C: Distribution authorized to U.S. Government Agencies and their contractors (Administrative or Operational Use; November 4, 2014).  Other requests for this document shall be referred to DARPA Public Release Center (PRC) via email at PRC@darpa.mil. </sub>
 
 <sub>WARNING - This document contains technology whose export or disclosure to
 Non-U.S. persons, wherever located, is subject to the Export Administrations
