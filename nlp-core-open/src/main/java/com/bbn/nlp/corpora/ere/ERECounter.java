@@ -18,8 +18,12 @@ import java.io.IOException;
 /**
  * Counts the number of occurrences of various structures in LDC ERE data.
  */
-public class ERECounter {
+public final class ERECounter {
   private static final Logger log = LoggerFactory.getLogger(ERECounter.class);
+
+  private ERECounter() {
+    throw new UnsupportedOperationException();
+  }
 
   public static void main(String[] argv) {
     // we wrap the main method in this way to
