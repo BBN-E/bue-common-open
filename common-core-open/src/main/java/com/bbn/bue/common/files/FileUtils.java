@@ -53,6 +53,7 @@ import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.Iterator;
@@ -66,6 +67,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.skip;
 import static com.google.common.collect.Iterables.transform;
+import static java.nio.file.Files.walkFileTree;
 
 public final class FileUtils {
   private FileUtils() {
@@ -167,8 +169,8 @@ public final class FileUtils {
    * Note that unless you want double .s, newExtension should not begin with a .
    */
   public static File swapExtension(final File f, final String newExtension) {
-    Preconditions.checkNotNull(f);
-    Preconditions.checkNotNull(newExtension);
+    checkNotNull(f);
+    checkNotNull(newExtension);
     Preconditions.checkArgument(!f.isDirectory());
 
     final String absolutePath = f.getAbsolutePath();
@@ -185,8 +187,8 @@ public final class FileUtils {
   }
 
   public static File addExtension(final File f, final String extension) {
-    Preconditions.checkNotNull(f);
-    Preconditions.checkNotNull(extension);
+    checkNotNull(f);
+    checkNotNull(extension);
     Preconditions.checkArgument(!extension.isEmpty());
     Preconditions.checkArgument(!f.isDirectory());
 
@@ -809,7 +811,7 @@ public final class FileUtils {
       return;
     }
     checkArgument(directory.isDirectory(), "Cannot recursively delete a non-directory");
-    java.nio.file.Files.walkFileTree(directory.toPath(), new DeletionFileVisitor());
+    walkFileTree(directory.toPath(), new DeletionFileVisitor());
   }
 
   private static class DeletionFileVisitor implements FileVisitor<Path> {
@@ -855,6 +857,67 @@ public final class FileUtils {
         }
       }
     });
+  }
+
+  /**
+   * Recursively copies a directory.
+   *
+   * @param sourceDir  the source directory
+   * @param destDir    the destination directory, which does not need to already exist
+   * @param copyOption options to be used for copying files
+   */
+  public static void recursivelyCopyDirectory(final File sourceDir, final File destDir,
+      final StandardCopyOption copyOption)
+      throws IOException {
+    checkNotNull(sourceDir);
+    checkNotNull(destDir);
+    checkArgument(sourceDir.isDirectory(), "Source directory does not exist");
+    destDir.mkdirs();
+    walkFileTree(sourceDir.toPath(), new CopyFileVisitor(sourceDir.toPath(), destDir.toPath(),
+        copyOption));
+  }
+
+  private static class CopyFileVisitor implements FileVisitor<Path> {
+
+    private final Path sourcePath;
+    private final Path destPath;
+    private final StandardCopyOption copyOption;
+
+    private CopyFileVisitor(Path sourcePath, Path destPath, final StandardCopyOption copyOption) {
+      this.sourcePath = checkNotNull(sourcePath);
+      this.destPath = checkNotNull(destPath);
+      this.copyOption = checkNotNull(copyOption);
+    }
+
+    @Override
+    public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs)
+        throws IOException {
+      final Path newPath = destPath.resolve(sourcePath.relativize(dir));
+      if (!java.nio.file.Files.exists(newPath)) {
+        java.nio.file.Files.createDirectory(newPath);
+      }
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
+        throws IOException {
+      final Path newPath = destPath.resolve(sourcePath.relativize(file));
+      java.nio.file.Files.copy(file, newPath, copyOption);
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(final Path file, final IOException exc)
+        throws IOException {
+      return FileVisitResult.TERMINATE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(final Path dir, final IOException exc)
+        throws IOException {
+      return FileVisitResult.CONTINUE;
+    }
   }
 
   /**
