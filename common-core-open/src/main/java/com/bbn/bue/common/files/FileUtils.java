@@ -75,6 +75,18 @@ public final class FileUtils {
   }
 
   /**
+   * Create the parent directories of the given file, if needed.
+   */
+  public static void ensureParentDirectoryExists(File f) throws IOException {
+    final File parent = f.getParentFile();
+    if (parent != null) {
+      if (!parent.isDirectory() && !parent.mkdirs()) {
+        throw new IOException("Could not create parent directories for " + f.getAbsolutePath());
+      }
+    }
+  }
+
+  /**
    * Takes a file with filenames listed one per line and returns a list of the corresponding File
    * objects.  Ignores blank lines and lines with a "#" in the first column position. Treats the
    * file as UTF-8 encoded.
