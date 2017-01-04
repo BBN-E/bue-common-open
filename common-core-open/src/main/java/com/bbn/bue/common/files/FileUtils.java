@@ -3,7 +3,6 @@ package com.bbn.bue.common.files;
 import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.collections.KeyValueSink;
 import com.bbn.bue.common.collections.MapUtils;
-import com.bbn.bue.common.collections.MultimapUtils;
 import com.bbn.bue.common.io.GZIPByteSink;
 import com.bbn.bue.common.io.GZIPByteSource;
 import com.bbn.bue.common.symbols.Symbol;
@@ -11,6 +10,7 @@ import com.bbn.bue.common.symbols.SymbolUtils;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -237,14 +237,18 @@ public final class FileUtils {
 
   public static ImmutableMap<Symbol, File> loadSymbolToFileMap(
       final CharSource source) throws IOException {
-    return MapUtils.copyWithKeysTransformedByInjection(
-        loadStringToFileMap(source), Symbol.FromString);
+    final ImmutableMap.Builder<Symbol, File> ret = ImmutableMap.builder();
+    loadMapToSink(source, MapUtils.asMapSink(ret), SymbolUtils.symbolizeFunction(),
+        FileFunction.INSTANCE);
+    return ret.build();
   }
 
   public static ImmutableListMultimap<Symbol, File> loadSymbolToFileListMultimap(
       final CharSource source) throws IOException {
-    return MultimapUtils.copyWithTransformedKeys(
-        loadStringToFileListMultimap(source), Symbol.FromString);
+    final ImmutableListMultimap.Builder<Symbol, File> ret = ImmutableListMultimap.builder();
+    loadMapToSink(source, MapUtils.asMapSink(ret), SymbolUtils.symbolizeFunction(),
+        FileFunction.INSTANCE);
+    return ret.build();
   }
 
   /**
@@ -288,75 +292,28 @@ public final class FileUtils {
   public static Map<String, File> loadStringToFileMap(
       final CharSource source) throws IOException {
     final ImmutableMap.Builder<String, File> ret = ImmutableMap.builder();
-    loadStringToFileMapToSink(source, MapUtils.asMapSink(ret));
+    loadMapToSink(source, MapUtils.asMapSink(ret), Functions.<String>identity(),
+        FileFunction.INSTANCE);
     return ret.build();
   }
 
   public static ImmutableListMultimap<String, File> loadStringToFileListMultimap(
       final CharSource source) throws IOException {
     final ImmutableListMultimap.Builder<String, File> ret = ImmutableListMultimap.builder();
-    loadStringToFileMapToSink(source, MapUtils.asMapSink(ret));
+    loadMapToSink(source, MapUtils.asMapSink(ret), Functions.<String>identity(),
+        FileFunction.INSTANCE);
     return ret.build();
   }
 
-  private static void loadStringToFileMapToSink(final CharSource source,
-      final KeyValueSink<String, File> mapSink)
+  public static <K, V> void loadMapToSink(final CharSource source,
+      final KeyValueSink<K, V> mapSink, final Function<String, K> keyFunction,
+      final Function<String, V> valueFunction)
       throws IOException {
-    final Splitter onTab = Splitter.on("\t").trimResults();
-    int lineNo = 0;
-    // using a LineProcessor saves memory by not loading the whole file into memory
-    // this can matter for multi-gigabyte Gigaword-scale maps
-    source.readLines(new LineProcessor<Void>() {
-      int lineNo = 0;
-
-      @Override
-      public boolean processLine(final String line) throws IOException {
-        ++lineNo;
-        if (line.isEmpty()) {
-          // skip this line and go to the next one
-          return true;
-        }
-
-        final Iterator<String> parts = onTab.split(line).iterator();
-
-        final String key;
-        final File value;
-        boolean good = true;
-
-        if (parts.hasNext()) {
-          key = parts.next();
-        } else {
-          key = null;
-          good = false;
-        }
-
-        if (parts.hasNext()) {
-          value = new File(parts.next());
-        } else {
-          value = null;
-          good = false;
-        }
-
-        if (!good || parts.hasNext()) {
-          throw new RuntimeException(String.format("Corrupt line #%d: %s", lineNo, line));
-        }
-
-        try {
-          mapSink.put(key, value);
-        } catch (IllegalArgumentException iae) {
-          throw new IOException(String.format("Error processing line %d of file map: %s",
-              lineNo, line), iae);
-        }
-        // all lines should be processed
-        return true;
-      }
-
-      @Override
-      public Void getResult() {
-        // we don't produce a result; we just write to mapSink as a side-effect
-        return null;
-      }
-    });
+    // Using a LineProcessor saves memory by not loading the whole file into memory. This can matter
+    // for multi-gigabyte Gigaword-scale maps.
+    final MapLineProcessor<K, V> processor =
+        new MapLineProcessor(mapSink, keyFunction, valueFunction, Splitter.on("\t").trimResults());
+    source.readLines(processor);
   }
 
   /**
@@ -951,5 +908,87 @@ public final class FileUtils {
   public static void writeUnixLines(Iterable<? extends CharSequence> lines, CharSink sink)
       throws IOException {
     sink.writeLines(lines, "\n");
+  }
+
+  /**
+   * Creates a {@link File} from a {@link String} using the {@link File} constructor.
+   */
+  public Function<String, File> asFileFunction() {
+    return FileFunction.INSTANCE;
+  }
+
+  private enum FileFunction implements Function<String, File> {
+    INSTANCE;
+
+    @Override
+    public File apply(final String input) {
+      return new File(checkNotNull(input));
+    }
+  }
+
+  private static class MapLineProcessor<K, V> implements LineProcessor<Void> {
+
+    private int lineNo;
+    private final KeyValueSink<K, V> mapSink;
+    private final Function<String, K> keyFunction;
+    private final Function<String, V> valueFunction;
+    private final Splitter splitter;
+
+    private MapLineProcessor(final KeyValueSink<K, V> mapSink,
+        final Function<String, K> keyFunction, final Function<String, V> valueFunction,
+        final Splitter splitter) {
+      this.mapSink = checkNotNull(mapSink);
+      this.keyFunction = checkNotNull(keyFunction);
+      this.valueFunction = checkNotNull(valueFunction);
+      this.splitter = checkNotNull(splitter);
+    }
+
+    @Override
+    public boolean processLine(final String line) throws IOException {
+      ++lineNo;
+      if (line.isEmpty()) {
+        // Skip this line and go to the next one
+        return true;
+      }
+
+      final Iterator<String> parts = splitter.split(line).iterator();
+
+      final String key;
+      final String value;
+      boolean good = true;
+
+      if (parts.hasNext()) {
+        key = parts.next();
+      } else {
+        key = null;
+        good = false;
+      }
+
+      if (parts.hasNext()) {
+        value = parts.next();
+      } else {
+        value = null;
+        good = false;
+      }
+
+      if (!good || parts.hasNext()) {
+        throw new RuntimeException(String.format("Corrupt line #%d: %s", lineNo, line));
+      }
+
+      try {
+        mapSink.put(keyFunction.apply(key), valueFunction.apply(value));
+      } catch (IllegalArgumentException iae) {
+        throw new IOException(String.format("Error processing line %d of file map: %s",
+            lineNo, line), iae);
+      }
+      // all lines should be processed
+      return true;
+    }
+
+    @Override
+    public Void getResult() {
+      // We don't produce a result; we just write to mapSink as a side-effect
+      return null;
+    }
   }
 }
