@@ -237,18 +237,12 @@ public final class FileUtils {
 
   public static ImmutableMap<Symbol, File> loadSymbolToFileMap(
       final CharSource source) throws IOException {
-    final ImmutableMap.Builder<Symbol, File> ret = ImmutableMap.builder();
-    loadMapToSink(source, MapUtils.asMapSink(ret), SymbolUtils.symbolizeFunction(),
-        FileFunction.INSTANCE);
-    return ret.build();
+    return loadMap(source, SymbolUtils.symbolizeFunction(), FileFunction.INSTANCE);
   }
 
   public static ImmutableListMultimap<Symbol, File> loadSymbolToFileListMultimap(
       final CharSource source) throws IOException {
-    final ImmutableListMultimap.Builder<Symbol, File> ret = ImmutableListMultimap.builder();
-    loadMapToSink(source, MapUtils.asMapSink(ret), SymbolUtils.symbolizeFunction(),
-        FileFunction.INSTANCE);
-    return ret.build();
+    return loadMultimap(source, SymbolUtils.symbolizeFunction(), FileFunction.INSTANCE);
   }
 
   /**
@@ -279,7 +273,6 @@ public final class FileUtils {
 
   public static Map<Symbol, CharSource> loadSymbolToFileCharSourceMap(CharSource source)
       throws IOException {
-
     return Maps.transformValues(loadSymbolToFileMap(source),
         FileUtils.asUTF8CharSourceFunction());
   }
@@ -288,31 +281,51 @@ public final class FileUtils {
     return loadStringToFileMap(Files.asCharSource(f, Charsets.UTF_8));
   }
 
-
-  public static Map<String, File> loadStringToFileMap(
-      final CharSource source) throws IOException {
-    final ImmutableMap.Builder<String, File> ret = ImmutableMap.builder();
-    loadMapToSink(source, MapUtils.asMapSink(ret), Functions.<String>identity(),
-        FileFunction.INSTANCE);
-    return ret.build();
+  public static Map<String, File> loadStringToFileMap(final CharSource source) throws IOException {
+    return loadMap(source, Functions.<String>identity(), FileFunction.INSTANCE);
   }
 
   public static ImmutableListMultimap<String, File> loadStringToFileListMultimap(
       final CharSource source) throws IOException {
-    final ImmutableListMultimap.Builder<String, File> ret = ImmutableListMultimap.builder();
-    loadMapToSink(source, MapUtils.asMapSink(ret), Functions.<String>identity(),
-        FileFunction.INSTANCE);
+    return loadMultimap(source, Functions.<String>identity(), FileFunction.INSTANCE);
+  }
+
+  public static <K, V> ImmutableMap<K, V> loadMap(final CharSource source,
+      final Function<String, K> keyFunction, final Function<String, V> valueFunction)
+      throws IOException {
+    final ImmutableMap.Builder<K, V> ret = ImmutableMap.builder();
+    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction);
     return ret.build();
   }
 
-  public static <K, V> void loadMapToSink(final CharSource source,
+  public static <K, V> ImmutableMap<K, V> loadMap(final File file,
+      final Function<String, K> keyFunction, final Function<String, V> valueFunction)
+      throws IOException {
+    return loadMap(Files.asCharSource(file, Charsets.UTF_8), keyFunction, valueFunction);
+  }
+
+  public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final CharSource source,
+      final Function<String, K> keyFunction, final Function<String, V> valueFunction)
+      throws IOException {
+    final ImmutableListMultimap.Builder<K, V> ret = ImmutableListMultimap.builder();
+    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction);
+    return ret.build();
+  }
+
+  public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final File file,
+      final Function<String, K> keyFunction, final Function<String, V> valueFunction)
+      throws IOException {
+    return loadMultimap(Files.asCharSource(file, Charsets.UTF_8), keyFunction, valueFunction);
+  }
+
+  private static <K, V> void loadMapToSink(final CharSource source,
       final KeyValueSink<K, V> mapSink, final Function<String, K> keyFunction,
       final Function<String, V> valueFunction)
       throws IOException {
     // Using a LineProcessor saves memory by not loading the whole file into memory. This can matter
     // for multi-gigabyte Gigaword-scale maps.
     final MapLineProcessor<K, V> processor =
-        new MapLineProcessor(mapSink, keyFunction, valueFunction, Splitter.on("\t").trimResults());
+        new MapLineProcessor<>(mapSink, keyFunction, valueFunction, Splitter.on("\t").trimResults());
     source.readLines(processor);
   }
 
