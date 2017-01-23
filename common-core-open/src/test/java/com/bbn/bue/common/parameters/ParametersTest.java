@@ -55,12 +55,12 @@ public final class ParametersTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testJoinNamespaceStartsWithPeriod() {
+  public void testJoinNamespaceEndsWithPeriod() {
     Parameters.joinNamespace(ImmutableList.of("foo.bar.", "baz"));
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testJoinNamespaceEndsWithPeriod() {
+  public void testJoinNamespaceStarsWithPeriod() {
     Parameters.joinNamespace(ImmutableList.of("foo.bar", ".baz"));
   }
 
