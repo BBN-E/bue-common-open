@@ -46,6 +46,12 @@ public final class ParametersTest {
     assertEquals("", Parameters.joinNamespace(ImmutableList.of("")));
     assertEquals("foo", Parameters.joinNamespace(ImmutableList.of("foo")));
     assertEquals("foo.bar", Parameters.joinNamespace(ImmutableList.of("foo", "bar")));
+    assertEquals("foo.bar.baz", Parameters.joinNamespace(ImmutableList.of("foo.bar", "baz")));
+
+    assertEquals("", Parameters.joinNamespace(""));
+    assertEquals("foo", Parameters.joinNamespace("foo"));
+    assertEquals("foo.bar", Parameters.joinNamespace("foo", "bar"));
+    assertEquals("foo.bar.baz", Parameters.joinNamespace("foo.bar", "baz"));
   }
 
   @Test

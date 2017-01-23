@@ -1315,6 +1315,14 @@ public final class Parameters {
     return dotJoiner().join(namespace);
   }
 
+  /**
+   * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for
+   * arguments {@code ["foo", "bar"]}.
+   */
+  public static String joinNamespace(final String... elements) {
+    return dotJoiner().join(elements);
+  }
+
   public static final class Builder {
 
     private final Map<String, String> params = Maps.newHashMap();
