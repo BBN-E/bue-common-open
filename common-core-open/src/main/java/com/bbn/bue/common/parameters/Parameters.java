@@ -34,6 +34,7 @@ import com.bbn.bue.common.validators.Validator;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -63,7 +64,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.bbn.bue.common.StringUtils.dotJoiner;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.in;
@@ -79,11 +79,15 @@ import static com.google.common.base.Predicates.not;
  * MissingRequiredParameter} exception.
  *
  * @author rgabbard
+ * @author clignos
  */
 @Beta
 public final class Parameters {
 
   public static final String DO_OS_CONVERSION_PARAM = "os_filepath_conversion";
+
+  private static final String DELIM = ".";
+  private static final Joiner JOINER = Joiner.on(DELIM);
 
   /**
    * Constructs a Parameters object from a <code>Map</code>.  The Map may contain neither null keys,
@@ -114,9 +118,9 @@ public final class Parameters {
    */
   public Parameters copyNamespace(final String requestedNamespace) {
     checkArgument(!requestedNamespace.isEmpty());
-    checkArgument(!requestedNamespace.endsWith("."));
+    checkArgument(!requestedNamespace.endsWith(DELIM));
     final ImmutableMap.Builder<String, String> ret = ImmutableMap.builder();
-    final String dottedNamespace = requestedNamespace + ".";
+    final String dottedNamespace = requestedNamespace + DELIM;
     for (final Map.Entry<String, String> param : params.entrySet()) {
       if (param.getKey().startsWith(dottedNamespace)) {
         ret.put(param.getKey().substring(dottedNamespace.length()), param.getValue());
@@ -141,7 +145,7 @@ public final class Parameters {
   public Parameters copyNamespaceIfPresent(final String requestedNamespace) {
     // checkArgument ensures namespaces are specified consistently
     checkArgument(!requestedNamespace.isEmpty());
-    checkArgument(!requestedNamespace.endsWith("."));
+    checkArgument(!requestedNamespace.endsWith(DELIM));
     if (isNamespacePresent(requestedNamespace)) {
       return copyNamespace(requestedNamespace);
     } else {
@@ -156,8 +160,8 @@ public final class Parameters {
    */
   public boolean isNamespacePresent(final String requestedNamespace) {
     checkArgument(requestedNamespace.length() > 0);
-    checkArgument(!requestedNamespace.endsWith("."));
-    final String probe = requestedNamespace + ".";
+    checkArgument(!requestedNamespace.endsWith(DELIM));
+    final String probe = requestedNamespace + DELIM;
     return Iterables.any(params.keySet(), StringUtils.startsWith(probe));
   }
 
@@ -311,7 +315,7 @@ public final class Parameters {
     if (namespace.isEmpty()) {
       return param;
     } else {
-      return joinNamespace(namespace) + "." + param;
+      return joinNamespace(namespace) + DELIM + param;
     }
   }
 
@@ -1243,7 +1247,7 @@ public final class Parameters {
     // all parameter requests eventually get routed through here,
     // so this is where we observe
     for (final Parameters.Listener listener : listeners) {
-      listener.observeParameterRequest(StringUtils.dotJoiner().join(
+      listener.observeParameterRequest(JOINER.join(
           FluentIterable.from(namespace).append(param)));
     }
   }
@@ -1309,10 +1313,27 @@ public final class Parameters {
 
   /**
    * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for {@code
-   * ["foo", "bar"]}.
+   * ["foo", "bar"]}. The namespace may consist of any number of elements, including none at all.
+   * No element in the namespace may begin or end with a period.
    */
   public static String joinNamespace(final List<String> namespace) {
-    return dotJoiner().join(namespace);
+    for (final String element : namespace) {
+      checkArgument(!element.startsWith(DELIM),
+          "Namespace element may not begin with a period: " + element);
+      checkArgument(!element.endsWith(DELIM),
+          "Namespace element may not end with a period: " + element);
+    }
+    return JOINER.join(namespace);
+  }
+
+  /**
+   * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for
+   * arguments {@code ["foo", "bar"]}. To match the behavior of {@link #joinNamespace(List)},
+   * the namespace may consist of any number of elements, including none at all. No element in the
+   * namespace may begin or end with a period.
+   */
+  public static String joinNamespace(final String... elements) {
+    return JOINER.join(elements);
   }
 
   public static final class Builder {
@@ -1377,7 +1398,7 @@ public final class Parameters {
       if (subNamespace.isNamespacePresent(activeNamespace)) {
         ret.add(nameSpaceToObjectMapper.fromNameSpace(subNamespace.copyNamespace(activeNamespace)));
       } else {
-        throw new ParameterException("Expected namespace " + baseNamespace + "." + activeNamespace
+        throw new ParameterException("Expected namespace " + baseNamespace + DELIM + activeNamespace
             + "to exist because of value of " + activeNamespacesFeature + " but "
             + "it did not");
       }
