@@ -1310,6 +1310,7 @@ public final class Parameters {
   /**
    * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for {@code
    * ["foo", "bar"]}. The namespace may consist of any number of elements, including none at all.
+   * No element in the namespace should end in a period.
    */
   public static String joinNamespace(final List<String> namespace) {
     return dotJoiner().join(namespace);
@@ -1318,7 +1319,8 @@ public final class Parameters {
   /**
    * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for
    * arguments {@code ["foo", "bar"]}. To match the behavior of {@link #joinNamespace(List)},
-   * the namespace may consist of any number of elements, including none at all.
+   * the namespace may consist of any number of elements, including none at all. No element in the
+   * namespace should end in a period.
    */
   public static String joinNamespace(final String... elements) {
     return dotJoiner().join(elements);
