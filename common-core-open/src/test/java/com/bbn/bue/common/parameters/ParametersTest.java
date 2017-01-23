@@ -54,6 +54,16 @@ public final class ParametersTest {
     assertEquals("foo.bar.baz", Parameters.joinNamespace("foo.bar", "baz"));
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testJoinNamespaceStartsWithPeriod() {
+    Parameters.joinNamespace(ImmutableList.of("foo.bar.", "baz"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testJoinNamespaceEndsWithPeriod() {
+    Parameters.joinNamespace(ImmutableList.of("foo.bar", ".baz"));
+  }
+
   @Test
   public void testBuilder() {
     final ImmutableMap<String, String> map = ImmutableMap.of("a", "1", "b", "2");

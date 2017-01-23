@@ -1314,9 +1314,15 @@ public final class Parameters {
   /**
    * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for {@code
    * ["foo", "bar"]}. The namespace may consist of any number of elements, including none at all.
-   * No element in the namespace should end in a period.
+   * No element in the namespace may begin or end with a period.
    */
   public static String joinNamespace(final List<String> namespace) {
+    for (final String element : namespace) {
+      checkArgument(!element.startsWith(DELIM),
+          "Namespace element may not begin with a period: " + element);
+      checkArgument(!element.endsWith(DELIM),
+          "Namespace element may not end with a period: " + element);
+    }
     return JOINER.join(namespace);
   }
 
@@ -1324,7 +1330,7 @@ public final class Parameters {
    * Returns the specified namespace joined into a string, for example {@code "foo.bar"} for
    * arguments {@code ["foo", "bar"]}. To match the behavior of {@link #joinNamespace(List)},
    * the namespace may consist of any number of elements, including none at all. No element in the
-   * namespace should end in a period.
+   * namespace may begin or end with a period.
    */
   public static String joinNamespace(final String... elements) {
     return JOINER.join(elements);
