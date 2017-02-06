@@ -133,7 +133,7 @@ public final class JacksonSerializer {
   public static final class Builder {
     private JsonFactory jsonFactory = new JsonFactory();
     private boolean usePropertyForTypeInformation = true;
-    private boolean usePrettyOutput = false;
+    private boolean usePrettyOutput = true;
     // paired lists of annotation inspectors and injectable values needed for deserializing
     // using values provided by a dependency-injection framework
     private AnnotationIntrospector annotationIntrospector = null;
@@ -171,6 +171,13 @@ public final class JacksonSerializer {
       ret.usePrettyOutput = true;
       return ret;
     }
+
+    public Builder compactButUnreadableOutput() {
+      final Builder ret = copy();
+      ret.usePrettyOutput = false;
+      return ret;
+    }
+
 
     /**
      * Specifies to use arrays rather than properties to encode type information. You will need to
