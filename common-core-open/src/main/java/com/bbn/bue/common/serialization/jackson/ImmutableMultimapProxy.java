@@ -24,7 +24,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *   <li>In your {@code JsonCreator} method, take an {@code ImmutableMultimapProxy} as an argument and call
  *   {@link #toImmutableMultimap()}</li>
  * </ol>
+ *
+ * @deprecated Prefer {@link MapEntries}
  */
+@Deprecated
 public class ImmutableMultimapProxy<K, V>  {
 
   @JsonProperty("keys")
@@ -40,6 +43,8 @@ public class ImmutableMultimapProxy<K, V>  {
     checkArgument(keys.size() == values.size());
   }
 
+  @Deprecated
+  @SuppressWarnings("deprecation")
   public static <K, V> ImmutableMultimapProxy<K, V> forMultimap(Multimap<K, V> map) {
     final List<K> keys = Lists.newArrayListWithCapacity(map.size());
     final List<Collection<V>> values = Lists.newArrayListWithCapacity(map.size());

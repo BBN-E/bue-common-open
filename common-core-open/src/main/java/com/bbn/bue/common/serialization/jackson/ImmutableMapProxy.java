@@ -19,8 +19,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * package-private accessor which returns {@code ImmutableMapProxy.forMap(myMap)}</li> <li>In your
  * {@code JsonCreator} method, take an {@code ImmutableMapProxy} as an argument and call {@link
  * #toImmutableMap()}</li> </ol>
+ *
+ * @deprecated Prefer {@link MapEntries}
  */
-public class ImmutableMapProxy<K, V> {
+@Deprecated
+public final class ImmutableMapProxy<K, V> {
 
   @JsonProperty("keys")
   private final List<K> keys;
@@ -34,6 +37,8 @@ public class ImmutableMapProxy<K, V> {
     checkArgument(keys.size() == values.size());
   }
 
+  @Deprecated
+  @SuppressWarnings("deprecation")
   public static <K, V> ImmutableMapProxy<K, V> forMap(Map<K, V> map) {
     final List<K> keys = Lists.newArrayListWithCapacity(map.size());
     final List<V> values = Lists.newArrayListWithCapacity(map.size());
@@ -48,3 +53,4 @@ public class ImmutableMapProxy<K, V> {
     return MapUtils.copyParallelListsToMap(keys, values);
   }
 }
+
