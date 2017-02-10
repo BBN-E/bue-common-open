@@ -217,8 +217,7 @@ public final class Parameters {
 
 
   public static Parameters loadSerifStyle(final File f) throws IOException {
-    final SerifStyleParameterFileLoader loader = new SerifStyleParameterFileLoader();
-    return new Parameters(loader.load(f), ImmutableList.<String>of());
+    return new SerifStyleParameterFileLoader.Builder().build().load(f);
   }
 
   public static Parameters fromMap(Map<String, String> map) {

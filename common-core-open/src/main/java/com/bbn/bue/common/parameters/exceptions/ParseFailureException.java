@@ -10,4 +10,8 @@ public class ParseFailureException extends ParameterFileException {
       final File filename, final int lineNumber) {
     super(String.format("%s: Line %d of %s: %s", error, lineNumber, filename, line));
   }
+
+  public ParseFailureException(final String message) {
+    super(message);
+  }
 }
