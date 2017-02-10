@@ -199,7 +199,7 @@ public final class Parameters {
       final SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       out.format("#%s\n", timeFormat.format(new Date()));
     }
-    List<String> keys = new ArrayList<String>(params.keySet());
+    List<String> keys = new ArrayList<>(params.keySet());
     Collections.sort(keys);
     for (final String rawKey : keys) {
       final String key;
@@ -217,8 +217,7 @@ public final class Parameters {
 
 
   public static Parameters loadSerifStyle(final File f) throws IOException {
-    final SerifStyleParameterFileLoader loader = new SerifStyleParameterFileLoader();
-    return new Parameters(loader.load(f), ImmutableList.<String>of());
+    return new SerifStyleParameterFileLoader.Builder().build().load(f);
   }
 
   public static Parameters fromMap(Map<String, String> map) {
@@ -305,6 +304,8 @@ public final class Parameters {
 
   public Optional<Set<Symbol>> getOptionalSymbolSet(final String param) {
     if (isPresent(param)) {
+      // we know get() will succeed because of isPresent
+      //noinspection OptionalGetWithoutIsPresent
       return Optional.<Set<Symbol>>of(ImmutableSet.copyOf(getOptionalSymbolList(param).get()));
     } else {
       return Optional.absent();
@@ -445,13 +446,13 @@ public final class Parameters {
   }
 
   public <T extends Enum<T>> T getEnum(final String param, final Class<T> clazz) {
-    return this.<T>get(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration");
+    return this.get(param, new StringToEnum<>(clazz), new AlwaysValid<T>(), "enumeration");
   }
 
   public <T extends Enum<T>> Optional<T> getOptionalEnum(final String param, final Class<T> clazz) {
     if (isPresent(param)) {
       return Optional
-          .of(this.<T>get(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration"));
+          .of(this.get(param, new StringToEnum<>(clazz), new AlwaysValid<T>(), "enumeration"));
     } else {
       return Optional.absent();
     }
@@ -461,7 +462,7 @@ public final class Parameters {
    * Gets a parameter whose value is a (possibly empty) list of enums.
    */
   public <T extends Enum<T>> List<T> getEnumList(final String param, final Class<T> clazz) {
-    return this.<T>getList(param, new StringToEnum<T>(clazz), new AlwaysValid<T>(), "enumeration");
+    return this.getList(param, new StringToEnum<>(clazz), new AlwaysValid<T>(), "enumeration");
   }
 
   public Class<?> getClassObjectForString(final String className) throws ClassNotFoundException {
@@ -527,15 +528,9 @@ public final class Parameters {
       if (!ret.isPresent()) {
         ret = createViaZeroArgConstructor(clazz, param);
       }
-    } catch (IllegalAccessException iae) {
+    } catch (IllegalAccessException | InstantiationException | InvocationTargetException iae) {
       throw new ParameterException("While attempting to load parameter-initialized object from "
           + param + " :", iae);
-    } catch (InstantiationException e) {
-      throw new ParameterException("While attempting to load parameter-initialized object from "
-          + param + " :", e);
-    } catch (InvocationTargetException e) {
-      throw new ParameterException("While attempting to load parameter-initialized object from "
-          + param + " :", e);
     }
 
     if (!ret.isPresent()) {
@@ -743,7 +738,7 @@ public final class Parameters {
    */
   public double getProbability(final String param) {
     return get(param, new StringToDouble(),
-        new IsInRange<Double>(Range.closed(0.0, 1.0)),
+        new IsInRange<>(Range.closed(0.0, 1.0)),
         "probability");
   }
 
@@ -761,7 +756,7 @@ public final class Parameters {
    */
   public File getExistingFile(final String param) {
     return get(param, getFileConverter(),
-        new And<File>(new FileExists(), new IsFile()),
+        new And<>(new FileExists(), new IsFile()),
         "existing file");
   }
 
@@ -814,7 +809,7 @@ public final class Parameters {
    */
   public File getExistingDirectory(final String param) {
     return get(param, new StringToFile(),
-        new And<File>(new FileExists(), new IsDirectory()),
+        new And<>(new FileExists(), new IsDirectory()),
         "existing directory");
   }
 
