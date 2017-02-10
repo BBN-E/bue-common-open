@@ -60,6 +60,12 @@ public abstract class SerifStyleParameterFileLoader implements ParameterFileLoad
 
   private static final Logger log = LoggerFactory.getLogger(SerifStyleParameterFileLoader.class);
 
+  /**
+   * The standard behavior of BBN parameter files is to crash if a parameter
+   * file redefines an already defined parameter without explicitly specifying the OVERRIDE prefix.
+   * Sometimes this behavior is inconvenient, so this parameter provides a way to turn it off, and
+   * allow silent redefinition.
+   * */
   @Value.Default
   public boolean crashOnUndeclaredOverrides() {
     return true;
