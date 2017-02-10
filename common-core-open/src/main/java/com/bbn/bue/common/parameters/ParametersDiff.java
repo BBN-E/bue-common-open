@@ -64,8 +64,8 @@ public final class ParametersDiff {
 
       if (!leftVal.equals(rightVal)) {
         System.out.println("<> " + potentialConflict +
-            "\nleft: " + leftVal +
-            "\nright: " + rightVal);
+            "\n\t< " + leftVal +
+            "\n\t> " + rightVal);
       }
     }
   }
