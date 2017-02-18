@@ -130,14 +130,14 @@ public final class MultimapUtils {
   /**
    * Creates a copy of the supplied multimap with its keys transformed by the supplied function.
    *
-   * The {@code injection} must never return null and the input multimap must contain no nulls.
+   * The {@code  function} must never return null and the input multimap must contain no nulls.
    */
   public static <K1, K2, V> ImmutableSetMultimap<K2, V> copyWithTransformedKeys(
       final SetMultimap<K1,V> setMultimap,
-      final Function<? super K1, ? extends K2> injection) {
+      final Function<? super K1, ? extends K2> function) {
     final ImmutableSetMultimap.Builder<K2,V> ret = ImmutableSetMultimap.builder();
     for (final Map.Entry<K1, V> entry : setMultimap.entries()) {
-      ret.put(injection.apply(entry.getKey()), entry.getValue());
+      ret.put( function.apply(entry.getKey()), entry.getValue());
     }
     return ret.build();
   }
