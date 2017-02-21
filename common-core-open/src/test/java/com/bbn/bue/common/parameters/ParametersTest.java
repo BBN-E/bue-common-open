@@ -82,6 +82,44 @@ public final class ParametersTest {
     assertEquals("foo.bar", fromMap(map, ImmutableList.of("foo", "bar")).modifiedCopyBuilder().build().namespace());
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuilderEmptyKey() {
+    final Parameters.Builder builder = Parameters.builder();
+    builder.set("", "bar");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuilderWhitespaceKey() {
+    final Parameters.Builder builder = Parameters.builder();
+    builder.set("fo o", "bar");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuilderOnlyWhitespaceKey() {
+    final Parameters.Builder builder = Parameters.builder();
+    builder.set(" ", "bar");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuilderEmptyValue() {
+    final Parameters.Builder builder = Parameters.builder();
+    builder.set("foo", "");
+  }
+
+  @Test
+  public void testBuilderWhitespaceValue() {
+    final Parameters.Builder builder = Parameters.builder();
+    builder.set("foo", " ba r ");
+    // Leading and trailing whitespace should be trimmed
+    assertEquals("ba r", builder.build().getString("foo"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuilderOnlyWhitespaceValue() {
+    final Parameters.Builder builder = Parameters.builder();
+    builder.set("foo", " ");
+  }
+
   @Test
   public void testStringList() {
     assertEquals(

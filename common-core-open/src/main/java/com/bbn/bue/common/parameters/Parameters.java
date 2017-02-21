@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -88,6 +89,7 @@ public final class Parameters {
 
   private static final String DELIM = ".";
   private static final Joiner JOINER = Joiner.on(DELIM);
+  private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
 
   /**
    * Constructs a Parameters object from a <code>Map</code>.  The Map may contain neither null keys,
@@ -1341,6 +1343,14 @@ public final class Parameters {
     }
 
     public Builder set(String key, String value) {
+      checkNotNull(key);
+      checkArgument(!key.isEmpty(), "Key must be non-empty");
+      checkArgument(!WHITESPACE_PATTERN.matcher(key).find(), "Key must not contain whitespace");
+      checkNotNull(value);
+      // Medial whitespace is allowed, but we remove initial/final whitespace as it will not
+      // preserved in loading.
+      value = value.trim();
+      checkArgument(!value.isEmpty(), "Value cannot be empty or only whitespace");
       params.put(key, value);
       return this;
     }
