@@ -1345,7 +1345,7 @@ public final class Parameters {
     public Builder set(String key, String value) {
       checkNotNull(key);
       checkArgument(!key.isEmpty(), "Key must be non-empty");
-      checkArgument(!WHITESPACE_PATTERN.matcher(key).find(), "Key must not contain whitespace");
+      checkArgument(!WHITESPACE_PATTERN.matcher(key).find(), "Key cannot contain whitespace");
       checkNotNull(value);
       // Medial whitespace is allowed, but we remove initial/final whitespace as it will not
       // preserved in loading.
