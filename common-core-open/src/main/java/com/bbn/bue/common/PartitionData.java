@@ -219,8 +219,9 @@ public final class PartitionData {
     final ImmutableList.Builder<File> partitionFiles = ImmutableList.builder();
     for (int partitionNum = 0; partitionNum < partitions.size(); partitionNum++) {
       final ImmutableList<Symbol> partition = partitions.get(partitionNum);
+      // maxPartition -1 since partitions are indexed starting at 0
       final String partitionFileName = partitionPrefix + '.'
-          + StringUtils.padWithMax(partitionNum, maxPartition);
+          + StringUtils.padWithMax(partitionNum, maxPartition - 1);
       final File partitionFile;
       if (documentMap != null) {
         partitionFile = new File(outputDirectory, partitionFileName + ".map");
