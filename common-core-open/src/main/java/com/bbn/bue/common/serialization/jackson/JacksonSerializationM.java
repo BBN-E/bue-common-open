@@ -52,6 +52,11 @@ public final class JacksonSerializationM extends AbstractModule {
     for (final Module jacksonModule : jacksonModules) {
       ret.registerModule(jacksonModule);
     }
+    // we block this module from being installed if found on the classpath because it breaks
+    // our normal Guice injection during deserialization.  This shouldn't be a problem because
+    // things which use this (like Jersey) don't use JacksonSerializer.Builder to get their
+    // deserializers anyway.  If it's ever a problem, we can provide an optional to disable it.
+    ret.blockModuleClassName("com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule");
     return ret;
   }
 
@@ -80,4 +85,5 @@ public final class JacksonSerializationM extends AbstractModule {
   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
   @Retention(RetentionPolicy.RUNTIME)
   @interface JacksonModulesP {}
+
 }

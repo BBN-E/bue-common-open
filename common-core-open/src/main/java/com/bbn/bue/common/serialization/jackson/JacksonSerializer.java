@@ -21,10 +21,14 @@ import com.google.common.collect.Ordering;
 import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -131,6 +135,8 @@ public final class JacksonSerializer {
    * and with properties for storing type information.
    */
   public static final class Builder {
+    private static final Logger log = LoggerFactory.getLogger(Builder.class);
+
     private JsonFactory jsonFactory = new JsonFactory();
     private boolean usePropertyForTypeInformation = true;
     private boolean usePrettyOutput = true;
@@ -141,6 +147,7 @@ public final class JacksonSerializer {
     // we order modules by name for determinism
     private ImmutableSet.Builder<Module> modules = ImmutableSortedSet.<Module>orderedBy(
         Ordering.natural().onResultOf(ModuleNameFunction.INSTANCE));
+    private final ImmutableSet.Builder<String> blockedModuleClassNamesB = ImmutableSet.builder();
 
     private Builder copy() {
       final Builder ret = new Builder();
@@ -178,6 +185,11 @@ public final class JacksonSerializer {
       return ret;
     }
 
+    public Builder blockModuleClassName(String className) {
+      checkArgument(!className.isEmpty(), "Blocking empty class name makes no sense.");
+      blockedModuleClassNamesB.add(className);
+      return this;
+    }
 
     /**
      * Specifies to use arrays rather than properties to encode type information. You will need to
@@ -243,7 +255,18 @@ public final class JacksonSerializer {
     private ObjectMapper mapperFromJSONFactory(JsonFactory jsonFactory) {
       final ObjectMapper mapper = new ObjectMapper(jsonFactory);
       mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-      mapper.findAndRegisterModules();
+
+      // the JaxB annotations module bound by Jersey breaks our normal serialization for
+      // some reason, so we need to block it if it is found on the classpath somehow
+      final ImmutableSet<String> blockedModuleClassNames = blockedModuleClassNamesB.build();
+      for (final Module foundModule : ObjectMapper.findModules()) {
+        if (!blockedModuleClassNames.contains(foundModule.getClass().getName())) {
+          mapper.registerModule(foundModule);
+        } else {
+          log.warn("Blocked installation of discovered module {}", foundModule);
+        }
+      }
+
       // modules are ordered by name for determinism, see field declaration
       for (final Module module : modules.build()) {
         mapper.registerModule(module);
