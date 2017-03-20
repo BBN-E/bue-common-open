@@ -1,6 +1,7 @@
 package com.bbn.bue.common.files;
 
 import com.bbn.bue.common.StringUtils;
+import com.bbn.bue.common.TextGroupImmutable;
 import com.bbn.bue.common.collections.KeyValueSink;
 import com.bbn.bue.common.collections.MapUtils;
 import com.bbn.bue.common.io.GZIPByteSink;
@@ -12,6 +13,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
@@ -34,6 +36,10 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 import com.google.common.primitives.Ints;
+
+import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -69,7 +75,10 @@ import static com.google.common.collect.Iterables.skip;
 import static com.google.common.collect.Iterables.transform;
 import static java.nio.file.Files.walkFileTree;
 
+@Value.Enclosing
 public final class FileUtils {
+  private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
+
   private FileUtils() {
     throw new UnsupportedOperationException();
   }
@@ -391,11 +400,87 @@ public final class FileUtils {
   }
 
   public static void backup(final File f) throws IOException {
-    backup(f, ".bak");
+    new BackupRequest.Builder()
+        .fileToBackup(f)
+        .build().doBackup();
   }
 
   public static void backup(final File f, final String extension) throws IOException {
-    Files.copy(f, addExtension(f, extension));
+    new BackupRequest.Builder()
+        .fileToBackup(f)
+        .extension(extension)
+        .build().doBackup();;
+  }
+
+  /**
+   * A request to backup a file. This request is executed by calling {@link #doBackup()}.
+   */
+  @TextGroupImmutable
+  @Value.Immutable
+  public static abstract class BackupRequest {
+    public abstract File fileToBackup();
+
+    /**
+     * The name of the type of object being backed up (e.g. "geonames database").  If this is
+     * provided, a message is logged.
+     */
+    public abstract Optional<String> nameOfThingToBackup();
+
+    /**
+     * The logger to write a log message to. If not specified, defaults to the logger of
+     * {@link FileUtils}
+     */
+    @Value.Default
+    public Logger logger() {
+      return FileUtils.log;
+    }
+
+    /**
+     * The extension to append to the backup file.  A "." is automatically inserted.  Defaults to "bak"
+     */
+    @Value.Default
+    public String extension() {
+      return "bak";
+    }
+
+    /**
+     * Whether to delete the file being backed up.
+     */
+    @Value.Default
+    public boolean deleteOriginal() {
+      return false;
+    }
+
+    @Value.Check
+    protected void check() {
+      checkArgument(!extension().isEmpty(), "Backup extension may not be empty");
+    }
+
+    /**
+     * Execute the backup request.
+     */
+    public final void doBackup() throws IOException {
+      if (fileToBackup().isFile()) {
+        final File backupFile = addExtension(fileToBackup(), extension());
+        final String operationMessage;
+        if (deleteOriginal()) {
+          operationMessage = "Moved";
+          java.nio.file.Files.move(fileToBackup().toPath(),
+                  backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } else {
+          operationMessage = "Copied";
+          java.nio.file.Files.copy(fileToBackup().toPath(),
+              backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        if (nameOfThingToBackup().isPresent()) {
+          logger().info("{} existing {} from {} to {}", operationMessage, nameOfThingToBackup().get(),
+              fileToBackup().getAbsolutePath(), backupFile.getAbsolutePath());
+        }
+      }
+    }
+
+    public static class Builder extends ImmutableFileUtils.BackupRequest.Builder {}
   }
 
   /**
