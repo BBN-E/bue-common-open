@@ -898,6 +898,14 @@ public final class Parameters {
     return Optional.absent();
   }
 
+  public Optional<ImmutableSet<String>> getOptionalStringSet(final String param) {
+    if (isPresent(param)) {
+      return Optional.of(ImmutableSet.copyOf(getStringSet(param)));
+    } else {
+      return Optional.absent();
+    }
+  }
+
   /**
    * Gets a ,-separated set of Symbols
    */
