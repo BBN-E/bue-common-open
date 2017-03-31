@@ -1159,6 +1159,18 @@ public final class Parameters {
     }
   }
 
+  /**
+   * If {@code param} is present, calls {@link #getCreatableDirectory(String)} with it.
+   * Otherwise, returns {@link Optional#absent()}
+   */
+  public Optional<File> getOptionalCreatableDirectory(final String param) {
+    if (isPresent(param)) {
+      return Optional.of(getCreatableDirectory(param));
+    } else {
+      return Optional.absent();
+    }
+  }
+
   public File getExistingFileRelativeTo(final File root, final String param) {
     if (!root.exists()) {
       throw new ParameterException(
