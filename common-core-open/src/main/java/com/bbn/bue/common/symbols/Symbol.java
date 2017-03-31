@@ -1,6 +1,8 @@
 package com.bbn.bue.common.symbols;
 
 import com.bbn.bue.common.HasStableHashCode;
+import com.bbn.bue.common.StringUtils;
+import com.bbn.bue.common.UnicodeFriendlyString;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -65,12 +67,22 @@ public final class Symbol implements Serializable, HasStableHashCode {
     return sym;
   }
 
+  public static synchronized Symbol from(final UnicodeFriendlyString unicodeFriendlyString) {
+    return from(unicodeFriendlyString.utf16CodeUnits());
+  }
+
   /**
    * Returns the string this Symbol represents. Will never be {@code null}.
    */
   @JsonProperty("string")
   public String asString() {
     return string;
+  }
+
+  public UnicodeFriendlyString asUnicodeFriendlyString() {
+    // this operation is relatively slow.  We can cache this in the future if
+    // we think it is worthwhile
+    return StringUtils.unicodeFriendly(string);
   }
 
   /**

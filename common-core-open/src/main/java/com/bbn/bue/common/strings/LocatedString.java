@@ -1,6 +1,9 @@
 package com.bbn.bue.common.strings;
 
-import com.bbn.bue.common.strings.offsets.ASRTime;
+import com.bbn.bue.common.StringUtils;
+import com.bbn.bue.common.TextGroupImmutable;
+import com.bbn.bue.common.UnicodeFriendlyString;
+import com.bbn.bue.common.UnicodeUnsafe;
 import com.bbn.bue.common.strings.offsets.ByteOffset;
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.EDTOffset;
@@ -8,688 +11,1084 @@ import com.bbn.bue.common.strings.offsets.OffsetGroup;
 import com.bbn.bue.common.strings.offsets.OffsetGroupRange;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+
+import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.getLast;
 
 /**
- * * Class for storing and manipulating strings that have been read in from a file, without losing
- * the relationship between each character and its origin in the file from which it was read.  In
- * particular, for each character in the located string, we record a start offset and an end offset
- * of each offset type (ByteOffset, CharOffset, EDTOffset, and ASRTime).  Start offsets and end
- * offsets are zero- indexed, and both are inclusive.  E.g., if a character in the string came from
- * a single byte at position 12, then that character's start ByteOffset and end ByteOffset will both
- * be 12.  For a character that was encoded using three bytes at positions 14, 15, and 16, the start
- * ByteOffset will be 14, and the end ByteOffset will be 16.
+ * Stores and manipulates strings in a way that tracks the relationship between each Unicode
+ * character in some string (the {@link #content()}) and each corresponding Unicode character in
+ * some original {@link #referenceString()}, which may or may not be accessible (this is typically
+ * the contents of the file a string was originally read from).
  *
- * In unmodified LocatedStrings, the start CharOffset for each character will be equal to its end
- * CharOffset.  However, modifications that replace substrings can result in individual characters
- * whose start and end offsets are not equal, since the offsets of the replacement characters are
- * set based on the entire range of characters in the replaced substring.
+ * <h2>{@code LocatedString} as character mapping</h2>
  *
- * The four offset types that are currently stored for each character are:
+ * <p>Conceptually, for each character in the {@link #content()} of {@code LocatedString},
+ * we record a start offset and an end offset of each of four offset types: ({@link ByteOffset},
+ * {@link CharOffset}, {@link EDTOffset}, and {@link com.bbn.bue.common.strings.offsets.ASRTime}).
+ * These encode the corresponding offsets <i>in the reference string</i>.  Start offsets and
+ * end offsets are zero-indexed, and both are inclusive.  For example, if a character in the string
+ * came from a single byte at position 12, then that character's start {@code ByteOffset} and end
+ * {@code ByteOffset} will both be 12.  For a character that was encoded using three bytes at
+ * positions 14, 15, and 16, the start {@code ByteOffset} will be 14, and the end {@code ByteOffset}
+ * will be 16.</p>
  *
- * - CharOffset.  More accurately, this is a unicode code point offset.
+ *  <p>In {@code LocatedString}s which have not undergone any transformations, the start
+ * and end {@code CharOffset}s for each character will be equal (this may not hold for other offsets,
+ * in particular {@link com.bbn.bue.common.strings.offsets.ASRTime}).  However, modifications that
+ * replace substrings can result in individual characters whose start and end offsets are not equal,
+ * since the offsets of the replacement characters are set based on the entire range of characters
+ * in the replaced substring. Similarly, when material is inserted, the inserted material may
+ * be arbitrarily mapped to the text before or after it.</p>
  *
- * - ByteOffset.
+ * <p>While conceptually a mapping is stored for each character, in practice we use a more
+ * efficient internal representation, described below. This internal representation is exposed
+ * through {@link #characterRegions()} solely for the use of I/O code. Please do not use it.</p>
  *
- * - EDTOffset.  EDT offsets are similar to character offsets, except that (i) any substrings
- * starting with "<" and extending to the matching ">" are skipped when counting offsets; and (ii)
- * the character "\r" is skipped when counting offsets. Note that condition (i) is *not* always
- * identical to skipping XML/SGML tags and comments.
+ * <h2>Offset types</h2>
  *
- * - ASRTime.  The start and end time of the speech signal that corresponds to a character.
+ * <p>The four offset types that are currently stored for each character are:
  *
- * @author originally by David A. Herman, refactored by Edward Loper; translated to Java by Ryan
- *         Gabbard
- * @author rgabbard
+ * <ul>
+ *
+ * <li><b>CharOffset</b>.  More accurately, this is a Unicode code point offset.  Note this means
+ * that non-BMP Unicode characters will be counted as one despite being two {@code char}s in Java.</li>
+ *
+ * <li><b>ByteOffset</b>. Optional.</li>
+ *
+ * <li><b>EDTOffset</b>.  Historically-speaking, EDT offsets are similar to character offsets,
+ * except that (i) any substrings starting with "<" and extending to the matching ">" are skipped
+ * when counting offsets; and (ii) the character "\r" is skipped when counting offsets.
+ * Note that condition (i) is *not* always identical to skipping XML/SGML tags and comments.
+ *
+ * Nothing in JSerif enforces this interpretation of EDT offsets, so you could use them for
+ * other purposes. However, the use of EDT offsets in other ways may cause problems interfacing
+ * with CSerif. Note however, that CSerif itself has modes which produce different EDT offsets.
+ * It is recommended that you not use EDT offsets.</li>
+ *
+ * <li><b>ASRTime</b>.  Optional. The start and end time of the speech signal that corresponds to a character.
+ * </li>
+ *
+ * </ul></p>
+ *
+ * <p>Byte and ASR offsets are typically lost by substring and other operations on
+ * {@link LocatedString} since there is usually insufficient information to determine what
+ * they should be.</p>
+ *
+ * <h2>Substrings</h2>
+ *
+ * There are many possible ways to get substrings of a {@link LocatedString}.  There are three
+ * dimensions to consider:
+ * <ul>
+ *   <li>do you want a substring of {@link #content()}</li> or of the {@link #referenceString()}?</li>
+ *   <li>do you want the substring to retain offset mapping information or to be
+ *   a raw {@link UnicodeFriendlyString}? If you don't need it, dropping the offset mapping
+ *   is much faster.  Note any substrings of the reference string will always lack offset
+ *   mapping, since it doesn't make sense.</li>
+ *   <li>do you want to specify the bounds of your substring by code point offsets in
+ *   the content string or in the reference string?</li>
+ * </ul>
+ *
+ * Here are how all the combinations translate to methods:
+ * <ul>
+ *
+ *   <li><b>substring of content, with offset mapping, by content bounds:</b>
+ *   {@link #contentLocatedSubstringByContentOffsets(OffsetRange)}</li>
+ *
+ *   <li><b>substring of content, with offset mapping, by reference bounds:</b>
+ *   {@link #contentLocatedSubstringByReferenceOffsets(OffsetRange)}. Currently unimplemented.</li>
+ *
+ *   <li><b>substring of content, without offset mapping, by content bounds:</b>
+ *   {@link #content()}'s {@link UnicodeFriendlyString#substringByCodePoints(CharOffset, CharOffset)}</li>
+ *
+ *   <li><b>substring of content, without offset mapping, by reference bounds:</b>
+ *   {@link #contentSubstringByReferenceOffsets(OffsetRange)}. Currently unimplemented.</li>
+ *
+ *   <li><b>substring of reference, without offset mapping, by content bounds:</b>
+ *   {@link #referenceSubstringByContentOffsets(OffsetRange)}</li>
+ *
+ *   <li><b>substring of reference, without offset mapping, by reference bounds:</b>
+ *       {@link #referenceString()}'s {@link UnicodeFriendlyString#substringByCodePoints(CharOffset, CharOffset)}.
+ * </li>
+ *
+ * </ul>
+ *
+ * <h2>Other notes</h2>
+ * <p>Equality for {@code LocatedString} is quite strict: not only is the content required to be
+ * identical, but so is the mapping between the content and the original text offsets.</p>
+ *
+ * <h2>Internal Representation</h2>
+ *
+ * <b>WARNING:</b> This section is for the benefit of future developers working on
+ * {@link LocatedString} internals.
+ * The implementation of {@link LocatedString} is exposed entirely for the sake of I/O and
+ * is not guaranteed to be stable.  Do not use {@link CharacterRegion} directly in your code.
+ *
+ * A {@code LocatedString} is represented by a sequence of  {@link CharacterRegion}s representing
+ * spans of content characters within which various reference string offsets can be
+ * straightforwardly calculated. To spell this out in detail, within each region, the following
+ * must hold:
+ *
+ * <ul>
+ *   <li>Every region must be made uniformly of code points either within the BMP or outside of it.
+ *   BMP and non-BMP code points cannot be mixed in a region.  This must hold true of both the
+ *   content and reference string text.</li>
+ *   <li>With respect to content string character offsets, exactly one of the following must hold:
+ *   <ul>
+ *     <li>Content string character offsets must correspond one-to-one with reference string
+ *        character offsets. (most common)</li>
+ *     <li>The reference string start and end character offsets must be equal (text was
+ *     transformed by insertion)</li>
+ *     <li>The content string start and end character offsets must be equal (text was transformed
+ *     by deletion).</li>
+ *   </ul></li>
+ *   <li>Every region must either have its start and end reference text EDT offsets equal to one
+ *   another or the reference text EDT offsets must be in one-to-one correspondence with the
+ *   reference text character offsets. That is, every either region represents an area where
+ *   EDT offset counting rules don't apply or an area which is skipped for EDT offset counting.</li>
+ * </ul>
+ *
+ * <p>The regions are required to be disjoint on the content text side and to cover it
+ * completely.  Adjacent regions *must* differ in their mapping properties in some way;
+ * however this "canonicalization" will occur automatically when the object is built, so
+ * users do not need to concern themselves with it. However, we exploit this property in e.g.
+ * string containment checks.</p>
+ *
+ * @author originally by David A. Herman, refactored by Edward Loper; translated to Java
+ * and later restructured significantly by Ryan Gabbard
  */
-public final class LocatedString {
+@JsonSerialize(as = ImmutableLocatedString.class)
+@JsonDeserialize(as = ImmutableLocatedString.class)
+@TextGroupImmutable
+@Value.Immutable(prehash = true)
+@Value.Enclosing
+public abstract class LocatedString {
+
+  // Data fields
 
   /**
    * The string represented by this LocatedString. This may or may not match the original text it
-   * came from.
+   * came from (see class Javadoc).
    */
-  private final String content;
-  /**
-   * The offsets in the source that this LocatedString corresponds to.
-   */
-  private final OffsetGroupRange bounds;
-  /**
-   * OffsetEntrys track the relationship between offsets and indices in the LocatedString. What this
-   * relationship is, exactly, can vary between different parts of a string. Examples: (a) inside an
-   * XML tag, LocatedString indices and character offsets will be incremented, but EDT offsets will
-   * not. (b) When text is inserted, many LocatedString offsets will correspond to the same
-   * character offset.
-   */
-  private final ImmutableList<OffsetEntry> regions;
-  private boolean hashCodeInitialized = false;
-  /**
-   * We cache the hash code for performance reasons.
-   */
-  private int hashCode = Integer.MIN_VALUE;
-
-  private LocatedString(final String content, final List<OffsetEntry> regions,
-      final OffsetGroupRange bounds) {
-    this.content = checkNotNull(content);
-    this.bounds = checkNotNull(bounds);
-    this.regions = ImmutableList.copyOf(regions);
-    checkValidity();
-  }
-
-  private void checkValidity() {
-    checkArgument(!regions.isEmpty(), "LocatedString for %s with bounds %s lacks regions",
-        content, bounds);
-    final int boundsStartCharOffset = bounds.startInclusive().charOffset().asInt();
-    final int regionsStartCharOffset = regions.get(0).startOffsetInclusive.charOffset().asInt();
-    checkArgument(boundsStartCharOffset <= regionsStartCharOffset,
-        "Bounds and regions have inconsistent start char offset",
-        boundsStartCharOffset, regionsStartCharOffset);
-    final int boundsEndCharOffset = bounds.endInclusive().charOffset().asInt();
-    final int regionsEndCharOffset = getLast(regions).endOffsetInclusive.charOffset().asInt();
-    checkArgument(boundsEndCharOffset <= regionsEndCharOffset,
-        "Bounds and regions have inconsistent end char offset",
-        boundsEndCharOffset, regionsStartCharOffset);
-  }
-
-  public String text() {
-    return content;
-  }
-
-  public int length() {
-    return content.length();
-  }
+  public abstract UnicodeFriendlyString content();
 
   /**
-   * ******************************************************************
-   * Offset accessors
-   * *******************************************************************
+   * This is the original string this located string is derived from before any transformations.
+   * Note that when e.g. taking substrings of a located string, the pointer to the full original
+   * reference string is maintained.
    */
-  public EDTOffset startEDTOffset() {
-    return bounds.startInclusive().edtOffset();
-  }
-
-  public EDTOffset endEDTOffset() {
-    return bounds.endInclusive().edtOffset();
-  }
-
-  public CharOffset startCharOffset() {
-    return bounds.startInclusive().charOffset();
-  }
-
-  public CharOffset endCharOffset() {
-    return bounds.endInclusive().charOffset();
-  }
-
-  public OffsetGroupRange bounds() {
-    return bounds;
-  }
-
-  public ImmutableList<OffsetEntry> regions() {
-    return regions;
-  }
+  public abstract Optional<UnicodeFriendlyString> referenceString();
 
   /**
-   * @deprecated Prefer {@link #regions()}
-   */
-  @Deprecated
-  public List<OffsetEntry> offsetEntries() {
-    return regions();
-  }
-
-  /**
-   * This method computes EDT offsets and is therefore deprecated. At some point it may be removed.
+   * {@link CharacterRegion}s track the relationship between offsets and indices in the
+   * LocatedString. What this relationship is, exactly, can vary between different parts of a
+   * string. Examples: (a) inside an XML tag, LocatedString indices and character offsets will
+   * be incremented, but EDT offsets will not. (b) When text is inserted, many LocatedString
+   * offsets will correspond to the same character offset.
    *
-   * @deprecated Prefer {@link #fromStringStartingAtZero(String)}
+   * These regions must be in order, gap-less with respect to their content string offsets, and
+   * non-overlapping with respect to their content string positions.
    */
-  @Deprecated
-  public static LocatedString forString(final String text) {
-    final OffsetGroup initialOffsets =
-        OffsetGroup.from(ByteOffset.asByteOffset(0), CharOffset.asCharOffset(0),
-        EDTOffset.asEDTOffset(0));
-    return forString(text, initialOffsets);
+  public abstract ImmutableList<CharacterRegion> characterRegions();
+
+  // Derived fields
+
+  /**
+   * The offsets in the reference string that {@link #content()} corresponds to.  This is roughly
+   * the "convex hull" of these reference string offsets. That is, there will be content string
+   * characters corresponding to the start and end reference string offsets of these bounds, but
+   * there may be intermediate reference string offsets with no corresponding content string
+   * position.
+   */
+  @Value.Derived
+  public OffsetGroupRange referenceBounds() {
+    // we enforce in check that regions is not empty and we do not access this method in check()
+    return OffsetGroupRange.from(
+        characterRegions().iterator().next().referenceStartOffsetInclusive(),
+        getLast(characterRegions()).referenceEndOffsetInclusive());
   }
 
+  @Override
+  public final String toString() {
+    return content() + " [" + referenceBounds() + "]";
+  }
 
-  public static LocatedString forString(final String text, final OffsetGroupRange bounds,
-      final List<OffsetEntry> spanOffsets) {
-    return new LocatedString(text, spanOffsets, bounds);
+  // Means of creation
+
+  /**
+   * Makes the provided string into a {@link LocatedString} with a one-to-one mapping
+   * between content characters and reference string characters and with EDT offsets equal
+   * to character offsets.  This is typically how a string should originate before any
+   * further transformations are applied.
+   */
+  public static LocatedString fromReferenceString(final String text) {
+    return new OffsetCalculator.Builder().build().calculateOffsets(text);
   }
 
   /**
-   * This method computes EDT offsets and is therefore deprecated. At some point it may be removed.
-   *
-   * @deprecated Prefer {@link #fromStringStartingAt(String, OffsetGroup)}
+   * Makes the provided string into a {@link LocatedString} with a one-to-one mapping
+   * between content characters and reference string characters and with EDT offsets equal
+   * to character offsets.  This is typically how a string should originate before any
+   * further transformations are applied.
    */
-  @Deprecated
-  public static LocatedString forString(final String text, final OffsetGroup initialOffsets) {
-    return forString(text, initialOffsets, false);
+  public static LocatedString fromReferenceString(final UnicodeFriendlyString text) {
+    return new OffsetCalculator.Builder().build().calculateOffsets(text);
   }
 
   /**
-   * This method may compute EDT offsets and is therefore deprecated. At some point it may be
-   * removed.
-   *
-   * @deprecated Prefer {@link #fromStringStartingAt(String, OffsetGroup)}
+   * Users should not construct {@code LocatedString} directly from a builder except in
+   * test and I/O code.  Prefer {@link #fromReferenceString(UnicodeFriendlyString)}.
    */
-  @Deprecated
-  public static LocatedString forString(final String text, final OffsetGroup initialOffsets,
-      final boolean EDTOffsetsAreCharOffsets) {
-    final List<OffsetEntry> offsets =
-        calculateOffsets(text, initialOffsets, EDTOffsetsAreCharOffsets);
-    final OffsetGroupRange bounds = boundsFromOffsets(offsets);
-    return new LocatedString(text, offsets, bounds);
+  public static class Builder extends ImmutableLocatedString.Builder {
+
   }
 
-  @SuppressWarnings("unchecked")
-  public static LocatedString fromStringStartingAtZero(final String text) {
-    return forString(text, OffsetGroup.fromMatchingCharAndEDT(0), true);
-  }
+  // offset mapping
 
-  @SuppressWarnings("unchecked")
-  public static LocatedString fromStringStartingAt(final String text,
-      final OffsetGroup initialOffsets) {
-    return forString(text, initialOffsets, true);
+  /**
+   * Get the earliest reference string offsets corresponding to the given content string offset.
+   */
+  public OffsetGroup startReferenceOffsetsForContentOffset(CharOffset contentOffset) {
+    return characterRegions().get(regionIndexContainingContentOffset(contentOffset))
+        .startOffsetGroupForPosition(contentOffset);
   }
 
   /**
-   * Return a LocatedString substring of this string.
+   * Get the latest reference string offsets corresponding to the given content string offset.
+   */
+  public OffsetGroup endReferenceOffsetsForContentOffset(CharOffset contentOffset) {
+    return characterRegions().get(regionIndexContainingContentOffset(contentOffset))
+        .endOffsetGroupForPosition(contentOffset);
+  }
+
+
+  // substrings
+
+  /**
+   * Return a {@code LocatedString} substring of this string.  The substring and the indices are
+   * both with respect to the {@code LocatedString}'s content, not its reference string.
+   * Please refer to the class Javadoc for coverage of available substring options.
    *
-   * NOTE: Because it recomputes the various offsets of every character in the
+   * <p><b>NOTE:</b> Because it recomputes the various offsets of every character in the
    * substring, this method is *significantly* more expensive than just
    * fetching the String content of the substring.  If you just need the String
-   * content, you should use rawSubstring() instead.
+   * content, you should use rawSubstring() instead.</p>
    */
-  public LocatedString substring(final OffsetGroup start, final OffsetGroup end) {
-    return substring(start.charOffset(), end.charOffset());
+  public final LocatedString contentLocatedSubstringByContentOffsets(
+      final OffsetRange<CharOffset> contentOffsets) {
+    final UnicodeFriendlyString substringText = content().substringByCodePoints(contentOffsets);
+    final List<CharacterRegion> substringOffsets =
+        offsetsOfSubstringByContentCodepointOffsets(contentOffsets);
+    return new LocatedString.Builder().content(substringText).referenceString(referenceString())
+        .characterRegions(substringOffsets).build();
   }
 
   /**
-   * Return a LocatedString substring of this string.
+   * Return a {@code LocatedString} substring of this string containing the content offsets
+   * covering the specified range of reference offsets. Please refer to the class Javadoc
+   * for coverage of available substring options.
    *
-   * NOTE: Because it recomputes the various offsets of every character in the
-   * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String
-   * content, you should use rawSubstring() instead.
+   * This method is currently unimplemented.
    */
-  public LocatedString substring(final CharOffset start, final CharOffset end) {
-    final int startOffset = start.asInt() - bounds.startInclusive().charOffset().asInt();
-    final int endOffset = end.asInt() - bounds.startInclusive().charOffset().asInt() + 1;
-
-    return substring(startOffset, endOffset);
+  @SuppressWarnings("unused")
+  public final LocatedString contentLocatedSubstringByReferenceOffsets(
+      final OffsetRange<CharOffset> contentOffsets) {
+    throw new UnsupportedOperationException();
   }
 
   /**
-   * Return a LocatedString substring of this string covering the indicated character offsets, where
-   * both bounds are inclusive.
+   * Return a substring of this string containing the content offsets
+   * covering the specified range of reference offsets. Please refer to the class Javadoc
+   * for coverage of available substring options.
    *
-   * NOTE: Because it recomputes the various offsets of every character in the
-   * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String
-   * content, you should use rawSubstring() instead.
+   * This method is currently unimplemented.
    */
-  public LocatedString substring(final OffsetRange<CharOffset> characterOffsetsInclusive) {
-    return substring(characterOffsetsInclusive.startInclusive(), characterOffsetsInclusive.endInclusive());
+  @SuppressWarnings("unused")
+  public final UnicodeFriendlyString contentSubstringByReferenceOffsets(
+      final OffsetRange<CharOffset> contentOffsets) {
+    throw new UnsupportedOperationException();
   }
 
   /**
-   * Return a LocatedString substring of this string.
+   * Gets the substring of the reference string corresponding to a range of content string
+   * offsets.  This will include intervening characters which may not themselves correspond to
+   * any content string character.
    *
-   * NOTE: Because it recomputes the various offsets of every character in the
-   * substring, this method is *significantly* more expensive than just
-   * fetching the String content of the substring.  If you just need the String
-   * content, you should use rawSubstring() instead.
-   */
-  public LocatedString substring(final int startIndexInclusive, final int endIndexExclusive) {
-    final String text = content.substring(startIndexInclusive, endIndexExclusive);
-    final List<OffsetEntry> offsets = offsetsOfSubstring(startIndexInclusive, endIndexExclusive);
-    final OffsetGroupRange bounds = boundsFromOffsets(offsets);
-    return new LocatedString(text, offsets, bounds);
-  }
-
-  /**
-   * @deprecated Prefer the more explicit {@link #rawSubstringByCharOffsets(CharOffset, CharOffset)}
-   */
-  @Deprecated
-  public String rawSubstring(final OffsetGroup start, final OffsetGroup end) {
-    return rawSubstring(start.charOffset(), end.charOffset());
-  }
-
-  /**
-   * @deprecated Prefer the more explicit {@link #rawSubstringByCharOffsets(CharOffset, CharOffset)}
-   */
-  @Deprecated
-  public String rawSubstring(final CharOffset start, final CharOffset end) {
-    return rawSubstringByCharOffsets(start, end);
-  }
-
-  public String rawSubstringByCharOffsets(final CharOffset start, final CharOffset end) {
-    final int startOffset = start.asInt() - bounds.startInclusive().charOffset().asInt();
-    final int endOffset = end.asInt() - bounds.startInclusive().charOffset().asInt() + 1;
-
-    return rawSubstring(startOffset, endOffset);
-  }
-
-  /**
-   * Return a String substring of this string.
-   */
-  public String rawSubstring(final int startIndexInclusive, final int endIndexExclusive) {
-    return content.substring(startIndexInclusive, endIndexExclusive);
-  }
-
-  /**
-   * Returns the earliest offset group within this {@code LocatedString} whose character offset
-   * matches the one supplied. If not such offset group exists, throws a {@link
-   * NoSuchElementException}.
-   */
-  public OffsetGroup offsetGroupForCharOffset(final CharOffset offset) {
-    // if this ever slows us down significantly, we can binary search
-    for (final OffsetEntry entry : regions) {
-      final int entryStartCharOffset = entry.startOffsetInclusive.charOffset().asInt();
-      final int entryEndCharOffset = entry.endOffsetInclusive.charOffset().asInt();
-
-      if (entryStartCharOffset <= offset.asInt() && entryEndCharOffset > offset.asInt()) {
-        // we assume EDT offsets are continuous within entries
-        final int offsetWithinEntry = offset.asInt() - entryStartCharOffset;
-
-        return OffsetGroup.from(offset, EDTOffset
-            .asEDTOffset(entry.startOffsetInclusive.edtOffset().asInt()
-                // edt offsets are not incremented in an EDT skip region
-                + (entry.isEDTSkipRegion() ? 0 : offsetWithinEntry)));
-      }
-    }
-    throw new NoSuchElementException();
-  }
-
-  public boolean contains(LocatedString other) {
-    // TODO: we do it this way because the C++ is implemented this way,
-    // so implementing isSubstringOf is an easy, less error-prone
-    // translation. But .contains() is more idiomatic Java.
-    return other.isSubstringOf(this);
-  }
-
-  /**
-   * finds the position of the first offset entry of this object which has an identical char offset to oe
+   * Will return {@link Optional#absent()} if and only if {@link #referenceString()} returns
+   * absent.
    *
-   * preserves the CPP interface, more or less
+   * Please refer to the class Javadoc for coverage of available substring options.
    */
-  private int positionOfStartOffsetChar(final CharOffset charOffset) {
-    for(final OffsetEntry it: offsetEntries()) {
-      if(it.startOffset().charOffset().asInt() > charOffset.asInt()) {
-        return -1;
-      }
-      if(charOffset.asInt() <= it.endOffset().charOffset().asInt()) {
-        return it.startPosInclusive() + (charOffset.asInt() - it.startOffset().charOffset()
-            .asInt());
-      }
-    }
-    return -1;
-  }
-
-  private CharOffset getStartOffset(int pos) {
-    final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
-    checkArgument(pos >= oe.startPosInclusive() && pos <= oe.endPosExclusive() - 1);
-    if (pos == oe.startPosInclusive()) {
-      return oe.startOffset().charOffset();
+  public final Optional<UnicodeFriendlyString> referenceSubstringByContentOffsets(
+      final OffsetRange<CharOffset> contentOffsets) {
+    if (referenceString().isPresent()) {
+      return Optional.of(referenceString().get().substringByCodePoints(
+          OffsetGroupRange.from(
+              startReferenceOffsetsForContentOffset(contentOffsets.startInclusive()),
+              endReferenceOffsetsForContentOffset(contentOffsets.endInclusive()))
+              .asCharOffsetRange()));
     } else {
-      return CharOffset
-          .asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPosInclusive()));
+      return Optional.absent();
     }
   }
 
-  private CharOffset getEndOffset(int pos) {
-    final OffsetEntry oe = offsetEntries().get(lastEntryStartingBefore(pos));
-    checkArgument(pos >= oe.startPosInclusive() && pos <= oe.endPosExclusive());
-    if (pos == oe.endPosExclusive() - 1) {
-      return oe.endOffset().charOffset();
+  /**
+   * Does this substring contain {@code other} <b>exactly</b>, which is to say, not only is the
+   * content text of {@code other} contained in this one, but for that text, the corresponding
+   * reference offset mappings are exactly the same as well.
+   *
+   * Note that for most applications doing containment checks on either {@link #content()}
+   * or {@link #referenceBounds()} suffices and is much faster.
+   * </p>
+   */
+  public final boolean containsExactly(LocatedString other) {
+    if (!referenceCharOffsetsSequential() && other.referenceCharOffsetsSequential()) {
+      throw new UnsupportedOperationException("Containment for non-monotonic LocatedStrings needs"
+          + " to be implemented");
+    }
+
+    if (!referenceBounds().asCharOffsetRange().contains(other.referenceBounds().asCharOffsetRange())
+        || !referenceBounds().asEdtOffsetRange()
+        .contains(other.referenceBounds().asEdtOffsetRange())) {
+      // quick, cheap short-circuit check
+      return false;
+    }
+
+    // which of our character regions contains the start character offset of the putative substring?
+    final Optional<Integer> startRegionIndex =
+        firstRegionIndexContainingReferenceCharOffset(other.referenceBounds().startCharOffsetInclusive());
+    // which of our character regions contains the end character offset of the putative substring?
+    final Optional<Integer> endRegionIndex =
+        firstRegionIndexContainingReferenceCharOffset(other.referenceBounds().endCharOffsetInclusive());
+
+    // if we don't have any region containing them, it can't be a substring
+    if (!startRegionIndex.isPresent() || !endRegionIndex.isPresent()) {
+      return false;
+    }
+
+    final int numThisRegionsPossiblyOverlappingSubstring =
+        endRegionIndex.get() - startRegionIndex.get() + 1;
+
+    // we know if they are a substring this must be equal because both are in canonical form
+    if (numThisRegionsPossiblyOverlappingSubstring != other.characterRegions().size()) {
+      return false;
+    }
+
+    if (numThisRegionsPossiblyOverlappingSubstring == 1) {
+      // special case for when the putative substring would be contained entirely in just one
+      // of our character regions
+      return characterRegions().get(startRegionIndex.get())
+          .contains(other.characterRegions().get(0));
     } else {
-      return CharOffset
-          .asCharOffset(oe.startOffset().charOffset().asInt() + (pos - oe.startPosInclusive()));
+      // if the putative substring covers more than one of our character regions, then
+      // its first region must be a suffix of our first region...
+      if (!other.characterRegions().get(0).isSuffixOf(characterRegions().get(startRegionIndex.get()))) {
+        return false;
+      }
+
+      // and its last region must be a prefix of our last region
+      if (!Iterables.getLast(other.characterRegions()).isPrefixOf(characterRegions().get(endRegionIndex.get()))) {
+        return false;
+      }
+
+      // and all intermediate regions must match exactly (because of canonical form)
+      for (int i = 1; i < numThisRegionsPossiblyOverlappingSubstring - 1; ++i) {
+        final CharacterRegion thisRegion = characterRegions().get(startRegionIndex.get() + i);
+        final CharacterRegion otherRegion = other.characterRegions().get(i);
+        if (!thisRegion.equivalentUpToShiftedContentOffsets(otherRegion)) {
+          return false;
+        }
+      }
+
+      // This isn't quite right! The content substring match
+      // could occur in a different place than the offset mapping match
+      // Fixing this is issue #64
+      return content().utf16CodeUnits().contains(other.content().utf16CodeUnits());
     }
   }
 
-  private boolean isSubstringOf(LocatedString sup) {
-    final int superStringStartPos =
-        sup.positionOfStartOffsetChar(offsetEntries().get(0).startOffset().charOffset());
-    if (superStringStartPos < 0) {
-      return false;
-    }
-    if (superStringStartPos + length() > sup.length()) {
-      return false;
+  // private implementation
+
+  /**
+   * Describes a region of the content string whose relationship to the reference string
+   * can be computed by some consistent rule for all character offsets in the region.
+   *
+   * This is an aspect of the internal representation of {@link LocatedString} which is exposed
+   * only for I/O by SerifXMLLoader. Users should never access {@link CharacterRegion}s directly.
+   */
+  @TextGroupImmutable
+  @Value.Immutable(prehash = true)
+  public static abstract class CharacterRegion {
+
+    /**
+     * Are any of the content string characters for this region non-BMP?
+     */
+    public abstract boolean contentNonBmp();
+
+    /**
+     * The beginning offset of this region in the content string.
+     */
+    public abstract CharOffset contentStartPosInclusive();
+
+    /**
+     * The offset after the end offset of this region in the content string.
+     */
+    public abstract CharOffset contentEndPosExclusive();
+
+    /**
+     * The reference offsets corresponding to the first content character.
+     */
+    public abstract OffsetGroup referenceStartOffsetInclusive();
+
+    /**
+     * The reference offsets corresponding to the last content character.
+     */
+    public abstract OffsetGroup referenceEndOffsetInclusive();
+
+    @Override
+    public String toString() {
+      return "OffsetEntry{pos: [" + contentStartPosInclusive() + ", " + contentEndPosExclusive()
+          + "]; "
+          + OffsetGroupRange.from(referenceStartOffsetInclusive(), referenceEndOffsetInclusive())
+          + "}";
     }
 
-    final OffsetRange<CharOffset> thisCharOffsets = this.bounds().asCharOffsetRange();
-    if (thisCharOffsets.startInclusive().asInt() != sup.getStartOffset(superStringStartPos).asInt()) {
-      return false;
+    @Value.Check
+    protected void check() {
+      // every region must cover some portion of the content string
+      checkArgument(contentCodePointLength() > 0);
+      // ensure that correspondence between content CharOffsets and reference CharOffsets is simple
+      checkArgument(contentAndReferenceCodePointsMatch() || isInsertion() || isDeletion());
+      // ensure that correspondence between content CharOffsets and reference EdtOffsets is simple
+      checkArgument(contentAndReferenceEdtOffsetsMatch() || isEdtSkipRegion() || isDeletion());
+      checkArgument(referenceEndOffsetInclusive().charOffset().asInt()
+          >= referenceStartOffsetInclusive().charOffset().asInt());
+      // if reference character offsets are not being updated, reference EDT offsets can't either
+      checkArgument(referenceCodePointLength() > 0 || referenceEdtLength() == 0);
     }
-    if (thisCharOffsets.endInclusive().asInt() != sup.getEndOffset(superStringStartPos + this.length()).asInt()-1) {
-      return false;
+
+    /**
+     * The size of this region on the reference side, in code points.
+     */
+    private int referenceCodePointLength() {
+      // +1 because offsets are inclusive
+      return referenceEndOffsetInclusive().charOffset().asInt() - referenceStartOffsetInclusive()
+          .charOffset().asInt() + 1;
     }
-    //TODO: if this is slow, do a point by point comparison instead of substring
-    if (!sup.content.substring(superStringStartPos, superStringStartPos + this.length()).equals(
-        content)) {
-      return false;
+
+    /**
+     * The size of this region on the content size, in code points.
+     */
+    private int contentCodePointLength() {
+      // no +1 because end offset is exclusive
+      return contentEndPosExclusive().asInt() - contentStartPosInclusive().asInt();
+    }
+
+    /**
+     * Whether this region represents content inserted with no corresponding reference text.
+     */
+    private boolean isInsertion() {
+      return contentCodePointLength() > 1 && referenceCodePointLength() == 1;
+    }
+
+    /**
+     * Whether this region represents content deleted from the reference text.
+     */
+    private boolean isDeletion() {
+      return contentCodePointLength() == 1 && referenceCodePointLength() > 1;
+    }
+
+    /**
+     * Whether there is a one-to-one mapping between content and reference offsets over this
+     * region.
+     */
+    private boolean contentAndReferenceCodePointsMatch() {
+      return referenceCodePointLength() == contentCodePointLength();
+    }
+
+    /**
+     * Whether there is a one-to-one mapping between content and EDT offsets over this
+     * region.
+     */
+    private boolean contentAndReferenceEdtOffsetsMatch() {
+      return referenceCodePointLength() == referenceEdtLength();
+    }
+
+    /**
+     * The size of this region in terms of EDT offsets.
+     */
+    private int referenceEdtLength() {
+      // +1 because offsets are inclusive
+      return referenceEndOffsetInclusive().edtOffset().asInt() - referenceStartOffsetInclusive()
+          .edtOffset().asInt() + 1;
+    }
+
+    /**
+     * Whether this is a region where EDT offsets are not incremented.
+     */
+    private boolean isEdtSkipRegion() {
+      return referenceCodePointLength() > 0
+          && referenceStartOffsetInclusive().edtOffset()
+          .equals(referenceEndOffsetInclusive().edtOffset());
+    }
+
+    /**
+     * The beginning of the reference offsets mapped to a content string offset.
+     */
+    private OffsetGroup startOffsetGroupForPosition(final CharOffset position) {
+      final int offset = position.asInt() - contentStartPosInclusive().asInt();
+
+      if (offset > 0) {
+        return new OffsetGroup.Builder()
+            .charOffset(startReferenceCharOffsetForRelativePosition(offset))
+            .edtOffset(startReferenceEdtOffsetForRelativePosition(offset))
+            .build();
+      } else {
+        return referenceStartOffsetInclusive();
+      }
+    }
+
+    /**
+     * The end of the reference offsets mapped to a content string offset.
+     */
+    private OffsetGroup endOffsetGroupForPosition(final CharOffset position) {
+      final int offset = position.asInt() - contentStartPosInclusive().asInt();
+
+      if (offset > 0) {
+        return new OffsetGroup.Builder()
+            .charOffset(endReferenceCharOffsetForRelativePosition(offset))
+            .edtOffset(endReferenceEdtOffsetForRelativePosition(offset))
+            .build();
+      } else {
+        return referenceStartOffsetInclusive();
+      }
+    }
+
+    /**
+     * The first character offset mapped to a content string offset, where the
+     * offset is specified relative to the beginning of this region.
+     */
+    private CharOffset startReferenceCharOffsetForRelativePosition(int relativePosition) {
+      if (isInsertion() || isDeletion()) {
+        return referenceStartOffsetInclusive().charOffset();
+      } else {
+        return CharOffset.asCharOffset(
+            referenceStartOffsetInclusive().charOffset().asInt() + relativePosition);
+      }
+    }
+
+    /**
+     * The last character offset mapped to a content string offset, where the
+     * offset is specified relative to the beginning of this region.
+     */
+    private CharOffset endReferenceCharOffsetForRelativePosition(int relativePosition) {
+      if (isInsertion() || isDeletion()) {
+        return referenceEndOffsetInclusive().charOffset();
+      } else {
+        return CharOffset.asCharOffset(
+            referenceStartOffsetInclusive().charOffset().asInt() + relativePosition);
+      }
+    }
+
+    /**
+     * The first EDT offset mapped to a content string offset, where the
+     * offset is specified relative to the beginning of this region.
+     */
+    private EDTOffset startReferenceEdtOffsetForRelativePosition(int relativePosition) {
+      // within any region, either the EDT offsets are constant or increase in lockstep with
+      // the content offsets
+      if (isInsertion() || isDeletion() || isEdtSkipRegion()) {
+        return referenceStartOffsetInclusive().edtOffset();
+      } else {
+        return EDTOffset.asEDTOffset(
+            referenceStartOffsetInclusive().edtOffset().asInt() + relativePosition);
+      }
+    }
+
+    /**
+     * The last EDT offset mapped to a content string offset, where the
+     * offset is specified relative to the beginning of this region.
+     */
+    private EDTOffset endReferenceEdtOffsetForRelativePosition(int relativePosition) {
+      // within any region, either the EDT offsets are constant or increase in lockstep with
+      // the content offsets
+      if (isInsertion() || isDeletion() || isEdtSkipRegion()) {
+        return referenceEndOffsetInclusive().edtOffset();
+      } else {
+        return EDTOffset.asEDTOffset(
+            referenceStartOffsetInclusive().edtOffset().asInt() + relativePosition);
+      }
+    }
+
+    /**
+     * Given content offsets within this region, makes a new {@link CharacterRegion} describing
+     * the mapping for the span only.
+     */
+    private CharacterRegion fromContentOffsetStartInclusiveToEndExclusive(
+        CharOffset substringContentStartInclusive, CharOffset substringContentEndExclusive) {
+      checkArgument(substringContentStartInclusive.followsOrEquals(contentStartPosInclusive())
+          && substringContentEndExclusive.precedesOrEquals(contentEndPosExclusive()));
+
+      final boolean isThisRegionExactly = substringContentStartInclusive.equals(contentStartPosInclusive())
+          && substringContentEndExclusive.equals(contentEndPosExclusive());
+      if (isThisRegionExactly) {
+        return this;
+      } else {
+        return new CharacterRegion.Builder()
+            .contentNonBmp(contentNonBmp())
+            .contentStartPosInclusive(substringContentStartInclusive)
+            .contentEndPosExclusive(substringContentEndExclusive)
+            .referenceStartOffsetInclusive(startOffsetGroupForPosition(substringContentStartInclusive))
+            .referenceEndOffsetInclusive(
+                endOffsetGroupForPosition(substringContentEndExclusive.shiftedCopy(-1)))
+            .build();
+      }
+    }
+
+    /**
+     * Given a content offset within this region, makes a new {@link CharacterRegion} describing
+     * the mapping for the span from that offset to the end of the region only.
+     */
+    private CharacterRegion fromContentOffsetInclusiveToEnd(CharOffset substringContentStartInclusive) {
+      return fromContentOffsetStartInclusiveToEndExclusive(substringContentStartInclusive,
+          contentEndPosExclusive());
+    }
+
+    /**
+     * Given a content offset within this region, makes a new {@link CharacterRegion} describing
+     * the mapping for the span from the beginning of the region to that offset only.
+     */
+    private CharacterRegion fromStartToContentOffsetExclusive(CharOffset substringContentEndExclusive) {
+      return fromContentOffsetStartInclusiveToEndExclusive(contentStartPosInclusive(),
+          substringContentEndExclusive);
+    }
+
+    /**
+     * Given an immediately following region which follows the same offset mapping rules,
+     * merges the two together into a new region. This is used when {@link LocatedString}s
+     * are put into canonical form during construction in {@link #check()}.
+     */
+    private CharacterRegion mergeFollowingRegion(final CharacterRegion followingRegion) {
+      checkArgument(
+          contentEndPosExclusive().precedesOrEquals(followingRegion.contentStartPosInclusive()));
+      checkArgument(mayMergeWithFollowing(followingRegion));
+
+      return new CharacterRegion.Builder()
+          .contentStartPosInclusive(contentStartPosInclusive())
+          .contentEndPosExclusive(followingRegion.contentEndPosExclusive())
+          .contentNonBmp(contentNonBmp()) // = followingRegion.contentNonBmp by precondition
+          .referenceStartOffsetInclusive(referenceStartOffsetInclusive())
+          .referenceEndOffsetInclusive(followingRegion.referenceEndOffsetInclusive())
+          .build();
+    }
+
+    /**
+     * Would merging this region with the following maintain offset mapping?  If so and they
+     * are adjacent, they must be merged to have a {@code LocatedString} in canonical form.
+     */
+    private boolean mayMergeWithFollowing(final CharacterRegion other) {
+      return contentEndPosExclusive().equals(other.contentStartPosInclusive())
+          && referenceEndOffsetInclusive().equals(other.referenceStartOffsetInclusive())
+          && isDeletion() == other.isDeletion()
+          && isInsertion() == other.isInsertion()
+          && isEdtSkipRegion() == other.isEdtSkipRegion()
+          && contentNonBmp() == other.contentNonBmp();
+    }
+
+    /**
+     * True if and only if this region's offset mapping exactly matches that of {@code other} over
+     * a suffix of {@code other}'s content offsets.
+     */
+    private boolean isSuffixOf(final CharacterRegion other) {
+      return contentNonBmp() == other.contentNonBmp()
+          && contentCodePointLength() <= other.contentCodePointLength()
+          && referenceEndOffsetInclusive().equals(other.referenceEndOffsetInclusive())
+          && other.referenceStartOffsetInclusive()
+          .precedesOrEqualsForAllOffsetTypesInBoth(referenceStartOffsetInclusive());
+    }
+
+    /**
+     * True if and only if this region's offset mapping exactly matches that of {@code other} over
+     * a prefix of {@code other}'s content offsets.
+     */
+    private boolean isPrefixOf(final CharacterRegion other) {
+      return contentNonBmp() == other.contentNonBmp()
+          && contentCodePointLength() <= other.contentCodePointLength()
+          && referenceStartOffsetInclusive().equals(other.referenceStartOffsetInclusive())
+          && referenceEndOffsetInclusive()
+          .precedesOrEqualsForAllOffsetTypesInBoth(other.referenceEndOffsetInclusive());
+    }
+
+    /**
+     * True if and only if this region's offset mapping exactly matches that of {@code other} over
+     * some contiguous subset of {@code other}'s content offsets.
+     */
+    private boolean contains(final CharacterRegion other) {
+      return contentNonBmp() == other.contentNonBmp()
+          && other.contentCodePointLength() <= contentCodePointLength()
+          && referenceStartOffsetInclusive()
+          .precedesOrEqualsForAllOffsetTypesInBoth(other.referenceStartOffsetInclusive())
+          && referenceEndOffsetInclusive()
+          .followsOrEqualsForAllOffsetTypesInBoth(other.referenceEndOffsetInclusive());
+    }
+
+
+    /**
+     * Makes a new {@code CharacterRegion} just like this one, but with the start and end content
+     * offsets shifted by the specified amount. Useful when making substrings.
+     */
+    private CharacterRegion shiftContentOffsets(int shiftAmount) {
+      return new CharacterRegion.Builder().from(this)
+          .contentStartPosInclusive(contentStartPosInclusive().shiftedCopy(shiftAmount))
+          .contentEndPosExclusive(contentEndPosExclusive().shiftedCopy(shiftAmount))
+          .build();
+    }
+
+    public boolean equivalentUpToShiftedContentOffsets(final CharacterRegion otherRegion) {
+      return contentNonBmp() == otherRegion.contentNonBmp()
+          && referenceStartOffsetInclusive().equals(otherRegion.referenceStartOffsetInclusive())
+          && referenceEndOffsetInclusive().equals(otherRegion.referenceEndOffsetInclusive())
+          && contentCodePointLength() == otherRegion.contentCodePointLength();
+    }
+
+    public static class Builder extends ImmutableLocatedString.CharacterRegion.Builder {
+
+    }
+
+  }
+
+  @UnicodeUnsafe
+  @Value.Check
+  protected LocatedString checkValidity() {
+    checkRegionsCompletelyCoverContentString();
+
+    // ensure that if a reference string is provided, it is compatible with the region's reference
+    // character offsets
+    if (referenceString().isPresent()) {
+      for (final CharacterRegion region : characterRegions()) {
+        final CharOffset lastCodepointOffsetInReferenceString = CharOffset.asCharOffset(
+            referenceString().get().lengthInCodePoints() - 1);
+
+        checkArgument(region.referenceStartOffsetInclusive().charOffset().asInt() >= 0
+            && region.referenceEndOffsetInclusive().charOffset()
+            .precedesOrEquals(lastCodepointOffsetInReferenceString));
+      }
+    }
+
+    final ImmutableList<CharacterRegion> canonicalRegions = canonicalize(characterRegions());
+    // == is ok here because if the character regions are already canonical, canonicalize
+    // promises to return the input list itself
+    if (canonicalRegions != characterRegions()) {
+      return new LocatedString.Builder().from(this).characterRegions(canonicalRegions)
+          .build();
+    } else {
+      return this;
+    }
+  }
+
+  private void checkRegionsCompletelyCoverContentString() {
+    checkArgument(!characterRegions().isEmpty(), "LocatedString for %s lacks regions",
+        content());
+
+    checkArgument(characterRegions().iterator().next().contentStartPosInclusive().asInt() == 0,
+        "First region of a located string must have a content position of 0");
+    CharacterRegion lastRegion = null;
+    for (final CharacterRegion region : characterRegions()) {
+      if (lastRegion != null) {
+        checkArgument(lastRegion.contentEndPosExclusive().equals(region.contentStartPosInclusive()),
+            "There is a gap in the content string not covered by any region: %s "
+                + "immediately precedes %s", lastRegion, region);
+      }
+      lastRegion = region;
+    }
+    checkArgument(getLast(characterRegions()).contentEndPosExclusive().asInt() == content()
+        .lengthInCodePoints());
+  }
+
+  /**
+   * Converts character regions into a canonical form where no two adjacent character regions have
+   * the same offset mapping rules (that is, there is no unnecessary multiplication of character
+   * regions).  We exploit this property when computing substring containment and doing equality
+   * checks.
+   *
+   * If the input is in canonical form already, the identical list object itself is returned.
+   */
+  private ImmutableList<CharacterRegion> canonicalize(ImmutableList<CharacterRegion> inputRegions) {
+    boolean mergedAnything = false;
+    final ImmutableList.Builder<CharacterRegion> canonicalizedRegions = ImmutableList.builder();
+    CharacterRegion bufferRegion = null;
+
+    for (final CharacterRegion curRegion : inputRegions) {
+      if (bufferRegion == null) {
+        bufferRegion = curRegion;
+      } else {
+        if (bufferRegion.mayMergeWithFollowing(curRegion)) {
+          mergedAnything = true;
+          bufferRegion = bufferRegion.mergeFollowingRegion(curRegion);
+        } else {
+          canonicalizedRegions.add(bufferRegion);
+          bufferRegion = curRegion;
+        }
+      }
+    }
+
+    if (bufferRegion != null) {
+      canonicalizedRegions.add(bufferRegion);
+    }
+
+    if (mergedAnything) {
+      return canonicalizedRegions.build();
+    } else {
+      return inputRegions;
+    }
+  }
+
+
+  /**
+   * Nothing actually requires that {@link LocatedString}'s reference character offsets increase
+   * monotonically, but it is not clear to me anything ever generates things which don't and
+   * dealing with them is very difficult. So where it matters, we will check this and throw
+   * an exception for unsupported operations. Whoever needs to support this in the future is
+   * responsible for dealing with it.
+   */
+  @Value.Derived
+  protected boolean referenceCharOffsetsSequential() {
+    for (int i = 1; i < characterRegions().size(); ++i) {
+      if (!characterRegions().get(i - 1).referenceEndOffsetInclusive().charOffset()
+          .precedesOrEquals(
+              characterRegions().get(i).referenceStartOffsetInclusive().charOffset())) {
+        return false;
+      }
     }
     return true;
   }
 
+  private Optional<Integer> firstRegionIndexContainingReferenceCharOffset(
+      final CharOffset charOffset) {
+    // lazy implementation, can make faster if needed
+    for (int i = 0; i < characterRegions().size(); ++i) {
+      final CharacterRegion region = characterRegions().get(i);
+      if (region.referenceStartOffsetInclusive().charOffset().precedesOrEquals(charOffset)
+          && region.referenceEndOffsetInclusive().charOffset().followsOrEquals(charOffset)) {
+        return Optional.of(i);
+      }
+    }
+    return Optional.absent();
+  }
+
   /**
-   * *****************************************************************************
-   * Private implementation
+   * Constructs {@link CharacterRegion}s for a substring.
+   * See {@link #contentLocatedSubstringByContentOffsets}
    */
+  private ImmutableList<CharacterRegion> offsetsOfSubstringByContentCodepointOffsets(
+      final OffsetRange<CharOffset> substringContentCodePointsRange) {
+    checkArgument(substringContentCodePointsRange.startInclusive().asInt() >= 0);
+    checkArgument(
+        substringContentCodePointsRange.endInclusive().asInt() < content().lengthInCodePoints());
 
-  @Override
-  public int hashCode() {
-    if (!hashCodeInitialized) {
-      hashCode = Objects.hashCode(content, bounds, regions);
-      hashCodeInitialized = true;
+    final int startEntryIdx = regionIndexContainingContentOffset(
+        substringContentCodePointsRange.startInclusive());
+    final int endEntryIdx = regionIndexContainingContentOffset(
+        substringContentCodePointsRange.endInclusive());
+
+    final ImmutableList.Builder<CharacterRegion> newRegions = ImmutableList.builder();
+
+    // the content offsets of returned substring must be shifted so return substring
+    // has offsets starting at zero
+    final int shift = -substringContentCodePointsRange.startInclusive().asInt();
+    if (startEntryIdx == endEntryIdx) {
+      newRegions.add(characterRegions().get(startEntryIdx).fromContentOffsetStartInclusiveToEndExclusive(
+          substringContentCodePointsRange.startInclusive(),
+          substringContentCodePointsRange.endInclusive().shiftedCopy(1))
+          .shiftContentOffsets(shift));
+    } else {
+      final CharacterRegion newStartRegion = characterRegions().get(startEntryIdx)
+          .fromContentOffsetInclusiveToEnd(substringContentCodePointsRange.startInclusive())
+          .shiftContentOffsets(shift);
+      final CharacterRegion newEndRegion = characterRegions().get(endEntryIdx)
+          .fromStartToContentOffsetExclusive(
+              substringContentCodePointsRange.endInclusive().shiftedCopy(1))
+          .shiftContentOffsets(shift);
+
+      newRegions.add(newStartRegion);
+      for (int i = startEntryIdx + 1; i< endEntryIdx; ++i) {
+        // internal regions are unaltered and can be used in the new LocatedString
+        newRegions.add(characterRegions().get(i)
+            .shiftContentOffsets(shift));
+      }
+      newRegions.add(newEndRegion);
     }
-    return hashCode;
+
+    return newRegions.build();
   }
 
-  @Override
-  /**
-   * Equality for this is quite strict - it must be exactly the same string and offsets
-   * with exactly the same interior material omitted, if any.
-   */
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+  private int regionIndexContainingContentOffset(CharOffset target) {
+    if (target.asInt() < 0) {
+      throw new IndexOutOfBoundsException(
+          "Not a valid character offset for LocatedString conent: " + target);
     }
-    if (obj == null || getClass() != obj.getClass()) {
-      return false;
-    }
-    final LocatedString other = (LocatedString) obj;
-
-    if (hashCode() != other.hashCode()) {
-      return false;
+    if (target.asInt() >= content().lengthInCodePoints()) {
+      throw new IndexOutOfBoundsException("Requested code point offset " + target
+          + " exceeds LocatedString code point length " + content().lengthInCodePoints());
     }
 
-    return Objects.equal(this.bounds, other.bounds) && Objects.equal(this.content, other.content)
-        && Objects.equal(this.regions, other.regions);
-  }
+    // we know by precondition checks that characterRegions cannot be empty
+    // we know by the check above the the target lies in one of our regions
+    // class-level preconditions guarantee the regions cover the content string completely
+    // without overlap
+    int startIndex = 0;
+    int endIndex = characterRegions().size() - 1;
 
-  public static final class OffsetEntry {
+    while (startIndex <= endIndex) {
+      // if integer overflow is a problem here, we have much bigger problems...
+      final int probe = (startIndex + endIndex) / 2;
 
-    private final int startInclusivePos;
-    private final int endExclusivePos;
-    private final OffsetGroup startOffsetInclusive;
-    private final OffsetGroup endOffsetInclusive;
+      final CharacterRegion probeRegion = characterRegions().get(probe);
+      final boolean targetAfterProbeStart =
+          probeRegion.contentStartPosInclusive().precedesOrEquals(target);
+      // follows because endPos is exclusive
+      final boolean targetBeforeProbeEnd = probeRegion.contentEndPosExclusive().follows(target);
 
-    public OffsetEntry(final int startPosInclusive, final int endPosExclusive,
-        final OffsetGroup startOffset,
-        final OffsetGroup endOffsetInclusive) {
-      this.startInclusivePos = startPosInclusive;
-      this.endExclusivePos = endPosExclusive;
-      this.startOffsetInclusive = startOffset;
-      this.endOffsetInclusive = endOffsetInclusive;
-      checkArgument(endExclusivePos > startInclusivePos);
-      checkArgument(endOffsetInclusive.charOffset().asInt()
-          >= startOffsetInclusive.charOffset().asInt());
-    }
-
-    public int startPosInclusive() {
-      return startInclusivePos;
-    }
-
-    public int endPosExclusive() {
-      return endExclusivePos;
-    }
-
-    public OffsetGroup startOffset() {
-      return startOffsetInclusive;
-    }
-
-    public OffsetGroup endOffset() {
-      return endOffsetInclusive;
-    }
-
-    public boolean isEDTSkipRegion() {
-      return charLength() > 0 && startOffset().edtOffset().equals(endOffset().edtOffset());
-    }
-
-    public final int posLength() {
-      return endExclusivePos - startInclusivePos;
-    }
-
-    public final int charLength() {
-      // +1 because offsets are inclusive
-      return endOffset().charOffset().asInt() - startOffset().charOffset().asInt() + 1;
-    }
-
-    public final int edtLength() {
-      // +1 because offsets are inclusive
-      return endOffset().edtOffset().asInt() - startOffset().edtOffset().asInt() + 1;
-    }
-
-    @Override
-    public String toString() {
-      return "OffsetEntry{pos: [" + startInclusivePos + ", " + endExclusivePos + "]; "
-          + OffsetGroupRange.from(startOffsetInclusive, endOffsetInclusive)
-          + "}";
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects
-          .hashCode(startInclusivePos, endExclusivePos, startOffsetInclusive, endOffsetInclusive);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null || getClass() != obj.getClass()) {
-        return false;
-      }
-      final OffsetEntry other = (OffsetEntry) obj;
-      return Objects.equal(this.startInclusivePos, other.startInclusivePos) && Objects
-          .equal(this.endExclusivePos, other.endExclusivePos) && Objects
-          .equal(this.startOffsetInclusive, other.startOffsetInclusive)
-          && Objects.equal(this.endOffsetInclusive, other.endOffsetInclusive);
-    }
-  }
-
-  @Deprecated
-  private static List<OffsetEntry> calculateOffsets(final String text,
-      final OffsetGroup initialOffsets, final boolean EDTOffsetsAreCharOffsets) {
-    checkNotNull(text);
-    checkNotNull(initialOffsets);
-
-    final ImmutableList.Builder<OffsetEntry> offsets = ImmutableList.builder();
-
-    final Optional<ASRTime> weDontKnowASRTime = Optional.absent();
-    int inTag = 0;
-    boolean useByteOffsets = initialOffsets.byteOffset().isPresent();
-    int byteOffset = useByteOffsets ? initialOffsets.byteOffset().get().asInt() : Integer.MIN_VALUE;
-    int charOffset = initialOffsets.charOffset().asInt();
-    int edtOffset = initialOffsets.edtOffset().asInt();
-
-    int pos = 0;
-    int startPos = 0;
-    boolean justLeftXMLTag = false;
-    char prevChar = 0;
-    OffsetGroup start = initialOffsets;
-
-    // TODO: figure out how this works with UTF-16 unicode encoding...
-    for (; pos < text.length(); ++pos) {
-      final char c = text.charAt(pos);
-      if (!EDTOffsetsAreCharOffsets && pos > 0 &&
-          (inTag == 0 && (c == '<' || prevChar == '\r') || justLeftXMLTag)
-          && !(justLeftXMLTag && c == '<')) {
-        final int prevEDTOffset =
-            (edtOffset == 0 || prevChar == '\r') ? edtOffset : (edtOffset - 1);
-        offsets.add(
-            new OffsetEntry(startPos, pos, start,
-                OffsetGroup.from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset - 1) : null,
-                    CharOffset.asCharOffset(charOffset - 1),
-                    EDTOffset.asEDTOffset(prevEDTOffset))));
-        startPos = pos;
-        final int startEDTOffset = (c == '<') ? edtOffset - 1 : edtOffset;
-        start = OffsetGroup
-            .from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset) : null, CharOffset.asCharOffset(charOffset),
-            EDTOffset.asEDTOffset(startEDTOffset));
-      }
-
-      ++charOffset;
-      byteOffset += UTF8BytesInChar(c);
-      if (EDTOffsetsAreCharOffsets || (!(inTag != 0 || c == '<' || c == '\r'))) {
-        ++edtOffset;
-      }
-      if (!EDTOffsetsAreCharOffsets) {
-        justLeftXMLTag = false;
-        if (c == '<') {
-          ++inTag;
-        } else if (inTag > 0 && c == '>') {
-          --inTag;
-          if (inTag == 0) {
-            justLeftXMLTag = true;
-          }
+      if (targetAfterProbeStart) {
+        if (targetBeforeProbeEnd) {
+          // probe is pointing to the containing region
+          return probe;
+        } else {
+          startIndex = probe + 1;
         }
-      }
-      prevChar = c;
-    }
-    if (pos > startPos) {
-      final int prevEDTOffset = Math.max(start.edtOffset().asInt(), edtOffset - 1);
-      offsets.add(new OffsetEntry(startPos, pos, start,
-          OffsetGroup.from(useByteOffsets ? ByteOffset.asByteOffset(byteOffset - 1) : null,
-              CharOffset.asCharOffset(charOffset - 1),
-              EDTOffset.asEDTOffset(prevEDTOffset))));
-    }
-    return offsets.build();
-  }
-
-  private static OffsetGroupRange boundsFromOffsets(final List<OffsetEntry> offsets) {
-    checkArgument(!offsets.isEmpty());
-    return OffsetGroupRange
-        .from(offsets.get(0).startOffsetInclusive,
-            offsets.get(offsets.size() - 1).endOffsetInclusive);
-  }
-
-  private static final char ONE_BYTE = 0x007f;
-  private static final char TWO_BYTE = 0x07ff;
-  private static final char THREE_BYTE = 0xffff;
-
-  private static final int UTF8BytesInChar(final char c) {
-    if (c <= ONE_BYTE) {
-      return 1;
-    } else if (c <= TWO_BYTE) {
-      return 2;
-    } else if (c <= THREE_BYTE) {
-      return 3;
-    } else {
-      return 4;
-    }
-  }
-
-  /**
-   * Returns offsets corresponding to substring, in order.
-   */
-  private List<OffsetEntry> offsetsOfSubstring(final int substringStartIndexInclusive,
-      final int substringEndIndexExclusive) {
-    checkArgument(substringStartIndexInclusive >= 0);
-    checkArgument(substringEndIndexExclusive <= length());
-    checkArgument(substringStartIndexInclusive < substringEndIndexExclusive,
-        "Start Index %s not less than end index %s", substringStartIndexInclusive,
-        substringEndIndexExclusive);
-
-    final ImmutableList.Builder<OffsetEntry> ret = ImmutableList.builder();
-
-    // recall that a LocatedString tracks offsets using a sequence of "offset entries".  Each of
-    // these entries is either a region where the EDT and char offsets have the same length
-    // (indicating nothing is skipped for EDT in this region) or it is an "EDT skip region" where
-    // char offsets continue to grow but EDT offsets do not
-    //     To make a new substring, we need to compute its offset entries.
-    for (int entryNum = lastEntryStartingBefore(substringStartIndexInclusive);
-         entryNum < regions.size(); ++entryNum) {
-      final OffsetEntry entry = regions.get(entryNum);
-      // sanity check
-      checkState(entry.startInclusivePos < substringEndIndexExclusive);
-
-      // this will be negative if the requested substring starts in the middle of the entry
-      // positive indicates the entry starts after the requested substring start
-      final int entryStartRelativeToSubstringStart =
-          entry.startInclusivePos - substringStartIndexInclusive;
-
-      // if the entry starts before the substring, the earlier part of the entry will get cut off,
-      // hence the max(0, ...)
-      final int newStartPosInclusive = Math.max(0, entryStartRelativeToSubstringStart);
-      final int newEndPosExclusive = Math.min(
-          substringEndIndexExclusive - substringStartIndexInclusive,
-          entry.endExclusivePos - substringStartIndexInclusive);
-
-      // if anything was chopped off the entry beginning we need to alter the starting bounds
-      final int numPositionsRemovedFromEntryBeginning =
-          Math.max(0, -entryStartRelativeToSubstringStart);
-      OffsetGroup newStartOffsetInclusive =
-          shiftOffsetGroup(entry.startOffset(), numPositionsRemovedFromEntryBeginning,
-              entry.isEDTSkipRegion());
-
-      // if anything was chopped off the end we need to alter the ending bounds
-      final int numPositionsRemovedFromEntryEnd =
-          Math.max(0, entry.endExclusivePos - substringEndIndexExclusive);
-      OffsetGroup newEndOffsetInclusive =
-          shiftOffsetGroup(entry.endOffset(), -numPositionsRemovedFromEntryEnd,
-              entry.isEDTSkipRegion());
-
-      ret.add(new OffsetEntry(newStartPosInclusive, newEndPosExclusive, newStartOffsetInclusive,
-          newEndOffsetInclusive));
-
-      final int requestedSubstringLength =
-          substringEndIndexExclusive - substringStartIndexInclusive;
-      if (newEndPosExclusive >= requestedSubstringLength) {
-        break;
+      } else {
+        endIndex = probe - 1;
       }
     }
 
-    return ret.build();
+    throw new IllegalStateException("Binary search for regions on LocatedStrings should not be "
+        + "able to fail");
+  }
+}
+
+/**
+ * Given a reference string, constructs the {@link LocatedString.CharacterRegion}s necessary for
+ * building a {@link LocatedString}. At the moment, only handles character offsets and
+ * non-BMP Unicode issues. Does not currently support calculating special EDT offsets or
+ * byte offsets, although this would be possible. Currently the produced EDT offsets are undefined:
+ * users should make no assumptions whatsoever about what the resulting EDT offsets are.
+ */
+@TextGroupImmutable
+@Value.Immutable
+abstract class OffsetCalculator {
+
+  @Value.Default
+  public boolean calculateEDTOffsetsByACERules() {
+    return false;
   }
 
-  // shifts an OffsetEntry boundary the specified amount, taking into account whether or not
-  // it is an EDT skip entry. Used by offsetsOfSubstring
-  private static OffsetGroup shiftOffsetGroup(OffsetGroup entryBoundary, int shift,
-      boolean isEDTSkipRegion) {
-    if (shift == 0) {
-      // save a little memory by reusing the immutable OffsetGroup object
-      // if we aren't actually going to change it
-      return entryBoundary;
+  @Value.Default
+  public boolean computeUtf8ByteOffsets() {
+    return false;
+  }
+
+  @Value.Check
+  protected void check() {
+    checkArgument(!calculateEDTOffsetsByACERules(), "EDT offset calculation not currently supported");
+    checkArgument(!computeUtf8ByteOffsets(),
+        "Computing UTF-8 byte offsets not currently supported");
+  }
+
+  public LocatedString calculateOffsets(final String s) {
+    return calculateOffsets(StringUtils.unicodeFriendly(s));
+  }
+
+  public LocatedString calculateOffsets(UnicodeFriendlyString s) {
+    return new OffsetCalculation(s).calculateOffsets();
+  }
+
+  public static class Builder extends ImmutableOffsetCalculator.Builder {
+
+  }
+
+  private final class OffsetCalculation {
+
+    private static final int ONE_BYTE = 0x007f;
+    private static final int TWO_BYTE = 0x07ff;
+    private static final int THREE_BYTE = 0xffff;
+    final ImmutableList.Builder<LocatedString.CharacterRegion> regions = ImmutableList.builder();
+    private final UnicodeFriendlyString s;
+    private int bufferStartCharOffset = 0;
+    private int curCharOffset = 0;
+
+    OffsetCalculation(final UnicodeFriendlyString s) {
+      this.s = checkNotNull(s);
     }
 
-    final CharOffset newCharOffsetValue = CharOffset.asCharOffset(
-        entryBoundary.charOffset().asInt() + shift);
-    final EDTOffset newEDTOffsetValue;
-    if (!isEDTSkipRegion) {
-      newEDTOffsetValue = EDTOffset.asEDTOffset(entryBoundary.edtOffset().asInt() + shift);
-    } else {
-      // if it was an EDT skip entry, the EDT counts were not being incremented within
-      // this entry anyway, so they don't need adjusting
-      newEDTOffsetValue = EDTOffset.asEDTOffset(entryBoundary.edtOffset().asInt());
+    void clearBuffer() {
+      regions.add(new LocatedString.CharacterRegion.Builder()
+          .contentStartPosInclusive(CharOffset.asCharOffset(bufferStartCharOffset))
+          .contentEndPosExclusive(CharOffset.asCharOffset(curCharOffset))
+          .contentNonBmp(s.hasNonBmpCharacter(
+              OffsetRange.charOffsetRange(bufferStartCharOffset, curCharOffset - 1)))
+          .referenceStartOffsetInclusive(
+              OffsetGroup.from(CharOffset.asCharOffset(bufferStartCharOffset),
+                  EDTOffset.asEDTOffset(bufferStartCharOffset)))
+          .referenceEndOffsetInclusive(OffsetGroup.from(
+              CharOffset.asCharOffset(curCharOffset - 1), EDTOffset.asEDTOffset(curCharOffset - 1)))
+          .build());
+      bufferStartCharOffset = curCharOffset;
     }
-    return OffsetGroup.from(newCharOffsetValue, newEDTOffsetValue);
-  }
 
-  private int lastEntryStartingBefore(final int pos) {
-    int i = 1;
-    while (i < regions.size() && regions.get(i).startInclusivePos <= pos) {
-      ++i;
+    LocatedString calculateOffsets() {
+      checkNotNull(s);
+      checkArgument(!s.isEmpty(), "Cannot have a LocatedString of an empty string");
+
+      // we initialize this to the codepoint count of the first character to ensure we don't
+      // trigger a buffer clear due to code point size mismatch on the first iteration through
+      // the loop
+      int lastCodeUnitCount = Character.charCount(Character.codePointAt(s.utf16CodeUnits(), 0));
+
+      for (int curUtf16CodeUnit = 0; curUtf16CodeUnit < s.lengthInUtf16CodeUnits(); ) {
+        final int codePoint = Character.codePointAt(s.utf16CodeUnits(), curUtf16CodeUnit);
+
+        final int codeUnitsForCharacter = Character.charCount(codePoint);
+        if (lastCodeUnitCount != codeUnitsForCharacter) {
+          clearBuffer();
+        }
+        lastCodeUnitCount = codeUnitsForCharacter;
+        curUtf16CodeUnit += codeUnitsForCharacter;
+        // commented-out code intentionally left in for future re-enabling of byte offset
+        // computation
+        /*if (computeUtf8ByteOffsets()) {
+          curByteOffset += utf8BytesForCodePoint(codePoint);
+        }*/
+        ++curCharOffset;
+      }
+
+      clearBuffer();
+
+      return new LocatedString.Builder().content(s).referenceString(s)
+          .characterRegions(regions.build()).build();
     }
-    return i - 1;
+
+    @SuppressWarnings("unused")
+    private int utf8BytesForCodePoint(final int c) {
+      // see section 3 of https://tools.ietf.org/html/rfc3629
+      if (c <= ONE_BYTE) {
+        return 1;
+      } else if (c <= TWO_BYTE) {
+        return 2;
+      } else if (c <= THREE_BYTE) {
+        return 3;
+      } else {
+        return 4;
+      }
+    }
   }
-
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(this).add("bounds", bounds).add("content", content).toString();
-  }
-
-
 }
