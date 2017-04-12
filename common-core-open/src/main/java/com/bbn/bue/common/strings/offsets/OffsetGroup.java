@@ -1,34 +1,28 @@
 package com.bbn.bue.common.strings.offsets;
 
-import com.google.common.base.Objects;
+import com.bbn.bue.common.TextGroupImmutable;
+
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.immutables.func.Functional;
+import org.immutables.value.Value;
 
-public final class OffsetGroup {
+import java.util.ArrayList;
+import java.util.List;
 
-  private OffsetGroup(final ByteOffset byteOffset, final CharOffset charOffset,
-      final EDTOffset edtOffset, final ASRTime asrTime) {
-    this.byteOffset = byteOffset;
-    this.charOffset = checkNotNull(charOffset);
-    this.edtOffset = checkNotNull(edtOffset);
-    this.asrTime = asrTime;
-  }
+@TextGroupImmutable
+@Value.Immutable
+@Functional
+public abstract class OffsetGroup {
 
-  /**
-   * Prefer static factory method
-   * @param byteOffset
-   * @param charOffset
-   * @param edtOffset
-   * @param asrTime
-   */
-/*	@Deprecated
-        public OffsetGroup(final Optional<ByteOffset> byteOffset, final CharOffset charOffset, final EDTOffset edtOffset, final Optional<ASRTime> asrTime) {
-		this.byteOffset = checkNotNull(byteOffset).orNull();
-		this.charOffset = checkNotNull(charOffset);
-		this.edtOffset = checkNotNull(edtOffset);
-		this.asrTime = checkNotNull(asrTime).orNull();
-	}*/
+  public abstract Optional<ByteOffset> byteOffset();
+
+  public abstract CharOffset charOffset();
+
+  public abstract EDTOffset edtOffset();
+
+  public abstract Optional<ASRTime> asrTime();
 
   /**
    * Creates an offset group using the same offset value as both the {@link
@@ -44,76 +38,102 @@ public final class OffsetGroup {
    * byte or ASR offsets.
    */
   public static OffsetGroup from(final CharOffset charOffset, final EDTOffset edtOffset) {
-    return new OffsetGroup(null, charOffset, edtOffset, null);
+    return new Builder().charOffset(charOffset).edtOffset(edtOffset).build();
   }
 
   public static OffsetGroup from(final ByteOffset byteOffset, final CharOffset charOffset,
       final EDTOffset edtOffset) {
-    return new OffsetGroup(byteOffset, charOffset, edtOffset, null);
+    return new Builder().byteOffset(byteOffset).charOffset(charOffset)
+        .edtOffset(edtOffset).build();
   }
 
-  private final ByteOffset byteOffset;
-  private final CharOffset charOffset;
-  private final EDTOffset edtOffset;
-  private final ASRTime asrTime;
-
-  public Optional<ByteOffset> byteOffset() {
-    return Optional.fromNullable(byteOffset);
+  /**
+   * Returns whether, for all offsets present in both groups, this {@code OffsetGroup}'s
+   * offset {@link Offset#precedesOrEquals(Offset)} the other's.
+   */
+  public boolean precedesOrEqualsForAllOffsetTypesInBoth(final OffsetGroup other) {
+    return charOffset().precedesOrEquals(other.charOffset())
+        && edtOffset().precedesOrEquals(other.edtOffset())
+        && (!byteOffset().isPresent() || !other.byteOffset().isPresent()
+                || byteOffset().get().precedesOrEquals(other.byteOffset().get()))
+        && (!asrTime().isPresent() || !other.asrTime().isPresent()
+                || asrTime().get().precedesOrEquals(other.asrTime().get()));
   }
 
-  public CharOffset charOffset() {
-    return charOffset;
+  /**
+   * Returns whether, for all offsets present in both groups, this {@code OffsetGroup}'s
+   * offset {@link Offset#precedes(Offset)} (Offset)} the other's.
+   */
+  public boolean precedesForAllOffsetTypesInBoth(final OffsetGroup other) {
+    return charOffset().precedes(other.charOffset())
+        && edtOffset().precedes(other.edtOffset())
+        && (!byteOffset().isPresent() || !other.byteOffset().isPresent()
+                || byteOffset().get().precedes(other.byteOffset().get()))
+        && (!asrTime().isPresent() || !other.asrTime().isPresent()
+                || asrTime().get().precedes(other.asrTime().get()));
   }
 
-  public EDTOffset edtOffset() {
-    return edtOffset;
+  /**
+   * Returns whether, for all offsets present in both groups, this {@code OffsetGroup}'s
+   * offset {@link Offset#followsOrEquals(Offset)} (Offset)} the other's.
+   */
+  public boolean followsOrEqualsForAllOffsetTypesInBoth(final OffsetGroup other) {
+    return charOffset().followsOrEquals(other.charOffset())
+        && edtOffset().followsOrEquals(other.edtOffset())
+        && (!byteOffset().isPresent() || !other.byteOffset().isPresent()
+                || byteOffset().get().followsOrEquals(other.byteOffset().get()))
+        && (!asrTime().isPresent() || !other.asrTime().isPresent()
+                || asrTime().get().followsOrEquals(other.asrTime().get()));
   }
 
-  public Optional<ASRTime> asrTime() {
-    return Optional.fromNullable(asrTime);
+  /**
+   * Returns whether, for all offsets present in both groups, this {@code OffsetGroup}'s
+   * offset {@link Offset#follows(Offset)} (Offset)} the other's.
+   */
+  public boolean followsForAllOffsetTypesInBoth(final OffsetGroup other) {
+    return charOffset().follows(other.charOffset())
+        && edtOffset().follows(other.edtOffset())
+        && (!byteOffset().isPresent() || !other.byteOffset().isPresent()
+                || byteOffset().get().follows(other.byteOffset().get()))
+        && (!asrTime().isPresent() || !other.asrTime().isPresent()
+                || asrTime().get().follows(other.asrTime().get()));
   }
 
-  @Override
-  public boolean equals(final Object other) {
-    if (other == null) {
-      return false;
-    }
-    if (other.getClass() != getClass()) {
-      return false;
-    }
-
-    final OffsetGroup ogOther = (OffsetGroup) other;
-    return Objects.equal(byteOffset, ogOther.byteOffset) &&
-        Objects.equal(charOffset, ogOther.charOffset) &&
-        Objects.equal(edtOffset, ogOther.edtOffset) &&
-        Objects.equal(asrTime, ogOther.asrTime);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(byteOffset, charOffset, edtOffset, asrTime);
-  }
-
+  public static final Joiner SEMICOLON_JOINER = Joiner.on(";");
   @Override
   public String toString() {
-    final StringBuilder ret = new StringBuilder();
+    final List<String> parts = new ArrayList<>();
 
-    if (charOffset.asInt() == edtOffset.asInt()) {
-      ret.append("ce").append(charOffset.asInt());
-    } else {
-      ret.append("c").append(charOffset.asInt())
-          .append(";e").append(edtOffset.asInt());
+    // frequently the char, EDT, and UTF-16 offsets are all the same. For compactness,
+    // when this is the case we only print the offset number once, using all
+    // three prefixes
+    final StringBuilder primaryPartPrefix = new StringBuilder("c");
+    final boolean charOffsetsEqualEdtOffsets = charOffset().asInt() == edtOffset().asInt();
+    if (charOffsetsEqualEdtOffsets) {
+      primaryPartPrefix.append("e");
     }
 
-    if (byteOffset != null) {
-      ret.append(";b").append(byteOffset.asInt());
+    parts.add(primaryPartPrefix.toString() + Integer.toString(charOffset().asInt()));
+
+    // then add EDT offsets if not equal to the char offset
+    if (!charOffsetsEqualEdtOffsets) {
+      parts.add(edtOffset().toString());
     }
 
-    if (asrTime != null) {
-      ret.append(";asr").append(asrTime.asInt());
+    // then add all other offsets, if present
+    if (byteOffset().isPresent()) {
+      parts.add(byteOffset().get().toString());
     }
 
-    return ret.toString();
+    if (asrTime().isPresent()) {
+      parts.add(asrTime().get().toString());
+    }
+
+    return SEMICOLON_JOINER.join(parts);
+  }
+
+  public static class Builder extends ImmutableOffsetGroup.Builder {
+
   }
 
 }

@@ -1,10 +1,15 @@
 package com.bbn.bue.common.strings.offsets;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * A range between two points in text, defined by the full offsets groups of its
+ * two inclusive end points.
+ */
 public final class OffsetGroupRange {
 
   private final OffsetGroup startInclusive;
@@ -23,9 +28,24 @@ public final class OffsetGroupRange {
     return new OffsetGroupRange(startInclusive, endInclusive);
   }
 
-	/*public static OffsetGroupRange fromTokenSpan(final Span span) {
-                return new OffsetGroupRange(span.startOffsetGroup(), span.endOffsetGroup());
-	}*/
+
+  // these are so frequent it makes sense to make convenience accessors for them
+  public CharOffset startCharOffsetInclusive() {
+    return startInclusive().charOffset();
+  }
+
+  public CharOffset endCharOffsetInclusive() {
+    return endInclusive().charOffset();
+  }
+
+  public EDTOffset startEdtOffsetInclusive() {
+    return startInclusive().edtOffset();
+  }
+
+  public EDTOffset endEdtOffsetInclusive() {
+    return endInclusive().edtOffset();
+  }
+
 
   private OffsetGroupRange(final OffsetGroup startInclusive, final OffsetGroup endInclusive) {
     this.startInclusive = checkNotNull(startInclusive);
@@ -42,19 +62,6 @@ public final class OffsetGroupRange {
   public String toString() {
     return startInclusive + "-" + endInclusive;
   }
-
-	/*private boolean overlapsByCharOffset(final OffsetGroupRange range) {
-		// if range starts strictly to the right of this...
-		if (startInclusive.charOffset().value() < range.startInclusive().charOffset().value()) {
-			// then it must start before our ending...
-			return range.startInclusive().charOffset().value() <= endInclusive.charOffset().value();
-		} else {
-			// range start to the left or at the same offset as this
-			// therefore it overlaps only if its end lies beyond our start
-			return range.endInclusive().charOffset().value() >= startInclusive.charOffset().value();
-		}
-	}*/
-
 
   @Override
   public int hashCode() {
@@ -77,5 +84,28 @@ public final class OffsetGroupRange {
   public OffsetRange<CharOffset> asCharOffsetRange() {
     return OffsetRange
         .fromInclusiveEndpoints(startInclusive().charOffset(), endInclusive().charOffset());
+  }
+
+  public OffsetRange<EDTOffset> asEdtOffsetRange() {
+    return OffsetRange
+        .fromInclusiveEndpoints(startInclusive().edtOffset(), endInclusive().edtOffset());
+  }
+
+  public Optional<OffsetRange<ByteOffset>> asByteOffsetRange() {
+    if (startInclusive().byteOffset().isPresent() && endInclusive().byteOffset().isPresent()) {
+      return Optional.of(OffsetRange.fromInclusiveEndpoints(startInclusive().byteOffset().get(),
+          endInclusive().byteOffset().get()));
+    } else {
+      return Optional.absent();
+    }
+  }
+
+  public Optional<OffsetRange<ASRTime>> asAsrTimeRange() {
+    if (startInclusive().asrTime().isPresent() && endInclusive().asrTime().isPresent()) {
+      return Optional.of(OffsetRange.fromInclusiveEndpoints(startInclusive().asrTime().get(),
+          endInclusive().asrTime().get()));
+    } else {
+      return Optional.absent();
+    }
   }
 }

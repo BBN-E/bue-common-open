@@ -39,6 +39,44 @@ public final class StringUtils {
   }
 
   /**
+   * Makes a string into a {@link UnicodeFriendlyString}. See that interface's Javadoc for more
+   * details.
+   */
+  public static UnicodeFriendlyString unicodeFriendly(String utf16CodeUnits) {
+    if (utf16CodeUnits.codePointCount(0, utf16CodeUnits.length()) == utf16CodeUnits.length()) {
+      return StringWithoutNonBmp.of(utf16CodeUnits);
+    } else {
+      return StringWithNonBmp.of(utf16CodeUnits);
+    }
+  }
+
+  /**
+   * Applies {@link #unicodeFriendly(String)} to the contents of a list.
+   */
+  public static ImmutableList<UnicodeFriendlyString> unicodeFriendlyList(Iterable<String> strings) {
+    final ImmutableList.Builder<UnicodeFriendlyString> ret = ImmutableList.builder();
+
+    for (final String s : strings) {
+      ret.add(unicodeFriendly(s));
+    }
+
+    return ret.build();
+  }
+
+  /**
+   * Applies {@link #unicodeFriendly(String)} to the contents of a set.
+   */
+  public static ImmutableSet<UnicodeFriendlyString> unicodeFriendlySet(Iterable<String> strings) {
+    final ImmutableSet.Builder<UnicodeFriendlyString> ret = ImmutableSet.builder();
+
+    for (final String s : strings) {
+      ret.add(unicodeFriendly(s));
+    }
+
+    return ret.build();
+  }
+
+  /**
    * Returns a string which is the result of replacing every match of regex in the input string with
    * the results of applying replacementFunction to the matched string. This is a candidate to be
    * moved to a more general utility package.

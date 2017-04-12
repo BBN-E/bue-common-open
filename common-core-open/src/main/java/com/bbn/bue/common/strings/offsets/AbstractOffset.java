@@ -33,6 +33,26 @@ public abstract class AbstractOffset<SelfType extends Offset<SelfType>>
   }
 
   @Override
+  public boolean precedes(SelfType other) {
+    return asInt() < other.asInt();
+  }
+
+  @Override
+  public boolean precedesOrEquals(SelfType other) {
+    return asInt() <= other.asInt();
+  }
+
+  @Override
+  public boolean follows(SelfType other) {
+    return asInt() > other.asInt();
+  }
+
+  @Override
+  public boolean followsOrEquals(SelfType other) {
+    return asInt() >= other.asInt();
+  }
+
+  @Override
   public final boolean equals(final Object o) {
     if (o == null) {
       return false;

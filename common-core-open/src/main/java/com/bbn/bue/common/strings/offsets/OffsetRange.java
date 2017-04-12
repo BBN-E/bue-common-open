@@ -15,6 +15,9 @@ import java.util.Comparator;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Represents an inclusive range of offsets.
+ */
 public class OffsetRange<OffsetType extends Offset<OffsetType>> {
 
   private final OffsetType startInclusive;
@@ -25,7 +28,7 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
       @JsonProperty("start") OffsetType startInclusive,
       @JsonProperty("end") OffsetType endInclusive) {
     checkArgument(startInclusive.asInt() <= endInclusive.asInt());
-    return new OffsetRange<OffsetType>(startInclusive, endInclusive);
+    return new OffsetRange<>(startInclusive, endInclusive);
   }
 
   private OffsetRange(OffsetType startInclusive, OffsetType endInclusive) {
@@ -70,7 +73,7 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
         .equal(this.endInclusive, other.endInclusive);
   }
 
-  public static final <T extends Offset<T>> Ordering<OffsetRange<T>> byLengthOrdering() {
+  public static <T extends Offset<T>> Ordering<OffsetRange<T>> byLengthOrdering() {
     return new Ordering<OffsetRange<T>>() {
       @Override
       public int compare(final OffsetRange<T> left, final OffsetRange<T> right) {
@@ -79,7 +82,7 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     };
   }
 
-  private static final <T extends Offset<T>> Function<OffsetRange<T>, T> toStartInclusiveFunction() {
+  private static <T extends Offset<T>> Function<OffsetRange<T>, T> toStartInclusiveFunction() {
     return new Function<OffsetRange<T>, T>() {
       @Override
       public T apply(OffsetRange<T> x) {
@@ -88,7 +91,7 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     };
   }
 
-  private static final <T extends Offset<T>> Function<OffsetRange<T>, T> toEndInclusiveFunction() {
+  private static <T extends Offset<T>> Function<OffsetRange<T>, T> toEndInclusiveFunction() {
     return new Function<OffsetRange<T>, T>() {
       @Override
       public T apply(OffsetRange<T> x) {
@@ -140,9 +143,17 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
             Ordering.<T>natural().onResultOf(OffsetRange.<T>toEndInclusiveFunction()).reverse());
   }
 
-  public static OffsetRange<CharOffset> charOffsetRange(int startInclusive, int endInclusive) {
+  public static OffsetRange<CharOffset> inclusiveCharOffsetRange(int startInclusive,
+      int endInclusive) {
     return fromInclusiveEndpoints(CharOffset.asCharOffset(startInclusive),
         CharOffset.asCharOffset(endInclusive));
+  }
+
+  /**
+   * Prefer {@link #inclusiveCharOffsetRange(int, int)}
+   */
+  public static OffsetRange<CharOffset> charOffsetRange(int startInclusive, int endInclusive) {
+    return inclusiveCharOffsetRange(startInclusive, endInclusive);
   }
 
   public static OffsetRange<ByteOffset> byteOffsetRange(final int startInclusive,
@@ -187,6 +198,16 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     }
   }
 
+  /**
+   * Returns if the given offset is within the inclusive bounds of this range.
+   */
+  public boolean contains(final OffsetType x) {
+    return x.asInt() >= startInclusive().asInt() && x.asInt() <= endInclusive().asInt();
+  }
+
+  /**
+   * Returns if the given inclusive offset range is within the inclusive bounds of this range.
+   */
   public boolean contains(OffsetRange<OffsetType> other) {
     return asRange().encloses(other.asRange());
   }
@@ -232,13 +253,14 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     return LengthFunction.INSTANCE;
   }
 
+
   private enum LengthFunction implements Function<OffsetRange<?>, Integer> {
     INSTANCE {
       @Override
       public Integer apply(final OffsetRange<?> input) {
         return input.length();
       }
-    };
+    }
   }
 
   public String toString() {
