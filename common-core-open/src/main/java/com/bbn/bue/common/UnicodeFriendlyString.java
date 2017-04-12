@@ -80,4 +80,8 @@ public interface UnicodeFriendlyString {
    * Returns a copy of this string with whitespace trimmed from either end.
    */
   UnicodeFriendlyString trim();
+
+  boolean contains(UnicodeFriendlyString other);
+
+  boolean contains(String otherCodeUnits);
 }

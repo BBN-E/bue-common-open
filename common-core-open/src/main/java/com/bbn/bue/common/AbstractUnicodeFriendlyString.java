@@ -16,6 +16,14 @@ abstract class AbstractUnicodeFriendlyString implements UnicodeFriendlyString {
         codePointRange.endInclusive().shiftedCopy(1));
   }
 
+  public final boolean contains(String otherCodeUnits) {
+    return utf16CodeUnits().contains(otherCodeUnits);
+  }
+
+  public final boolean contains(UnicodeFriendlyString other) {
+    return utf16CodeUnits().contains(other.utf16CodeUnits());
+  }
+
   @Override
   public final int hashCode() {
     return utf16CodeUnits().hashCode();

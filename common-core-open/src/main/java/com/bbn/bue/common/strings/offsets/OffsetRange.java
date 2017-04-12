@@ -253,6 +253,7 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     return LengthFunction.INSTANCE;
   }
 
+
   private enum LengthFunction implements Function<OffsetRange<?>, Integer> {
     INSTANCE {
       @Override

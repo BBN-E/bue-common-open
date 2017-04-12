@@ -384,22 +384,48 @@ public abstract class LocatedString {
       return false;
     }
 
+    final CharOffset earliestPossibleMatchingContentOffset;
+    final CharOffset latestPossibleMatchingContentOffset;
+
     if (numThisRegionsPossiblyOverlappingSubstring == 1) {
       // special case for when the putative substring would be contained entirely in just one
       // of our character regions
-      return characterRegions().get(startRegionIndex.get())
-          .contains(other.characterRegions().get(0));
+      final CharacterRegion containerOnlyMatchingRegion =
+          characterRegions().get(startRegionIndex.get());
+      final CharacterRegion containeeOnlyRegion = other.characterRegions().get(0);
+      if (containerOnlyMatchingRegion.contains(containeeOnlyRegion)) {
+        earliestPossibleMatchingContentOffset =
+            containerOnlyMatchingRegion.absoluteStartingContentOffsetOfReferenceCharOffset(
+                containeeOnlyRegion.referenceStartOffsetInclusive().charOffset());
+        latestPossibleMatchingContentOffset =
+            containerOnlyMatchingRegion.absoluteEndingContentOffsetOfReferenceCharOffset(
+                containeeOnlyRegion.referenceEndOffsetInclusive().charOffset());
+      } else {
+        return false;
+      }
     } else {
       // if the putative substring covers more than one of our character regions, then
       // its first region must be a suffix of our first region...
-      if (!other.characterRegions().get(0).isSuffixOf(characterRegions().get(startRegionIndex.get()))) {
+      final CharacterRegion containerFirstMatchingRegion =
+          characterRegions().get(startRegionIndex.get());
+      final CharacterRegion containeeFirstRegion = other.characterRegions().get(0);
+      if (!containeeFirstRegion.isSuffixOf(containerFirstMatchingRegion)) {
         return false;
       }
+      earliestPossibleMatchingContentOffset =
+          containerFirstMatchingRegion.absoluteStartingContentOffsetOfReferenceCharOffset(
+              containeeFirstRegion.referenceStartOffsetInclusive().charOffset());
 
       // and its last region must be a prefix of our last region
-      if (!Iterables.getLast(other.characterRegions()).isPrefixOf(characterRegions().get(endRegionIndex.get()))) {
+      final CharacterRegion containerLastMatchingRegion =
+          characterRegions().get(endRegionIndex.get());
+      final CharacterRegion containeeLastRegion = Iterables.getLast(other.characterRegions());
+      if (!containeeLastRegion.isPrefixOf(containerLastMatchingRegion)) {
         return false;
       }
+      latestPossibleMatchingContentOffset =
+          containerLastMatchingRegion.absoluteEndingContentOffsetOfReferenceCharOffset(
+              containeeLastRegion.referenceEndOffsetInclusive().charOffset());
 
       // and all intermediate regions must match exactly (because of canonical form)
       for (int i = 1; i < numThisRegionsPossiblyOverlappingSubstring - 1; ++i) {
@@ -409,12 +435,11 @@ public abstract class LocatedString {
           return false;
         }
       }
-
-      // This isn't quite right! The content substring match
-      // could occur in a different place than the offset mapping match
-      // Fixing this is issue #64
-      return content().utf16CodeUnits().contains(other.content().utf16CodeUnits());
     }
+
+    return content().substringByCodePoints(OffsetRange.fromInclusiveEndpoints(
+        earliestPossibleMatchingContentOffset, latestPossibleMatchingContentOffset))
+        .contains(other.content());
   }
 
   // private implementation
@@ -759,6 +784,44 @@ public abstract class LocatedString {
           && referenceStartOffsetInclusive().equals(otherRegion.referenceStartOffsetInclusive())
           && referenceEndOffsetInclusive().equals(otherRegion.referenceEndOffsetInclusive())
           && contentCodePointLength() == otherRegion.contentCodePointLength();
+    }
+
+    /**
+     * Gets the earliest content position in the region mapped to the given reference
+     * character offset
+     */
+    public CharOffset absoluteStartingContentOffsetOfReferenceCharOffset(
+        final CharOffset referenceCharOffset) {
+      checkArgument(
+          referenceStartOffsetInclusive().charOffset().precedesOrEquals(referenceCharOffset)
+              && referenceEndOffsetInclusive().charOffset().followsOrEquals(referenceCharOffset));
+
+      if (isInsertion() || isDeletion()) {
+        return contentStartPosInclusive();
+      } else {
+        final int relativePositionWithinRegion =
+            referenceCharOffset.asInt() - referenceStartOffsetInclusive().charOffset().asInt();
+        return contentStartPosInclusive().shiftedCopy(relativePositionWithinRegion);
+      }
+    }
+
+    /**
+     * Gets the latest content position in the region mapped to the given reference
+     * character offset
+     */
+    public CharOffset absoluteEndingContentOffsetOfReferenceCharOffset(
+        final CharOffset referenceCharOffset) {
+      checkArgument(
+          referenceStartOffsetInclusive().charOffset().precedesOrEquals(referenceCharOffset)
+              && referenceEndOffsetInclusive().charOffset().followsOrEquals(referenceCharOffset));
+
+      if (isInsertion() || isDeletion()) {
+        return contentEndPosExclusive().shiftedCopy(-1);
+      } else {
+        final int relativePositionWithinRegion =
+            referenceCharOffset.asInt() - referenceStartOffsetInclusive().charOffset().asInt();
+        return contentStartPosInclusive().shiftedCopy(relativePositionWithinRegion);
+      }
     }
 
     public static class Builder extends ImmutableLocatedString.CharacterRegion.Builder {

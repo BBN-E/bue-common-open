@@ -11,6 +11,7 @@ import static com.bbn.bue.common.StringUtils.unicodeFriendly;
 import static com.bbn.bue.common.strings.offsets.CharOffset.asCharOffset;
 import static com.bbn.bue.common.strings.offsets.OffsetGroup.fromMatchingCharAndEDT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -394,5 +395,37 @@ public final class LocatedStringTest {
       assertEquals(ls.startReferenceOffsetsForContentOffset(asCharOffset(1 + i)),
           ell.startReferenceOffsetsForContentOffset(asCharOffset(i)));
     }
+  }
+
+  @Test
+  public void testSubstringMappingContentMismatchBug() {
+    // this tests the bug described in issue #64
+    // where the offset mapping and content string are allowed to match in different
+    // places for containsExactly
+    final LocatedString container = LocatedString.fromReferenceString("abcde");
+    final LocatedString trueContainee = new LocatedString.Builder()
+        .content(unicodeFriendly("de"))
+        .referenceString(container.referenceString())
+        .addCharacterRegions(new LocatedString.CharacterRegion.Builder()
+            .contentNonBmp(false)
+            .contentStartPosInclusive(asCharOffset(0))
+            .contentEndPosExclusive(asCharOffset(2))
+            .referenceStartOffsetInclusive(OffsetGroup.fromMatchingCharAndEDT(3))
+            .referenceEndOffsetInclusive(OffsetGroup.fromMatchingCharAndEDT(4)).build())
+        .build();
+    final LocatedString spuriousContainee = new LocatedString.Builder()
+        .content(unicodeFriendly("de"))
+        .referenceString(container.referenceString())
+        .addCharacterRegions(new LocatedString.CharacterRegion.Builder()
+            .contentNonBmp(false)
+            .contentStartPosInclusive(asCharOffset(0))
+            .contentEndPosExclusive(asCharOffset(2))
+            // note wrong offsets here compared to above
+            .referenceStartOffsetInclusive(OffsetGroup.fromMatchingCharAndEDT(0))
+            .referenceEndOffsetInclusive(OffsetGroup.fromMatchingCharAndEDT(1)).build())
+        .build();
+
+    assertTrue(container.containsExactly(trueContainee));
+    assertFalse(container.containsExactly(spuriousContainee));
   }
 }
