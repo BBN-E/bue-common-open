@@ -3,6 +3,8 @@ package com.bbn.bue.common;
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 
+import com.google.common.base.Optional;
+
 /**
  * A wrapper for {@link String} which makes it easier (and more efficient) not to make errors
  * in the presence of Unicode codepoints outside the Basic Multilingual Plane (BMP).
@@ -84,4 +86,25 @@ public interface UnicodeFriendlyString {
   boolean contains(UnicodeFriendlyString other);
 
   boolean contains(String otherCodeUnits);
+
+  /**
+   * Returns the {@link CharOffset} for the first occurrence of {@code other} within this
+   * {@link UnicodeFriendlyString}. If {@code other} does not occur as a substring, {@link absent()}
+   * is returned. Plain {@link String} codePointIndexOf() methods are not supported to restrict
+   * users from accidentally calling a substring with a naive {@link String#length()} as that length
+   * will be in UTF16 offsets and not behave correctly with this interface when used with non-BMP
+   * characters.
+   */
+  Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other);
+
+  /**
+   * Returns the {@link CharOffset} for the first occurrence of {@code other} within this
+   * {@link UnicodeFriendlyString} which beings at or after {@code startIndex}. If {@code other}
+   * does not occur as a substring, {@link absent()} is returned.  Plain {@link String}
+   * codePointIndexOf() methods are not supported to restrict users from accidentally calling a
+   * substring with a naive {@link String#length()} as that length will be in UTF16 offsets and not
+   * behave correctly with this interface when used with non-BMP characters.
+   */
+  Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other, CharOffset startIndex);
+
 }

@@ -3,6 +3,8 @@ package com.bbn.bue.common;
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 
+import com.google.common.base.Optional;
+
 /**
  * Ensures certain common behaviors for {@link UnicodeFriendlyString} implementations, especially
  * that equality and hashcode are done by the UTF-16 code units (that is, the underlying Java
@@ -42,4 +44,9 @@ abstract class AbstractUnicodeFriendlyString implements UnicodeFriendlyString {
   public String toString() {
     return utf16CodeUnits();
   }
+
+  public final Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other) {
+    return codePointIndexOf(other, CharOffset.asCharOffset(0));
+  }
+
 }
