@@ -228,6 +228,7 @@ public class UnicodeFriendlyStringTest {
     final UnicodeFriendlyString multipleTearsOfJoy =
         unicodeFriendly(FACE_WITH_TEARS_OF_JOY + FACE_WITH_TEARS_OF_JOY);
     // test for present and correct index
+    testExpectedIndexIsCorrect(HELLO_WORLD.codePointIndexOf(HELLO_WORLD), 0);
     // multiple present
     testExpectedIndexIsCorrect(
         multipleTearsOfJoy.codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY)), 0);
