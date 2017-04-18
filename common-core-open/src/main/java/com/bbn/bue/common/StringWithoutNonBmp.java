@@ -66,6 +66,9 @@ abstract class StringWithoutNonBmp extends AbstractUnicodeFriendlyString
   @Override
   public final Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other,
       CharOffset startIndex) {
+    if(startIndex.asInt() < 0 || startIndex.asInt() > lengthInCodePoints()) {
+      throw new IndexOutOfBoundsException("StartIndex was out of bounds: " + startIndex);
+    }
     final int offset = utf16CodeUnits().indexOf(other.utf16CodeUnits(), startIndex.asInt());
     if (offset >= 0) {
       return Optional.of(CharOffset.asCharOffset(offset));
