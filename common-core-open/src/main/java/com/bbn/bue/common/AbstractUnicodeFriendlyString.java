@@ -45,6 +45,7 @@ abstract class AbstractUnicodeFriendlyString implements UnicodeFriendlyString {
     return utf16CodeUnits();
   }
 
+  @Override
   public final Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other) {
     return codePointIndexOf(other, CharOffset.asCharOffset(0));
   }
