@@ -98,7 +98,7 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     }
   }
 
-  private CharOffset charOffsetUnitOffsetFor(UTF16Offset offset) {
+  private CharOffset charOffsetFor(UTF16Offset offset) {
     // slow placeholder implementation
     int charOffset = 0;
     int codePointsConsumed = 0;
@@ -137,7 +137,7 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
       return Optional.absent();
     } else {
       final UTF16Offset utf16Offset = UTF16Offset.of(matchingOffset);
-      final CharOffset charOffset = charOffsetUnitOffsetFor(utf16Offset);
+      final CharOffset charOffset = charOffsetFor(utf16Offset);
       return Optional.of(charOffset);
     }
   }
