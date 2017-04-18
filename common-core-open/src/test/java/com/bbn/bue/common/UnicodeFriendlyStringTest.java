@@ -316,6 +316,11 @@ public class UnicodeFriendlyStringTest {
     assertFalse(HELLO_CHEESE_WEDGE_TEARS
         .codePointIndexOf(CHEESE_WEDGE_AND_TEARS, CharOffset.asCharOffset(7)).isPresent());
 
-
+    // repeat the above examples with the empty string
+    testExpectedIndexIsCorrect(EMPTY.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(HELLO_WORLD.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(CHEESE_WEDGE_AND_TEARS.codePointIndexOf(EMPTY), 0);
   }
 }
