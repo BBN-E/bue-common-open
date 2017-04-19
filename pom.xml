@@ -3,7 +3,7 @@
 
   <groupId>com.bbn.bue</groupId>
   <artifactId>common-all-open</artifactId>
-  <version>7.0.3</version>
+  <version>7.0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>com.bbn.bue:common-all-open</name>
@@ -282,7 +282,7 @@
     <connection>scm:git:http://e-gitlab.bbn.com/text-group/bue-common-open.git</connection>
   <developerConnection>scm:git:http://e-gitlab.bbn.com/text-group/bue-common-open.git</developerConnection>
   <!--<url>git@github.com:rgabbard-bbn/bue-common-open.git</url>-->
-  <tag>common-all-open-7.0.3</tag>
+  <tag>HEAD</tag>
   </scm>
 
 <distributionManagement>
