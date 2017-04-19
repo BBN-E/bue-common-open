@@ -4,6 +4,8 @@ import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.strings.offsets.UTF16Offset;
 
+import com.google.common.base.Optional;
+
 import org.immutables.func.Functional;
 import org.immutables.value.Value;
 
@@ -96,6 +98,27 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     }
   }
 
+  private CharOffset charOffsetFor(UTF16Offset offset) {
+    // slow placeholder implementation
+    int charOffset = 0;
+    int codePointsConsumed = 0;
+
+    while(charOffset < utf16CodeUnits().length() && codePointsConsumed < offset.asInt()) {
+      final int codePoint = utf16CodeUnits().codePointAt(codePointsConsumed);
+      charOffset++;
+      codePointsConsumed += Character.charCount(codePoint);
+    }
+
+    if (codePointsConsumed == offset.asInt()) {
+      return CharOffset.asCharOffset(charOffset);
+    } else {
+      // this will happen if codePointOffset is negative or equal to or greater than the
+      // total number of codepoints in the string
+      throw new IndexOutOfBoundsException();
+    }
+  }
+
+
   public boolean isEmpty() {
     return utf16CodeUnits().isEmpty();
   }
@@ -104,6 +127,23 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     return StringWithNonBmp.of(utf16CodeUnits().trim());
   }
 
+  @Override
+  public final Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other,
+      CharOffset startIndex) {
+    if(startIndex.asInt() < 0 || startIndex.asInt() > lengthInCodePoints()) {
+      throw new IndexOutOfBoundsException("StartIndex was out of bounds: " + startIndex);
+    }
+    final UTF16Offset offsetForStart = codeUnitOffsetFor(startIndex);
+    final int matchingOffset =
+        utf16CodeUnits().indexOf(other.utf16CodeUnits(), offsetForStart.asInt());
+    if (matchingOffset < 0) {
+      return Optional.absent();
+    } else {
+      final UTF16Offset utf16Offset = UTF16Offset.of(matchingOffset);
+      final CharOffset charOffset = charOffsetFor(utf16Offset);
+      return Optional.of(charOffset);
+    }
+  }
 
   static class Builder extends ImmutableStringWithNonBmp.Builder {
 

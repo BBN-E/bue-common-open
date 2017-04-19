@@ -1,6 +1,9 @@
 package com.bbn.bue.common;
 
+import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
+
+import com.google.common.base.Optional;
 
 import org.junit.Test;
 
@@ -201,5 +204,129 @@ public class UnicodeFriendlyStringTest {
         asCharOffset(3)).hasNonBmpCharacter());
     assertFalse(HELLO_CHEESE_WEDGE_TEARS.substringByCodePoints(asCharOffset(0),
         asCharOffset(3)).hasNonBmpCharacter());
+  }
+
+  private void testExpectedIndexIsCorrect(final Optional<CharOffset> received, final int expected) {
+    assertTrue(received.isPresent());
+    //noinspection OptionalGetWithoutIsPresent
+    assertTrue(received.get().asInt() == expected);
+  }
+
+  @Test
+  public void testCodePointIndexOf() {
+    // test for proper behavior with a missing example
+    final UnicodeFriendlyString notContained = unicodeFriendly("notContained");
+    // works when nothing is present
+    assertFalse(EMPTY.codePointIndexOf(notContained).isPresent());
+    // works with only a single type of UnicodeFriendlyString
+    assertFalse(HELLO_WORLD.codePointIndexOf(notContained).isPresent());
+    assertFalse(CHEESE_WEDGE_AND_TEARS.codePointIndexOf(notContained).isPresent());
+    // test across transitions
+    assertFalse(HELLO_CHEESE_WEDGE.codePointIndexOf(notContained).isPresent());
+    assertFalse(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(notContained).isPresent());
+
+    final UnicodeFriendlyString multipleTearsOfJoy =
+        unicodeFriendly(FACE_WITH_TEARS_OF_JOY + FACE_WITH_TEARS_OF_JOY);
+    // test for present and correct index
+    testExpectedIndexIsCorrect(HELLO_WORLD.codePointIndexOf(HELLO_WORLD), 0);
+    // multiple present
+    testExpectedIndexIsCorrect(
+        multipleTearsOfJoy.codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY)), 0);
+    testExpectedIndexIsCorrect(
+        CHEESE_WEDGE_AND_TEARS.codePointIndexOf(unicodeFriendly(CHEESE_WEDGE)), 0);
+    testExpectedIndexIsCorrect(
+        CHEESE_WEDGE_AND_TEARS.codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY)), 1);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(unicodeFriendly(CHEESE_WEDGE)),
+        6);
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY)), 7);
+    // test a string longer than one character
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(unicodeFriendly("ello")), 1);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(CHEESE_WEDGE_AND_TEARS),
+        6);
+
+    // the above, with BMP transitions
+    // test a string longer than one character starting in BMP, ending in non-BMP
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(unicodeFriendly("o " + CHEESE_WEDGE)), 4);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(unicodeFriendly("o " + CHEESE_WEDGE_AND_TEARS_CODEUNITS)), 4);
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE.codePointIndexOf(unicodeFriendly("o " + CHEESE_WEDGE)), 4);
+    // test a string longer than one character starting in non-BMP, ending in BMP
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE.codePointIndexOf(unicodeFriendly(CHEESE_WEDGE + "!")), 6);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(unicodeFriendly(CHEESE_WEDGE_AND_TEARS_CODEUNITS + "!")), 6);
+    // test a string BMP -> nonBMP -> BMP
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(unicodeFriendly(" " + CHEESE_WEDGE_AND_TEARS_CODEUNITS + "!")), 5);
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE.codePointIndexOf(unicodeFriendly(" " + CHEESE_WEDGE + "!")), 5);
+    // test a string nonBMP -> BMP -> nonBMP
+    final UnicodeFriendlyString nonBMPTransitions =
+        unicodeFriendly(multipleTearsOfJoy.utf16CodeUnits() + "__" + CHEESE_WEDGE);
+    testExpectedIndexIsCorrect(nonBMPTransitions
+        .codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY + "__" + CHEESE_WEDGE)), 1);
+    // test entirely in BMP
+    testExpectedIndexIsCorrect(multipleTearsOfJoy.codePointIndexOf(multipleTearsOfJoy), 0);
+
+    // test for multiple instances
+    testExpectedIndexIsCorrect(multipleTearsOfJoy
+        .codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY), CharOffset.asCharOffset(1)), 1);
+
+    // test for input index/offset starting before target string
+    testExpectedIndexIsCorrect(
+        HELLO_WORLD.codePointIndexOf(unicodeFriendly("world"), CharOffset.asCharOffset(2)), 6);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE
+        .codePointIndexOf(unicodeFriendly(CHEESE_WEDGE), CharOffset.asCharOffset(3)), 6);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY), CharOffset.asCharOffset(3)), 7);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(CHEESE_WEDGE_AND_TEARS, CharOffset.asCharOffset(4)), 6);
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(unicodeFriendly("!"), CharOffset.asCharOffset(4)),
+        8);
+    // also test splitting up a non-bmp pair
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(unicodeFriendly("!"), CharOffset.asCharOffset(7)),
+        8);
+
+    // test for input index/offset starting at target strung
+    testExpectedIndexIsCorrect(
+        HELLO_WORLD.codePointIndexOf(unicodeFriendly("world"), CharOffset.asCharOffset(6)), 6);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE
+        .codePointIndexOf(unicodeFriendly(CHEESE_WEDGE), CharOffset.asCharOffset(6)), 6);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY), CharOffset.asCharOffset(7)), 7);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(CHEESE_WEDGE_AND_TEARS, CharOffset.asCharOffset(6)), 6);
+    testExpectedIndexIsCorrect(
+        HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(unicodeFriendly("!"), CharOffset.asCharOffset(8)),
+        8);
+
+    // test for input index/offset starting after target string (find nothing)
+    assertFalse(HELLO_WORLD.codePointIndexOf(unicodeFriendly("world"), CharOffset.asCharOffset(7))
+        .isPresent());
+    assertFalse(HELLO_CHEESE_WEDGE
+        .codePointIndexOf(unicodeFriendly(CHEESE_WEDGE), CharOffset.asCharOffset(7)).isPresent());
+    assertFalse(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY), CharOffset.asCharOffset(8))
+        .isPresent());
+    assertFalse(HELLO_CHEESE_WEDGE_TEARS
+        .codePointIndexOf(CHEESE_WEDGE_AND_TEARS, CharOffset.asCharOffset(7)).isPresent());
+
+    // repeat the above examples with the empty string
+    testExpectedIndexIsCorrect(EMPTY.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(HELLO_WORLD.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(EMPTY), 0);
+    testExpectedIndexIsCorrect(CHEESE_WEDGE_AND_TEARS.codePointIndexOf(EMPTY), 0);
+    // and non-initial versions
+    testExpectedIndexIsCorrect(HELLO_WORLD.codePointIndexOf(EMPTY, CharOffset.asCharOffset(2)), 2);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(EMPTY, CharOffset.asCharOffset(3)), 3);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(EMPTY, CharOffset.asCharOffset(6)), 6);
+    testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(EMPTY, CharOffset.asCharOffset(6)), 6);
+    testExpectedIndexIsCorrect(CHEESE_WEDGE_AND_TEARS.codePointIndexOf(EMPTY, CharOffset.asCharOffset(1)), 1);
   }
 }

@@ -3,6 +3,8 @@ package com.bbn.bue.common;
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 
+import com.google.common.base.Optional;
+
 import org.immutables.value.Value;
 
 /**
@@ -59,6 +61,20 @@ abstract class StringWithoutNonBmp extends AbstractUnicodeFriendlyString
   @Override
   public UnicodeFriendlyString trim() {
     return StringWithoutNonBmp.of(utf16CodeUnits().trim());
+  }
+
+  @Override
+  public final Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other,
+      CharOffset startIndex) {
+    if(startIndex.asInt() < 0 || startIndex.asInt() > lengthInCodePoints()) {
+      throw new IndexOutOfBoundsException("StartIndex was out of bounds: " + startIndex);
+    }
+    final int offset = utf16CodeUnits().indexOf(other.utf16CodeUnits(), startIndex.asInt());
+    if (offset >= 0) {
+      return Optional.of(CharOffset.asCharOffset(offset));
+    } else {
+      return Optional.absent();
+    }
   }
 
   public static class Builder extends ImmutableStringWithoutNonBmp.Builder {}
