@@ -2,7 +2,7 @@
     <parent>
         <artifactId>common-all-open</artifactId>
         <groupId>com.bbn.bue</groupId>
-        <version>7.0.2-SNAPSHOT</version>
+        <version>7.0.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -47,12 +47,12 @@
         <dependency>
             <groupId>com.bbn.bue</groupId>
             <artifactId>common-core-open</artifactId>
-            <version>7.0.2-SNAPSHOT</version>
+            <version>7.0.2</version>
         </dependency>
         <dependency>
             <groupId>com.bbn.bue</groupId>
             <artifactId>scoring-open</artifactId>
-            <version>7.0.2-SNAPSHOT</version>
+            <version>7.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
