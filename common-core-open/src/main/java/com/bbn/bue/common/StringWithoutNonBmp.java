@@ -7,6 +7,8 @@ import com.google.common.base.Optional;
 
 import org.immutables.value.Value;
 
+import static com.bbn.bue.common.strings.offsets.CharOffset.asCharOffset;
+
 /**
  * A {@link UnicodeFriendlyString} which does not contain a non-BMP character. This class
  * should never be referenced directly. Always create {@link UnicodeFriendlyString}s
@@ -66,15 +68,37 @@ abstract class StringWithoutNonBmp extends AbstractUnicodeFriendlyString
   @Override
   public final Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other,
       CharOffset startIndex) {
-    if(startIndex.asInt() < 0 || startIndex.asInt() > lengthInCodePoints()) {
+    if (startIndex.asInt() < 0 || startIndex.asInt() > lengthInCodePoints()) {
       throw new IndexOutOfBoundsException("StartIndex was out of bounds: " + startIndex);
     }
     final int offset = utf16CodeUnits().indexOf(other.utf16CodeUnits(), startIndex.asInt());
     if (offset >= 0) {
-      return Optional.of(CharOffset.asCharOffset(offset));
+      return Optional.of(asCharOffset(offset));
     } else {
       return Optional.absent();
     }
+  }
+
+  @Override
+  public final <T> void processCodePoints(CodePointProcessor<T> codePointProcessor) {
+    for (int i=0; i<utf16CodeUnits().length(); ++i) {
+      codePointProcessor.processCodepoint(this, asCharOffset(i), utf16CodeUnits().codePointAt(i));
+    }
+  }
+
+  @Override
+  public final String toString() {
+    return super.toString();
+  }
+
+  @Override
+  public final int hashCode() {
+    return super.hashCode();
+  }
+
+  @Override
+  public final boolean equals(Object o) {
+    return super.equals(o);
   }
 
   public static class Builder extends ImmutableStringWithoutNonBmp.Builder {}
