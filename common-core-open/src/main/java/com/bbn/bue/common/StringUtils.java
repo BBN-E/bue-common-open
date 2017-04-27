@@ -20,6 +20,7 @@ import com.google.common.io.LineProcessor;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.MatchResult;
@@ -71,6 +72,17 @@ public final class StringUtils {
 
     for (final String s : strings) {
       ret.add(unicodeFriendly(s));
+    }
+
+    return ret.build();
+  }
+
+  public static ImmutableSet<UnicodeFriendlyString> unicodeFriendlySet(String s, String... strings) {
+    final ImmutableSet.Builder<UnicodeFriendlyString> ret = ImmutableSet.builder();
+
+    ret.add(unicodeFriendly(s));
+    for (final String string : strings) {
+      ret.add(unicodeFriendly(string));
     }
 
     return ret.build();
@@ -578,6 +590,19 @@ public final class StringUtils {
     public Integer apply(final String input) {
       return input.codePointCount(0, input.length());
     }
+  }
+
+  // \p{M} means all Unicode "marks"
+  private static final Pattern ACCENT_STRIPPER = Pattern.compile("[^\\p{M}]");
+
+  /**
+   * Removes all Unicode marks from a string. As a side effect, applies NFD normalization.
+   */
+  public static UnicodeFriendlyString stripAccents(final UnicodeFriendlyString input) {
+    // this nifty normalization courtesy of http://stackoverflow.com/questions/3322152/is-there-a-way-to-get-rid-of-accents-and-convert-a-whole-string-to-regular-lette
+    return StringUtils.unicodeFriendly(ACCENT_STRIPPER.matcher(
+        Normalizer.normalize(input.utf16CodeUnits(), Normalizer.Form.NFD))
+        .replaceAll(""));
   }
 
   /******************************** Deprecated code ************************************/
