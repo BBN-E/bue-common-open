@@ -77,7 +77,7 @@ public final class StringUtils {
   }
 
   public static String codepointToString(int codePoint) {
-    return new String(new int[] {codePoint}, 0, 1);
+    return new String(Character.toChars(codePoint));
   }
 
   /**
