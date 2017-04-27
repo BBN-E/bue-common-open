@@ -76,6 +76,10 @@ public final class StringUtils {
     return ret.build();
   }
 
+  public static String codepointToString(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
+
   /**
    * Returns a string which is the result of replacing every match of regex in the input string with
    * the results of applying replacementFunction to the matched string. This is a candidate to be
@@ -163,7 +167,7 @@ public final class StringUtils {
   /**
    * Returns a Function which will join the string with the specified separator
    */
-  public static final Function<Iterable<?>, String> joinFunction(final Joiner joiner) {
+  public static Function<Iterable<?>, String> joinFunction(final Joiner joiner) {
     return new Function<Iterable<?>, String>() {
       @Override
       public String apply(final Iterable<?> list) {
@@ -173,8 +177,18 @@ public final class StringUtils {
   }
 
   @SuppressWarnings("deprecation")
-  public static final Joiner spaceJoiner() {
+  public static Joiner spaceJoiner() {
     return SpaceJoiner;
+  }
+
+  private static final Joiner OR_JOINER = Joiner.on("|");
+
+  /**
+   * A {@link Joiner} which joins on |.  Handy for constructing regular expressions.
+   * @return
+   */
+  public static Joiner pipeJoiner() {
+    return OR_JOINER;
   }
 
   /**
@@ -184,7 +198,7 @@ public final class StringUtils {
   public static final Joiner SpaceJoiner = Joiner.on(" ");
 
   @SuppressWarnings("deprecation")
-  public static final Joiner unixNewlineJoiner() {
+  public static Joiner unixNewlineJoiner() {
     return NewlineJoiner;
   }
 
@@ -195,12 +209,12 @@ public final class StringUtils {
   public static final Joiner NewlineJoiner = Joiner.on("\n");
 
   @SuppressWarnings("deprecation")
-  public static final Joiner commaJoiner() {
+  public static Joiner commaJoiner() {
     return CommaJoiner;
   }
 
   @SuppressWarnings("deprecation")
-  public static final Joiner dotJoiner() {
+  public static Joiner dotJoiner() {
     return DotJoiner;
   }
 
@@ -569,6 +583,22 @@ public final class StringUtils {
       ret.add(new String(Character.toChars(codePoint)));
     }
     return ret.build();
+  }
+
+  /**
+   * Guava {@link Function} which runs {@link String#trim()} on all inputs.
+   */
+  public static Function<String, String> trimFunction() {
+    return TrimFunction.INSTANCE;
+  }
+
+  private enum TrimFunction implements Function<String, String> {
+    INSTANCE;
+
+    @Override
+    public String apply(final String input) {
+      return input.trim();
+    }
   }
 
   private enum CodepointCountFunction implements Function<String, Integer> {

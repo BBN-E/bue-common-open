@@ -27,12 +27,24 @@ abstract class AbstractUnicodeFriendlyString implements UnicodeFriendlyString {
   }
 
   @Override
-  public final int hashCode() {
+  public final boolean startsWith(final UnicodeFriendlyString ufs) {
+    return startsWith(ufs, CharOffset.asCharOffset(0));
+  }
+
+  @Override
+  public boolean startsWith(UnicodeFriendlyString ufs, CharOffset offset) {
+    // simple but slow implementation
+    final Optional<CharOffset> ret = codePointIndexOf(ufs, offset);
+    return ret.isPresent() && ret.get().asInt() == 0;
+  }
+
+  @Override
+  public int hashCode() {
     return utf16CodeUnits().hashCode();
   }
 
   @Override
-  public final boolean equals(Object other) {
+  public boolean equals(Object other) {
     if (this == other) {
       return true;
     }

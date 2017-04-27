@@ -57,6 +57,18 @@ public interface UnicodeFriendlyString {
   int lengthInCodePoints();
 
   /**
+   * Tests if this string starts with the specified prefix.  Always returns {@code true} for
+   * if the argument is the empty string.
+   */
+  boolean startsWith(UnicodeFriendlyString ufs);
+
+  /**
+   * Tests if the substring of this string beginning at the specified index starts with the
+   * specified prefix. Always returns {@code true} for if the argument is the empty string.
+   */
+  boolean startsWith(UnicodeFriendlyString ufs, CharOffset offset);
+
+  /**
    * Returns the substring, in terms of code point offsets,
    * starting at {@code startCodepointInclusive} and continuing to the end of the string.
    */
@@ -89,22 +101,51 @@ public interface UnicodeFriendlyString {
 
   /**
    * Returns the {@link CharOffset} for the first occurrence of {@code other} within this
-   * {@link UnicodeFriendlyString}. If {@code other} does not occur as a substring, {@link absent()}
-   * is returned. Plain {@link String} codePointIndexOf() methods are not supported to restrict
-   * users from accidentally calling a substring with a naive {@link String#length()} as that length
-   * will be in UTF16 offsets and not behave correctly with this interface when used with non-BMP
-   * characters.
+   * {@link UnicodeFriendlyString}. If {@code other} does not occur as a substring,
+   * {@link Optional#absent()} is returned. Plain {@link String} codePointIndexOf() methods are not
+   * supported to restrict users from accidentally calling a substring with a naive
+   * {@link String#length()} as that length will be in UTF16 offsets and not behave correctly with
+   * this interface when used with non-BMP characters.
    */
   Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other);
 
   /**
    * Returns the {@link CharOffset} for the first occurrence of {@code other} within this
    * {@link UnicodeFriendlyString} which beings at or after {@code startIndex}. If {@code other}
-   * does not occur as a substring, {@link absent()} is returned.  Plain {@link String}
+   * does not occur as a substring, {@link Optional#absent()}  is returned.  Plain {@link String}
    * codePointIndexOf() methods are not supported to restrict users from accidentally calling a
    * substring with a naive {@link String#length()} as that length will be in UTF16 offsets and not
    * behave correctly with this interface when used with non-BMP characters.
    */
   Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other, CharOffset startIndex);
+
+  /**
+   * Process each codepoint of this string with a {@link CodePointProcessor}.  This is how
+   * you should replace things which would be for loops over the indices of a regular {@link String}.
+   */
+  <T> void processCodePoints(CodePointProcessor<T> codePointProcessor);
+
+  /**
+   * Something which can process the code points of a string and produce some result.  Note that
+   * in many cases it is easier to create an anonymous {@link NoResultCodePointProcessor} and
+   * ignore {@link #getResult()}.
+   */
+  interface CodePointProcessor<T> {
+    void processCodepoint(UnicodeFriendlyString s, CharOffset codePointOffset, int codePoint);
+    T getResult();
+  }
+
+  /**
+   * A {@link CodePointProcessor} useful for making anonymous {@code CodePointProcessors} which
+   * feed their output directly into local variables in a method and doesn't bother with
+   * {@link #getResult()}.
+   */
+  abstract class NoResultCodePointProcessor implements CodePointProcessor<Void> {
+    @Override
+    public final Void getResult() {
+      throw new UnsupportedOperationException("Should not call getResult on "
+          + "a NoResultCodePointProcessor");
+    }
+  }
 
 }

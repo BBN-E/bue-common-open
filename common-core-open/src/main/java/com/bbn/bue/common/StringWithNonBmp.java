@@ -9,6 +9,8 @@ import com.google.common.base.Optional;
 import org.immutables.func.Functional;
 import org.immutables.value.Value;
 
+import static com.bbn.bue.common.strings.offsets.CharOffset.asCharOffset;
+
 /**
  * A {@link UnicodeFriendlyString} which actually contains a non-BMP character. This class
  * should never be referenced directly in user code because it assumes the provided string
@@ -61,9 +63,11 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     return new Builder().utf16CodeUnits(s).build();
   }
 
+
+
   public final UnicodeFriendlyString substringByCodePoints(CharOffset startCodepointInclusive) {
     return substringByCodePoints(startCodepointInclusive,
-        CharOffset.asCharOffset(lengthInCodePoints()));
+        asCharOffset(lengthInCodePoints()));
   }
 
   public final UnicodeFriendlyString substringByCodePoints(CharOffset startCodepointInclusive,
@@ -110,7 +114,7 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     }
 
     if (codePointsConsumed == offset.asInt()) {
-      return CharOffset.asCharOffset(charOffset);
+      return asCharOffset(charOffset);
     } else {
       // this will happen if codePointOffset is negative or equal to or greater than the
       // total number of codepoints in the string
@@ -130,7 +134,7 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
   @Override
   public final Optional<CharOffset> codePointIndexOf(UnicodeFriendlyString other,
       CharOffset startIndex) {
-    if(startIndex.asInt() < 0 || startIndex.asInt() > lengthInCodePoints()) {
+    if (startIndex.asInt() < 0 || startIndex.asInt() > lengthInCodePoints()) {
       throw new IndexOutOfBoundsException("StartIndex was out of bounds: " + startIndex);
     }
     final UTF16Offset offsetForStart = codeUnitOffsetFor(startIndex);
@@ -143,6 +147,31 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
       final CharOffset charOffset = charOffsetFor(utf16Offset);
       return Optional.of(charOffset);
     }
+  }
+
+  @Override
+  public final <T> void processCodePoints(CodePointProcessor<T> codePointProcessor) {
+    for (int codeUnitOffset = 0, codePointOffset = 0; codeUnitOffset < utf16CodeUnits().length();
+         ++codePointOffset) {
+      final int codePoint = utf16CodeUnits().codePointAt(codePointOffset);
+      codePointProcessor.processCodepoint(this, asCharOffset(codePointOffset), codePoint);
+      codeUnitOffset += Character.charCount(codePoint);
+    }
+  }
+
+  @Override
+  public final String toString() {
+    return super.toString();
+  }
+
+  @Override
+  public final int hashCode() {
+    return super.hashCode();
+  }
+
+  @Override
+  public final boolean equals(Object o) {
+    return super.equals(o);
   }
 
   static class Builder extends ImmutableStringWithNonBmp.Builder {

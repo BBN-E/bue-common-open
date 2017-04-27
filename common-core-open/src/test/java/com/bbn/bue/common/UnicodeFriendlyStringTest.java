@@ -329,4 +329,37 @@ public class UnicodeFriendlyStringTest {
     testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(EMPTY, CharOffset.asCharOffset(6)), 6);
     testExpectedIndexIsCorrect(CHEESE_WEDGE_AND_TEARS.codePointIndexOf(EMPTY, CharOffset.asCharOffset(1)), 1);
   }
+
+  private static class SumOfCodePoints
+      implements UnicodeFriendlyString.CodePointProcessor<Integer> {
+
+    private int sum = 0;
+
+    @Override
+    public void processCodepoint(final UnicodeFriendlyString s, final CharOffset codePointOffset,
+        final int codePoint) {
+      sum += codePoint;
+    }
+
+    @Override
+    public Integer getResult() {
+      return sum;
+    }
+  }
+
+  @Test
+  public void testCodePointProcessor() {
+    final UnicodeFriendlyString allBMP = unicodeFriendly("abc");
+    final UnicodeFriendlyString withNonBMP = unicodeFriendly("abc" + FACE_WITH_TEARS_OF_JOY);
+
+    final UnicodeFriendlyString.CodePointProcessor<Integer> sumOfCodePoints1 =
+        new SumOfCodePoints();
+    allBMP.processCodePoints(sumOfCodePoints1);
+    assertEquals(97 + 98 + 99, sumOfCodePoints1.getResult().intValue());
+
+    final UnicodeFriendlyString.CodePointProcessor<Integer> sumOfCodePoints2 =
+        new SumOfCodePoints();
+    withNonBMP.processCodePoints(sumOfCodePoints2);
+    assertEquals(97 + 98 + 99 + 128514, sumOfCodePoints2.getResult().intValue());
+  }
 }
