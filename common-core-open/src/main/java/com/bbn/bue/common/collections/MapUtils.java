@@ -293,7 +293,7 @@ public final class MapUtils {
     @Override
     public V apply(final K input) {
       final V result = map.get(input);
-      return (result != null || map.containsKey(result)) ? result : defaultFunction.apply(input);
+      return (result != null || map.containsKey(input)) ? result : defaultFunction.apply(input);
     }
 
     @Override
