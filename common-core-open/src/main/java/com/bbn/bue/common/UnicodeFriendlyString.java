@@ -57,6 +57,11 @@ public interface UnicodeFriendlyString {
   int lengthInCodePoints();
 
   /**
+   * Returns the Unicode codepoint at the given codepoint index.
+   */
+  int codepointAtCodepointIndex(CharOffset codepointIdx);
+
+  /**
    * Tests if this string starts with the specified prefix.  Always returns {@code true} for
    * if the argument is the empty string.
    */

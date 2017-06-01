@@ -44,6 +44,12 @@ abstract class StringWithoutNonBmp extends AbstractUnicodeFriendlyString
   }
 
   @Override
+  public int codepointAtCodepointIndex(final CharOffset codepointIdx) {
+    // for this class codepoint indices are guaranteed to equal code unit indices
+    return utf16CodeUnits().codePointAt(codepointIdx.asInt());
+  }
+
+  @Override
   public UnicodeFriendlyString substringByCodePoints(final CharOffset startCodepointInclusive) {
     return StringWithoutNonBmp.of(utf16CodeUnits().substring(startCodepointInclusive.asInt()));
   }
