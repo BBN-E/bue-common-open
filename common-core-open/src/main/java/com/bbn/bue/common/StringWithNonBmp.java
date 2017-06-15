@@ -59,6 +59,11 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     return utf16CodeUnits().codePointCount(0, utf16CodeUnits().length());
   }
 
+  @Override
+  public int codepointAtCodepointIndex(final CharOffset codepointIdx) {
+    return utf16CodeUnits().codePointAt(codeUnitOffsetFor(codepointIdx).asInt());
+  }
+
   static UnicodeFriendlyString of(String s) {
     return new Builder().utf16CodeUnits(s).build();
   }

@@ -20,6 +20,7 @@ import com.google.common.io.LineProcessor;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.MatchResult;
@@ -69,6 +70,17 @@ public final class StringUtils {
   public static ImmutableSet<UnicodeFriendlyString> unicodeFriendlySet(Iterable<String> strings) {
     final ImmutableSet.Builder<UnicodeFriendlyString> ret = ImmutableSet.builder();
 
+    for (final String s : strings) {
+      ret.add(unicodeFriendly(s));
+    }
+
+    return ret.build();
+  }
+
+  public static ImmutableSet<UnicodeFriendlyString> unicodeFriendlySet(String s1, String... strings) {
+    final ImmutableSet.Builder<UnicodeFriendlyString> ret = ImmutableSet.builder();
+
+    ret.add(unicodeFriendly(s1));
     for (final String s : strings) {
       ret.add(unicodeFriendly(s));
     }
@@ -185,7 +197,6 @@ public final class StringUtils {
 
   /**
    * A {@link Joiner} which joins on |.  Handy for constructing regular expressions.
-   * @return
    */
   public static Joiner pipeJoiner() {
     return OR_JOINER;
@@ -608,6 +619,20 @@ public final class StringUtils {
     public Integer apply(final String input) {
       return input.codePointCount(0, input.length());
     }
+  }
+
+  // \p{M} means all Unicode "marks"
+  private static final Pattern ACCENT_STRIPPER = Pattern.compile("[^\\p{M}]");
+
+  /**
+   * Removes all Unicode marks from a string. As a side effect, applies NFD normalization.
+   */
+  public static UnicodeFriendlyString stripAccents(final UnicodeFriendlyString input) {
+    // this nifty normalization courtesy of http://stackoverflow.com/questions/3322152/is-there-a-way-to-get-rid-of-accents-and-convert-a-whole-string-to-regular-lette
+    return StringUtils.unicodeFriendly(ACCENT_STRIPPER.matcher(
+        Normalizer.normalize(input.utf16CodeUnits(), Normalizer.Form.NFD))
+        // note this replaceAll is really deleteAll
+        .replaceAll(""));
   }
 
   /******************************** Deprecated code ************************************/

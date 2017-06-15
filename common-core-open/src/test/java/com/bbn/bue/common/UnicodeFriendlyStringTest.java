@@ -16,8 +16,10 @@ import static org.junit.Assert.assertTrue;
 public class UnicodeFriendlyStringTest {
 
   // non-BMP emoji
-  private final String CHEESE_WEDGE = "\uD83E\uDDC0";
+  private static final String CHEESE_WEDGE = "\uD83E\uDDC0";
+  private static final int CHEESE_WEDGE_INT = 129472;
   private static final String FACE_WITH_TEARS_OF_JOY = "\uD83D\uDE02";
+  private static final int FACE_WITH_TEARS_OF_JOY_INT = 128514;
 
   private final String EMPTY_CODEUNITS = "";
 
@@ -213,7 +215,7 @@ public class UnicodeFriendlyStringTest {
   }
 
   @Test
-  public void testCodePointIndexOf() {
+  public void testCodePointIndexOfAndCodePointAt() {
     // test for proper behavior with a missing example
     final UnicodeFriendlyString notContained = unicodeFriendly("notContained");
     // works when nothing is present
@@ -229,6 +231,7 @@ public class UnicodeFriendlyStringTest {
         unicodeFriendly(FACE_WITH_TEARS_OF_JOY + FACE_WITH_TEARS_OF_JOY);
     // test for present and correct index
     testExpectedIndexIsCorrect(HELLO_WORLD.codePointIndexOf(HELLO_WORLD), 0);
+
     // multiple present
     testExpectedIndexIsCorrect(
         multipleTearsOfJoy.codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY)), 0);
@@ -238,8 +241,10 @@ public class UnicodeFriendlyStringTest {
         CHEESE_WEDGE_AND_TEARS.codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY)), 1);
     testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(unicodeFriendly(CHEESE_WEDGE)),
         6);
+
     testExpectedIndexIsCorrect(
         HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(unicodeFriendly(FACE_WITH_TEARS_OF_JOY)), 7);
+
     // test a string longer than one character
     testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(unicodeFriendly("ello")), 1);
     testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(CHEESE_WEDGE_AND_TEARS),
@@ -328,6 +333,21 @@ public class UnicodeFriendlyStringTest {
     testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE.codePointIndexOf(EMPTY, CharOffset.asCharOffset(6)), 6);
     testExpectedIndexIsCorrect(HELLO_CHEESE_WEDGE_TEARS.codePointIndexOf(EMPTY, CharOffset.asCharOffset(6)), 6);
     testExpectedIndexIsCorrect(CHEESE_WEDGE_AND_TEARS.codePointIndexOf(EMPTY, CharOffset.asCharOffset(1)), 1);
+  }
+
+  @Test
+  public void testCodePointAt() {
+    assertEquals(FACE_WITH_TEARS_OF_JOY_INT,
+        unicodeFriendly(FACE_WITH_TEARS_OF_JOY).codepointAtCodepointIndex(asCharOffset(0)));
+    assertEquals('H', HELLO_WORLD.codepointAtCodepointIndex(asCharOffset(0)));
+    assertEquals('o', HELLO_WORLD.codepointAtCodepointIndex(asCharOffset(4)));
+    assertEquals(CHEESE_WEDGE_INT,
+        unicodeFriendly(CHEESE_WEDGE).codepointAtCodepointIndex(asCharOffset(0)));
+    assertEquals(FACE_WITH_TEARS_OF_JOY_INT,
+        CHEESE_WEDGE_AND_TEARS.codepointAtCodepointIndex(asCharOffset(1)));
+    assertEquals(CHEESE_WEDGE_INT, HELLO_CHEESE_WEDGE.codepointAtCodepointIndex(asCharOffset(6)));
+    assertEquals(FACE_WITH_TEARS_OF_JOY_INT,
+        HELLO_CHEESE_WEDGE_TEARS.codepointAtCodepointIndex(asCharOffset(7)));
   }
 
   private static class SumOfCodePoints

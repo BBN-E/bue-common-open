@@ -66,6 +66,25 @@ public class UnicodeFriendlyStringBuilder {
     return length;
   }
 
+  public boolean isEmpty() {
+    return lengthInCodepoints() == 0;
+  }
+
+
+  /**
+   * Clears the contents of this {@code UnicodeFriendlyStringBuilder}.  In the usual JDK
+   * implementations this will maintain the underlying buffer so that future use of this string
+   * builder should not require buffer re-allocation. However, this is not guaranteed.
+   *
+   * {@link StringBuilder} doesn't have a corresponding method, but it is a frequent pattern to
+   * use the less clear {@code sb.setLenth(0)} to achieve the same thing.
+   */
+  public UnicodeFriendlyStringBuilder clearProbablyMaintainingBuffer() {
+    sb.setLength(0);
+    length = 0;
+    return this;
+  }
+
   public UnicodeFriendlyString build() {
     // this could be made more efficient by not having to re-scan for non-BMP characters
     return StringUtils.unicodeFriendly(sb.toString());
