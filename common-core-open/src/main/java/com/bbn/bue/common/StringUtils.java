@@ -76,6 +76,17 @@ public final class StringUtils {
     return ret.build();
   }
 
+  public static ImmutableSet<UnicodeFriendlyString> unicodeFriendlySet(String s1, String... strings) {
+    final ImmutableSet.Builder<UnicodeFriendlyString> ret = ImmutableSet.builder();
+
+    ret.add(unicodeFriendly(s1));
+    for (final String s : strings) {
+      ret.add(unicodeFriendly(s));
+    }
+
+    return ret.build();
+  }
+
   public static String codepointToString(int codePoint) {
     return new String(Character.toChars(codePoint));
   }
