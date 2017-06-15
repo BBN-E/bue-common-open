@@ -340,7 +340,7 @@ public class UnicodeFriendlyStringTest {
     assertEquals(FACE_WITH_TEARS_OF_JOY_INT,
         unicodeFriendly(FACE_WITH_TEARS_OF_JOY).codepointAtCodepointIndex(asCharOffset(0)));
     assertEquals('H', HELLO_WORLD.codepointAtCodepointIndex(asCharOffset(0)));
-    assertEquals('O', HELLO_WORLD.codepointAtCodepointIndex(asCharOffset(4)));
+    assertEquals('o', HELLO_WORLD.codepointAtCodepointIndex(asCharOffset(4)));
     assertEquals(CHEESE_WEDGE_INT,
         unicodeFriendly(CHEESE_WEDGE).codepointAtCodepointIndex(asCharOffset(0)));
     assertEquals(FACE_WITH_TEARS_OF_JOY_INT,
