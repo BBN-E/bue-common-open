@@ -17,9 +17,9 @@ public class UnicodeFriendlyStringTest {
 
   // non-BMP emoji
   private static final String CHEESE_WEDGE = "\uD83E\uDDC0";
-  private static final int CHEESE_WEDGE_INT = CHEESE_WEDGE.codePointAt(0);
+  private static final int CHEESE_WEDGE_INT = 129472;
   private static final String FACE_WITH_TEARS_OF_JOY = "\uD83D\uDE02";
-  private static final int FACE_WITH_TEARS_OF_JOY_INT = FACE_WITH_TEARS_OF_JOY.codePointAt(0);
+  private static final int FACE_WITH_TEARS_OF_JOY_INT = 128514;
 
   private final String EMPTY_CODEUNITS = "";
 
