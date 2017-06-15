@@ -631,6 +631,7 @@ public final class StringUtils {
     // this nifty normalization courtesy of http://stackoverflow.com/questions/3322152/is-there-a-way-to-get-rid-of-accents-and-convert-a-whole-string-to-regular-lette
     return StringUtils.unicodeFriendly(ACCENT_STRIPPER.matcher(
         Normalizer.normalize(input.utf16CodeUnits(), Normalizer.Form.NFD))
+        // note this replaceAll is really deleteAll
         .replaceAll(""));
   }
 
