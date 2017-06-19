@@ -193,6 +193,11 @@ public final class StringUtils {
     return SpaceJoiner;
   }
 
+  @SuppressWarnings("deprecation")
+  public static Joiner commaSpaceJoiner() {
+    return CommaSpaceJoiner;
+  }
+
   private static final Joiner OR_JOINER = Joiner.on("|");
 
   /**
