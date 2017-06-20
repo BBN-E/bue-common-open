@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
 
+import static com.bbn.bue.common.StringUtils.unicodeFriendly;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -78,5 +79,10 @@ public class StringUtilsTest {
         StringUtils.laxSubstringByCodepoints(stringWithNonBMPCharacter, -1, 6));
     assertEquals("lo\uD862\uDF4EWorld",
         StringUtils.laxSubstringByCodepoints(stringWithNonBMPCharacter, 3, 100000));
+  }
+
+  @Test
+  public void testStripAccents() {
+    assertEquals("foo", StringUtils.stripAccents(unicodeFriendly("föó")).utf16CodeUnits());
   }
 }
