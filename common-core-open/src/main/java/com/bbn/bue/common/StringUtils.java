@@ -627,7 +627,7 @@ public final class StringUtils {
   }
 
   // \p{M} means all Unicode "marks"
-  private static final Pattern ACCENT_STRIPPER = Pattern.compile("[^\\p{M}]");
+  private static final Pattern ACCENT_STRIPPER = Pattern.compile("[\\p{M}]");
 
   /**
    * Removes all Unicode marks from a string. As a side effect, applies NFD normalization.

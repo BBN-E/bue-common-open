@@ -207,6 +207,10 @@ public final class FileUtils {
     return new File(String.format("%s.%s", basePath, newExtension));
   }
 
+  /**
+   * Derives one {@link File} from another by adding the provided extension.
+   * The extension will be separated from the base file name by a ".".
+   */
   public static File addExtension(final File f, final String extension) {
     checkNotNull(f);
     checkNotNull(extension);
