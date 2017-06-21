@@ -1089,11 +1089,4 @@ public final class FileUtils {
       return null;
     }
   }
-
-  public static File[] listFilesNonNull(File f){
-    //WIP
-    File files[] = f.listFiles();
-    checkNotNull(files);
-    return files;
-  }
 }
