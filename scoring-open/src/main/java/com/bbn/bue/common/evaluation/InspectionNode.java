@@ -12,6 +12,7 @@ import com.google.common.annotations.Beta;
 public class InspectionNode<InT> extends InspectorTreeNode<InT> implements Inspector<InT>,
     Finishable {
 
+  @Override
   public void inspect(final InT item) {
     for (final Inspector<InT> consumer : consumers()) {
       consumer.inspect(item);

@@ -54,6 +54,7 @@ public final class EquivalenceBasedProvenancedAligner<LeftT, RightT, EqClassT>
         (Function<RightT, EqClass>) rightEquivalenceFunction);
   }
 
+  @Override
   public EquivalenceBasedProvenancedAlignment<EqClassT, LeftT, RightT> align(
       Iterable<? extends LeftT> left,
       Iterable<? extends RightT> right) {
