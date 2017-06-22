@@ -11,6 +11,7 @@ public class StringToDouble implements StringConverter<Double> {
     return Double.class;
   }
 
+  @Override
   public Double decode(final String s) {
     try {
       return Double.parseDouble(s);

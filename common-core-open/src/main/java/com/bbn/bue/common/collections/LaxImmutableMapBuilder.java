@@ -54,6 +54,7 @@ final class MonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBuild
     this.keepFirst = keepFirst;
   }
 
+  @Override
   public LaxImmutableMapBuilder<K, V> put(K key, V value) {
     checkNotNull(key);
     checkNotNull(value);
@@ -73,6 +74,7 @@ final class MonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBuild
     return this;
   }
 
+  @Override
   public LaxImmutableMapBuilder<K,V> putAll(Map<? extends K, ? extends V> map) {
     for (final Map.Entry<? extends K, ? extends V> e : map.entrySet()) {
       put(e.getKey(), e.getValue());
@@ -80,6 +82,7 @@ final class MonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBuild
     return this;
   }
 
+  @Override
   public LaxImmutableMapBuilder<K, V> putAll(Iterable<? extends Map.Entry<? extends K, ? extends V>> entries) {
     for (final Map.Entry<? extends K, ? extends V> e : entries) {
       put(e.getKey(), e.getValue());
@@ -90,11 +93,13 @@ final class MonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBuild
   /**
    * See {@link ImmutableMap.Builder#orderEntriesByValue(Comparator)}
    */
+  @Override
   public LaxImmutableMapBuilder<K, V> orderEntriesByValue(Comparator<? super V> valueComparator) {
     innerBuilder.orderEntriesByValue(valueComparator);
     return this;
   }
 
+  @Override
   public ImmutableMap<K,V> build() {
     return innerBuilder.build();
   }
@@ -113,6 +118,7 @@ final class NonMonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBu
     this.conflictComparator = checkNotNull(conflictComparator);
   }
 
+  @Override
   public LaxImmutableMapBuilder<K,V> put(K key, V value) {
     checkNotNull(key);
     checkNotNull(value);
@@ -131,6 +137,7 @@ final class NonMonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBu
     return this;
   }
 
+  @Override
   public LaxImmutableMapBuilder<K,V> putAll(Map<? extends K, ? extends V> map) {
     for (final Map.Entry<? extends K, ? extends V> e : map.entrySet()) {
       put(e.getKey(), e.getValue());
@@ -138,6 +145,7 @@ final class NonMonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBu
     return this;
   }
 
+  @Override
   public LaxImmutableMapBuilder<K, V> putAll(Iterable<? extends Map.Entry<? extends K, ? extends V>> entries) {
     for (final Map.Entry<? extends K, ? extends V> e : entries) {
       put(e.getKey(), e.getValue());
@@ -148,11 +156,13 @@ final class NonMonotonicLaxImmutableMapBuilder<K,V> implements LaxImmutableMapBu
   /**
    * See {@link ImmutableMap.Builder#orderEntriesByValue(Comparator)}
    */
+  @Override
   public LaxImmutableMapBuilder<K, V> orderEntriesByValue(Comparator<? super V> valueComparator) {
     this.immutableMapEntryOrdering = checkNotNull(valueComparator);
     return this;
   }
 
+  @Override
   public ImmutableMap<K,V> build() {
     final ImmutableMap.Builder<K, V> ret = ImmutableMap.builder();
     if (immutableMapEntryOrdering != null) {

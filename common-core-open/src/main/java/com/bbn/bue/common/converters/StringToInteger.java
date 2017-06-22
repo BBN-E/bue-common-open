@@ -11,6 +11,7 @@ public class StringToInteger implements StringConverter<Integer> {
     return Integer.class;
   }
 
+  @Override
   public Integer decode(final String s) {
     try {
       return Integer.parseInt(checkNotNull(s));

@@ -19,12 +19,15 @@ import static com.bbn.bue.common.strings.offsets.CharOffset.asCharOffset;
 abstract class StringWithoutNonBmp extends AbstractUnicodeFriendlyString
     implements UnicodeFriendlyString {
 
+  @Override
   public abstract String utf16CodeUnits();
 
+  @Override
   public final boolean hasNonBmpCharacter() {
     return false;
   }
 
+  @Override
   public boolean hasNonBmpCharacter(OffsetRange<CharOffset> characterRange) {
     return false;
   }

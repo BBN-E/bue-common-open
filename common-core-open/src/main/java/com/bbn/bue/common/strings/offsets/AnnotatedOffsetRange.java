@@ -57,6 +57,7 @@ public final class AnnotatedOffsetRange<OffsetType extends Offset<OffsetType>> {
     };
   }
 
+  @Override
   public String toString() {
     final String attributesString = attributes().isEmpty() ? "" : (" " + attributes().toString());
     return "[" + type.toString() + ": " + range().toString() + attributesString + "]";

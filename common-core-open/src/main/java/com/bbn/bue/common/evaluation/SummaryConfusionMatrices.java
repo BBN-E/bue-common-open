@@ -4,6 +4,7 @@ import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.primitives.DoubleUtils;
 import com.bbn.bue.common.symbols.Symbol;
 import com.bbn.bue.common.symbols.SymbolUtils;
+
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -226,6 +227,7 @@ class TableBasedSummaryConfusionMatrix implements SummaryConfusionMatrix {
 
   private final Table<Symbol, Symbol, Double> table;
 
+  @Override
   public double cell(final Symbol row, final Symbol col) {
     final Double ret = table.get(row, col);
     if (ret != null) {
@@ -238,6 +240,7 @@ class TableBasedSummaryConfusionMatrix implements SummaryConfusionMatrix {
   /**
    * The left-hand labels of the confusion matrix.
    */
+  @Override
   public Set<Symbol> leftLabels() {
     return table.rowKeySet();
   }
@@ -245,6 +248,7 @@ class TableBasedSummaryConfusionMatrix implements SummaryConfusionMatrix {
   /**
    * The right hand labels of the confusion matrix.
    */
+  @Override
   public Set<Symbol> rightLabels() {
     return table.columnKeySet();
   }
@@ -255,14 +259,17 @@ class TableBasedSummaryConfusionMatrix implements SummaryConfusionMatrix {
     checkArgument(all(table.values(), IsNonNegative));
   }
 
+  @Override
   public double sumOfallCells() {
     return DoubleUtils.sum(table.values());
   }
 
+  @Override
   public double rowSum(Symbol rowSymbol) {
     return DoubleUtils.sum(table.row(rowSymbol).values());
   }
 
+  @Override
   public double columnSum(Symbol columnSymbol) {
     return DoubleUtils.sum(table.column(columnSymbol).values());
   }
@@ -287,6 +294,7 @@ class TableBasedSummaryConfusionMatrix implements SummaryConfusionMatrix {
     return ret.build();
   }
 
+  @Override
   public void accumulateTo(SummaryConfusionMatrices.Builder builder) {
     for (final Table.Cell<Symbol, Symbol, Double> cell : table.cellSet()) {
       builder.accumulate(cell.getRowKey(), cell.getColumnKey(), cell.getValue());
@@ -354,6 +362,7 @@ class BinarySummaryConfusionMatrix implements SummaryConfusionMatrix {
     return data[2 * rowIdx + colIdx];
   }
 
+  @Override
   public void accumulateTo(SummaryConfusionMatrices.Builder builder) {
     builder.accumulate(key0, key0, data[0]);
     builder.accumulate(key0, key1, data[1]);

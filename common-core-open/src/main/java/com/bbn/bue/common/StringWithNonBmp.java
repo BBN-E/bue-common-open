@@ -28,12 +28,15 @@ import static com.bbn.bue.common.strings.offsets.CharOffset.asCharOffset;
 abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     implements UnicodeFriendlyString {
 
+  @Override
   public abstract String utf16CodeUnits();
 
+  @Override
   public final boolean hasNonBmpCharacter() {
     return true;
   }
 
+  @Override
   public boolean hasNonBmpCharacter(OffsetRange<CharOffset> characterRange) {
     // slow placeholder implementation
     for (int i = codeUnitOffsetFor(characterRange.startInclusive()).asInt();
@@ -50,11 +53,13 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
   }
 
   @Value.Derived
+  @Override
   public int lengthInUtf16CodeUnits() {
     return utf16CodeUnits().length();
   }
 
   @Value.Derived
+  @Override
   public int lengthInCodePoints() {
     return utf16CodeUnits().codePointCount(0, utf16CodeUnits().length());
   }
@@ -69,12 +74,13 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
   }
 
 
-
+  @Override
   public final UnicodeFriendlyString substringByCodePoints(CharOffset startCodepointInclusive) {
     return substringByCodePoints(startCodepointInclusive,
         asCharOffset(lengthInCodePoints()));
   }
 
+  @Override
   public final UnicodeFriendlyString substringByCodePoints(CharOffset startCodepointInclusive,
       CharOffset endCodepointExclusive) {
     // this is a slow, simple, temporary implementation
@@ -128,10 +134,12 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
   }
 
 
+  @Override
   public boolean isEmpty() {
     return utf16CodeUnits().isEmpty();
   }
 
+  @Override
   public final UnicodeFriendlyString trim() {
     return StringWithNonBmp.of(utf16CodeUnits().trim());
   }

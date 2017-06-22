@@ -767,6 +767,7 @@ public final class FileUtils {
   private enum AsUTF8CharSource implements Function<File, CharSource> {
     INSTANCE;
 
+    @Override
     public CharSource apply(File f) {
       return Files.asCharSource(f, Charsets.UTF_8);
     }

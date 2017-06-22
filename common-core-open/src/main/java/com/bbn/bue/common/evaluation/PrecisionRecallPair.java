@@ -12,10 +12,12 @@ public final class PrecisionRecallPair extends FMeasureInfo {
     this.recall = recall;
   }
 
+  @Override
   public double precision() {
     return precision;
   }
 
+  @Override
   public double recall() {
     return recall;
   }

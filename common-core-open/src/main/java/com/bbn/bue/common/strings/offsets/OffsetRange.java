@@ -263,6 +263,7 @@ public class OffsetRange<OffsetType extends Offset<OffsetType>> {
     }
   }
 
+  @Override
   public String toString() {
     return "[" + startInclusive().toString() + "-" + endInclusive().toString() + "]";
   }
