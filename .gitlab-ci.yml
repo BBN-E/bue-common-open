@@ -1,2 +1,2 @@
 maven-build:
-  script: mvn -U clean compile test package verify
+  script: JAVA_HOME=/opt/jdk1.8.0_20-x86_64 mvn clean verify
