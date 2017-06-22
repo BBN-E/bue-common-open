@@ -19,7 +19,7 @@ public final class NullByteSink extends ByteSink {
 
   }
 
-  @SuppressWarnings("deprecated")
+  @SuppressWarnings("deprecation")
   public static ByteSink create() {
     return new NullByteSink();
   }
