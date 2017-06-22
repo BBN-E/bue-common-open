@@ -64,7 +64,10 @@ public class TestSerialization {
     assertEquals(expected, serializer.deserializeFromString(serialized, expected.getClass()));
   }
 
+  // warning suppressed because we only care about equality for the test
+  @SuppressWarnings("EqualsHashCode")
   private static class ImmutableMapWrapper {
+
     private final ImmutableMap map;
 
     private ImmutableMapWrapper(ImmutableMap map) {
@@ -99,7 +102,10 @@ public class TestSerialization {
     }
   }
 
+  // warning suppressed because we only care about equality for the test
+  @SuppressWarnings("EqualsHashCode")
   private static class ImmutableMultimapWrapper {
+
     private final ImmutableMultimap map;
 
     private ImmutableMultimapWrapper(ImmutableMultimap map) {
@@ -118,8 +124,7 @@ public class TestSerialization {
       return ImmutableMultimapProxy.forMultimap(map);
     }
 
-    // warning suppressed because we only care about equality for the test
-    @SuppressWarnings("EqualsHashCode")
+
     @Override
     public boolean equals(Object o) {
       if (this == o) {
