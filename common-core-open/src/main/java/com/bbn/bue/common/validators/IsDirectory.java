@@ -4,6 +4,7 @@ import java.io.File;
 
 public class IsDirectory implements Validator<File> {
 
+  @Override
   public void validate(File arg) throws ValidationException {
     if (!arg.isDirectory()) {
       throw new ValidationException(

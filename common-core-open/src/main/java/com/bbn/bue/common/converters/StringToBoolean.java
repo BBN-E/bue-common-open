@@ -11,6 +11,7 @@ public class StringToBoolean implements StringConverter<Boolean> {
     return Boolean.class;
   }
 
+  @Override
   public Boolean decode(final String s) {
     return Boolean.parseBoolean(checkNotNull(s));
   }

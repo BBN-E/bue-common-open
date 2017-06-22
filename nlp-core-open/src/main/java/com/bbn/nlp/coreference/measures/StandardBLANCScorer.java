@@ -17,6 +17,7 @@ import java.util.Set;
     this.useSelfEdges = useSelfEdges;
   }
 
+  @Override
   public BLANCResult score(final Iterable<? extends Iterable<?>> predicted,
       final Iterable<? extends Iterable<?>> gold) {
     final Iterable<Set<Object>> predictedAsSets = CorefScorerUtils.toSets(predicted);
@@ -68,7 +69,7 @@ import java.util.Set;
 
         final ImmutableSet<Object> neighborsInEither =
             Sets.union(predictedNeighbors, goldNeighbors).immutableCopy();
-        // -1 = don't count this item itself as a link if not using self-edgescd 
+      // -1 = don't count this item itself as a link if not using self-edgescd
         nonCorefInBoth += Sets.difference(allItems, neighborsInEither).size() + (useSelfEdges?0:-1);
     }
 

@@ -1,13 +1,14 @@
 package com.bbn.bue.common.serialization.jackson;
 
 import com.bbn.bue.common.evaluation.FMeasureCounts;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import junit.framework.TestCase;
+
 import org.junit.Test;
 
 import java.io.File;
@@ -15,8 +16,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.junit.Assert.assertEquals;
 
-public class TestSerialization extends TestCase {
+public class TestSerialization {
 
   private final JacksonSerializer serializer = JacksonSerializer.builder().prettyOutput().build();
 
@@ -52,7 +54,8 @@ public class TestSerialization extends TestCase {
   }
 
   // can't be type-safe when deserializing
-  @SuppressWarnings("unchecked")
+  // suppress EqualsHashCode because we only care about equality for the test
+  @SuppressWarnings({"unchecked", "EqualsHashCode"})
   @Test
   public void testImmutableMultimapProxy() throws IOException {
     final ImmutableMultimapWrapper expected = new ImmutableMultimapWrapper(
@@ -61,7 +64,10 @@ public class TestSerialization extends TestCase {
     assertEquals(expected, serializer.deserializeFromString(serialized, expected.getClass()));
   }
 
+  // warning suppressed because we only care about equality for the test
+  @SuppressWarnings("EqualsHashCode")
   private static class ImmutableMapWrapper {
+
     private final ImmutableMap map;
 
     private ImmutableMapWrapper(ImmutableMap map) {
@@ -96,22 +102,28 @@ public class TestSerialization extends TestCase {
     }
   }
 
+  // warning suppressed because we only care about equality for the test
+  @SuppressWarnings("EqualsHashCode")
   private static class ImmutableMultimapWrapper {
+
     private final ImmutableMultimap map;
 
     private ImmutableMultimapWrapper(ImmutableMultimap map) {
       this.map = checkNotNull(map);
     }
 
+    @SuppressWarnings("deprecation")
     @JsonCreator
     private static ImmutableMultimapWrapper fromJson(@JsonProperty("map") ImmutableMultimapProxy map) {
       return new ImmutableMultimapWrapper(map.toImmutableMultimap());
     }
 
+    @SuppressWarnings("deprecation")
     @JsonProperty("map")
     private ImmutableMultimapProxy mapProxy() {
       return ImmutableMultimapProxy.forMultimap(map);
     }
+
 
     @Override
     public boolean equals(Object o) {

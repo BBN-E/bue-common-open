@@ -11,6 +11,7 @@ public class StringToLong implements StringConverter<Long> {
     return Long.class;
   }
 
+  @Override
   public Long decode(final String s) {
     try {
       return Long.parseLong(checkNotNull(s));

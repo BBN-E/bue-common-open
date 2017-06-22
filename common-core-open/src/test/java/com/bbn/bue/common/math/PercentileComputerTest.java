@@ -1,10 +1,10 @@
 package com.bbn.bue.common.math;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 
-public class PercentileComputerTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+public class PercentileComputerTest {
 
   // sample data from NIST's Handbook of Engineering Statistics
   // article on percentiles

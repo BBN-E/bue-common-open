@@ -12,16 +12,19 @@ import com.google.common.base.Optional;
  */
 abstract class AbstractUnicodeFriendlyString implements UnicodeFriendlyString {
 
+  @Override
   public final UnicodeFriendlyString substringByCodePoints(OffsetRange<CharOffset> codePointRange) {
     return substringByCodePoints(codePointRange.startInclusive(),
         // version with separate arguments has exclusive endpoint
         codePointRange.endInclusive().shiftedCopy(1));
   }
 
+  @Override
   public final boolean contains(String otherCodeUnits) {
     return utf16CodeUnits().contains(otherCodeUnits);
   }
 
+  @Override
   public final boolean contains(UnicodeFriendlyString other) {
     return utf16CodeUnits().contains(other.utf16CodeUnits());
   }

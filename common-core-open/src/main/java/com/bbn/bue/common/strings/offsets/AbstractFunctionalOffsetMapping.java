@@ -9,6 +9,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 public abstract class AbstractFunctionalOffsetMapping implements FunctionalOffsetMapping {
 
+  @Override
   public Optional<Integer> mapOffsetUniquely(int sourceIdx) {
     final Collection<Integer> mappings = mapOffset(sourceIdx);
     checkState(mappings.size() < 2,

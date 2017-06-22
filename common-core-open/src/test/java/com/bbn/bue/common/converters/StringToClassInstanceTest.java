@@ -16,7 +16,7 @@ public class StringToClassInstanceTest {
     public String getValue();
   }
 
-  public abstract class AbstractClass implements Interface {
+  public abstract static class AbstractClass implements Interface {
 
   }
 

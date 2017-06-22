@@ -11,6 +11,7 @@ public class StringToFloat implements StringConverter<Float> {
     return Float.class;
   }
 
+  @Override
   public Float decode(final String s) {
     try {
       return Float.parseFloat(checkNotNull(s));

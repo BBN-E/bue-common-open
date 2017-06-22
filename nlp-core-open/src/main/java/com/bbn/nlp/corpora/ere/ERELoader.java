@@ -426,7 +426,7 @@ final class ERELoading {
 
 
   // no way around unchecked cast for heterogeneous container
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"TypeParameterUnusedInFormals", "unchecked"})
   private <T> T fetch(final String id) {
     checkNotNull(id);
     checkArgument(!id.isEmpty());

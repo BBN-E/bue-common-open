@@ -136,6 +136,7 @@ public final class XMLStyleAnnotationFormatter {
       nextTagToEnd = (nextTagToEndIdx < numTags) ? tagsInEndingOrder.get(nextTagToEndIdx++) : null;
     }
 
+    @Override
     public Iterator<TagCursor> iterator() {
       return new Iterator<TagCursor>() {
 
