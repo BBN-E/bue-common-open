@@ -54,7 +54,8 @@ public class TestSerialization {
   }
 
   // can't be type-safe when deserializing
-  @SuppressWarnings("unchecked")
+  // suppress EqualsHashCode because we only care about equality for the test
+  @SuppressWarnings({"unchecked", "EqualsHashCode"})
   @Test
   public void testImmutableMultimapProxy() throws IOException {
     final ImmutableMultimapWrapper expected = new ImmutableMultimapWrapper(
@@ -105,16 +106,20 @@ public class TestSerialization {
       this.map = checkNotNull(map);
     }
 
+    @SuppressWarnings("deprecation")
     @JsonCreator
     private static ImmutableMultimapWrapper fromJson(@JsonProperty("map") ImmutableMultimapProxy map) {
       return new ImmutableMultimapWrapper(map.toImmutableMultimap());
     }
 
+    @SuppressWarnings("deprecation")
     @JsonProperty("map")
     private ImmutableMultimapProxy mapProxy() {
       return ImmutableMultimapProxy.forMultimap(map);
     }
 
+    // warning suppressed because we only care about equality for the test
+    @SuppressWarnings("EqualsHashCode")
     @Override
     public boolean equals(Object o) {
       if (this == o) {
