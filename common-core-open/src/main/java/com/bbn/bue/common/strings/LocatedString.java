@@ -830,6 +830,7 @@ public abstract class LocatedString {
 
   }
 
+  @SuppressWarnings("ReferenceEquality") // see comment in method body
   @UnicodeUnsafe
   @Value.Check
   protected LocatedString checkValidity() {
@@ -1079,7 +1080,7 @@ abstract class OffsetCalculator {
 
   }
 
-  private final class OffsetCalculation {
+  private static final class OffsetCalculation {
 
     private static final int ONE_BYTE = 0x007f;
     private static final int TWO_BYTE = 0x07ff;
