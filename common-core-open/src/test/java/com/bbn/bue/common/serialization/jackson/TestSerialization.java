@@ -1,13 +1,14 @@
 package com.bbn.bue.common.serialization.jackson;
 
 import com.bbn.bue.common.evaluation.FMeasureCounts;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import junit.framework.TestCase;
+
 import org.junit.Test;
 
 import java.io.File;
@@ -15,8 +16,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.junit.Assert.assertEquals;
 
-public class TestSerialization extends TestCase {
+public class TestSerialization {
 
   private final JacksonSerializer serializer = JacksonSerializer.builder().prettyOutput().build();
 
