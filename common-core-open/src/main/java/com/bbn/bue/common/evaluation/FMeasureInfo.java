@@ -37,8 +37,8 @@ public abstract class FMeasureInfo {
     float recallTotal = 0.0f;
 
     for (final FMeasureInfo info : corefAgreementsLR) {
-      precisionTotal += info.precision();
-      recallTotal += info.recall();
+      precisionTotal += (float) info.precision();
+      recallTotal += (float) info.recall();
     }
 
     final int count = corefAgreementsLR.size();
