@@ -519,7 +519,7 @@ public final class FileUtils {
         throw e;
       }
     }
-    return new BufferedReader(new InputStreamReader(stream));
+    return new BufferedReader(new InputStreamReader(stream, Charsets.UTF_8));
   }
 
   public static ImmutableList<Symbol> loadSymbolList(final File symbolListFile) throws IOException {
