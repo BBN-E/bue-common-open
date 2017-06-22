@@ -36,6 +36,7 @@ public final class MultiBLANCScorer implements BLANCScorer {
     this.useSelfEdges = useSelfEdges;
   }
 
+  @Override
   public BLANCResult score(final Iterable<? extends Iterable<?>> predicted,
       final Iterable<? extends Iterable<?>> gold) {
     final Iterable<Set<Object>> predictedAsSets = CorefScorerUtils.toSets(predicted);

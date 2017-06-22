@@ -2,8 +2,8 @@ package com.bbn.nlp.events.scoring;
 
 import com.bbn.bue.common.HasDocID;
 import com.bbn.bue.common.symbols.Symbol;
-import com.bbn.nlp.events.HasEventType;
 import com.bbn.nlp.events.HasEventArgType;
+import com.bbn.nlp.events.HasEventType;
 
 import com.google.common.base.Objects;
 
@@ -68,6 +68,7 @@ public final class DocLevelEventArg implements HasDocID, HasEventType, HasEventA
         && Objects.equal(this.corefID, other.corefID);
   }
 
+  @Override
   public String toString() {
     return docID + "-" + eventType + "-" + argumentType + "-" + corefID;
   }
