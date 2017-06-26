@@ -290,19 +290,32 @@ public final class FileUtils {
         FileUtils.asUTF8CharSourceFunction());
   }
 
+  /**
+   * Deserializes an {@link Map} from a {@link File}, where each line is a key, a tab character
+   * ("\t"), and a value. Lines beginning with "#" are ignored.
+   */
   public static Map<String, File> loadStringToFileMap(final File f) throws IOException {
     return loadStringToFileMap(Files.asCharSource(f, Charsets.UTF_8));
   }
 
+  /**
+   * Deserializes a {@link Map} from a {@link CharSource}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   */
   public static Map<String, File> loadStringToFileMap(final CharSource source) throws IOException {
     return loadMap(source, Functions.<String>identity(), FileFunction.INSTANCE);
   }
 
+  /**
+   * Deserializes an {@link ImmutableListMultimap} from a {@link CharSource}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   */
   public static ImmutableListMultimap<String, File> loadStringToFileListMultimap(
       final CharSource source) throws IOException {
     return loadMultimap(source, Functions.<String>identity(), FileFunction.INSTANCE);
   }
 
+  /**
+   * Deserializes an {@link ImmutableMap} from a {@link CharSource}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableMap<K, V> loadMap(final CharSource source,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
@@ -311,12 +324,19 @@ public final class FileUtils {
     return ret.build();
   }
 
+  /**
+   * Deserializes an {@link ImmutableMap} from a {@link File}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableMap<K, V> loadMap(final File file,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
     return loadMap(Files.asCharSource(file, Charsets.UTF_8), keyFunction, valueFunction);
   }
 
+  /**
+   * Deserializes a map from a {@link CharSource}, where each line is a key, a tab character ("\t"),
+   * and a value. Lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final CharSource source,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
@@ -325,6 +345,9 @@ public final class FileUtils {
     return ret.build();
   }
 
+  /**
+   * Deserializes an {@link ImmutableListMultimap} from a {@link File}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final File file,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
@@ -337,6 +360,7 @@ public final class FileUtils {
       throws IOException {
     // Using a LineProcessor saves memory by not loading the whole file into memory. This can matter
     // for multi-gigabyte Gigaword-scale maps.
+    // see issue #69 for modifying the input lines on the fly.
     final MapLineProcessor<K, V> processor =
         new MapLineProcessor<>(mapSink, keyFunction, valueFunction, Splitter.on("\t").trimResults());
     source.readLines(processor);
@@ -1049,11 +1073,12 @@ public final class FileUtils {
     @Override
     public boolean processLine(final String line) throws IOException {
       ++lineNo;
+      // see issue #69 for modifying the skipped lines.
       if (line.isEmpty() || line.startsWith("#")) {
         // Skip this line and go to the next one
         return true;
       }
-      
+
       final Iterator<String> parts = splitter.split(line).iterator();
 
       final String key;
