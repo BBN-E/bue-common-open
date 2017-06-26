@@ -1049,11 +1049,11 @@ public final class FileUtils {
     @Override
     public boolean processLine(final String line) throws IOException {
       ++lineNo;
-      if (line.isEmpty()) {
+      if (line.isEmpty() || line.startsWith("#")) {
         // Skip this line and go to the next one
         return true;
       }
-
+      
       final Iterator<String> parts = splitter.split(line).iterator();
 
       final String key;
