@@ -299,14 +299,16 @@ public final class FileUtils {
   }
 
   /**
-   * Deserializes a {@link Map} from a {@link CharSource}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   * Deserializes a {@link Map} from a {@link CharSource}, where each line is a key, a tab character
+   * ("\t"), and a value. Lines beginning with "#" are ignored.
    */
   public static Map<String, File> loadStringToFileMap(final CharSource source) throws IOException {
     return loadMap(source, Functions.<String>identity(), FileFunction.INSTANCE);
   }
 
   /**
-   * Deserializes an {@link ImmutableListMultimap} from a {@link CharSource}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   * Deserializes an {@link ImmutableListMultimap} from a {@link CharSource}, where each line is a
+   * key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
    */
   public static ImmutableListMultimap<String, File> loadStringToFileListMultimap(
       final CharSource source) throws IOException {
@@ -314,7 +316,8 @@ public final class FileUtils {
   }
 
   /**
-   * Deserializes an {@link ImmutableMap} from a {@link CharSource}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   * Deserializes an {@link ImmutableMap} from a {@link CharSource}, where each line is a key, a tab
+   * character ("\t"), and a value. Lines beginning with "#" are ignored.
    */
   public static <K, V> ImmutableMap<K, V> loadMap(final CharSource source,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
@@ -325,7 +328,8 @@ public final class FileUtils {
   }
 
   /**
-   * Deserializes an {@link ImmutableMap} from a {@link File}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   * Deserializes an {@link ImmutableMap} from a {@link File}, where each line is a key, a tab
+   * character ("\t"), and a value. Lines beginning with "#" are ignored.
    */
   public static <K, V> ImmutableMap<K, V> loadMap(final File file,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
@@ -346,7 +350,8 @@ public final class FileUtils {
   }
 
   /**
-   * Deserializes an {@link ImmutableListMultimap} from a {@link File}, where each line is a key, a tab character ("\t"), and a value. Lines beginning with "#" are ignored.
+   * Deserializes an {@link ImmutableListMultimap} from a {@link File}, where each line is a key, a
+   * tab character ("\t"), and a value. Lines beginning with "#" are ignored.
    */
   public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final File file,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
