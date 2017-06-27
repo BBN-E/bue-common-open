@@ -67,7 +67,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import static com.bbn.bue.common.StringUtils.startsWith;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.not;
@@ -97,7 +96,7 @@ public final class FileUtils {
 
   /**
    * Takes a file with filenames listed one per line and returns a list of the corresponding File
-   * objects.  Ignores blank lines and lines with a "#" in the first column position. Treats the
+   * objects.  Ignores blank lines and lines beginning with "#". Treats the
    * file as UTF-8 encoded.
    */
   public static ImmutableList<File> loadFileList(final File fileList) throws IOException {
@@ -106,14 +105,13 @@ public final class FileUtils {
 
   /**
    * Takes a {@link com.google.common.io.CharSource} with filenames listed one per line and returns
-   * a list of the corresponding File objects.  Ignores blank lines and lines with a "#" in the
-   * first column position.
+   * a list of the corresponding File objects. Ignores blank lines and lines beginning with "#".
    */
   public static ImmutableList<File> loadFileList(final CharSource source) throws IOException {
     final ImmutableList.Builder<File> ret = ImmutableList.builder();
 
     for (final String filename : source.readLines()) {
-      if (!filename.isEmpty() && !filename.startsWith("#")) {
+      if (!filename.isEmpty() && !isCommentLine(filename)) {
         ret.add(new File(filename.trim()));
       }
     }
@@ -122,8 +120,8 @@ public final class FileUtils {
   }
 
   /**
-   * takes a List of fileNames and returns a list of files, ignoring any empty entries white space
-   * at the end of a name
+   * Takes a List of filenames and returns a list of files, ignoring any empty strings and any
+   * trailing whitespace.
    */
   public static ImmutableList<File> loadFileList(final Iterable<String> fileNames)
       throws IOException {
@@ -166,8 +164,8 @@ public final class FileUtils {
   /**
    * Takes a file with relative pathnames listed one per line and returns a list of the
    * corresponding {@link java.io.File} objects, resolved against the provided base path using the
-   * {@link java.io.File#File(java.io.File, String)} constructor. Ignores blank lines and lines with
-   * a "#" in the first column position.
+   * {@link java.io.File#File(java.io.File, String)} constructor. Ignores blank lines and lines
+   * beginning with "#".
    */
   public static ImmutableList<File> loadFileListRelativeTo(File fileList, File basePath)
       throws IOException {
@@ -175,7 +173,7 @@ public final class FileUtils {
     final ImmutableList.Builder<File> ret = ImmutableList.builder();
 
     for (final String filename : Files.readLines(fileList, Charsets.UTF_8)) {
-      if (!filename.isEmpty() && !filename.startsWith("#")) {
+      if (!filename.isEmpty() && !isCommentLine(filename)) {
         ret.add(new File(basePath, filename.trim()));
       }
     }
@@ -290,55 +288,116 @@ public final class FileUtils {
         FileUtils.asUTF8CharSourceFunction());
   }
 
+  /**
+   * Reads an {@link Map} from a {@link File}, where each line is a key, a tab character
+   * ("\t"), and a value. Blank lines and lines beginning with "#" are ignored.
+   */
   public static Map<String, File> loadStringToFileMap(final File f) throws IOException {
     return loadStringToFileMap(Files.asCharSource(f, Charsets.UTF_8));
   }
 
+  /**
+   * Reads a {@link Map} from a {@link CharSource}, where each line is a key, a tab character
+   * ("\t"), and a value. Blank lines and lines beginning with "#" are ignored.
+   */
   public static Map<String, File> loadStringToFileMap(final CharSource source) throws IOException {
-    return loadMap(source, Functions.<String>identity(), FileFunction.INSTANCE);
+    return loadMap(source, Functions.<String>identity(), FileFunction.INSTANCE,
+        IsCommentLine.INSTANCE);
   }
 
+  /**
+   * Reads an {@link ImmutableListMultimap} from a {@link CharSource}, where each line is a
+   * key, a tab character ("\t"), and a value. Blank lines and lines beginning with "#" are ignored.
+   */
   public static ImmutableListMultimap<String, File> loadStringToFileListMultimap(
       final CharSource source) throws IOException {
-    return loadMultimap(source, Functions.<String>identity(), FileFunction.INSTANCE);
+    return loadMultimap(source, Functions.<String>identity(), FileFunction.INSTANCE,
+        IsCommentLine.INSTANCE);
   }
 
+  /**
+   * Reads an {@link ImmutableMap} from a {@link CharSource}, where each line is a key, a tab
+   * character ("\t"), and a value. Blank lines and lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableMap<K, V> loadMap(final CharSource source,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
     final ImmutableMap.Builder<K, V> ret = ImmutableMap.builder();
-    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction);
+    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction,
+        IsCommentLine.INSTANCE);
     return ret.build();
   }
 
+  /**
+   * Reads an {@link ImmutableMap} from a {@link CharSource}, where each line is a key, a tab
+   * character ("\t"), and a value. Blank lines and lines for which {@code skipLinePredicate} is
+   * true are ignored.
+   */
+  public static <K, V> ImmutableMap<K, V> loadMap(final CharSource source,
+      final Function<String, K> keyFunction, final Function<String, V> valueFunction,
+      final Predicate<String> skipLinePredicate)
+      throws IOException {
+    final ImmutableMap.Builder<K, V> ret = ImmutableMap.builder();
+    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction, skipLinePredicate);
+    return ret.build();
+  }
+
+  /**
+   * Reads an {@link ImmutableMap} from a {@link File}, where each line is a key, a tab
+   * character ("\t"), and a value. Blank lines and lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableMap<K, V> loadMap(final File file,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
     return loadMap(Files.asCharSource(file, Charsets.UTF_8), keyFunction, valueFunction);
   }
 
+  /**
+   * Reads an {@link ImmutableListMultimap} from a {@link CharSource}, where each line is a key, a
+   * tab character ("\t"), and a value. Blank lines and lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final CharSource source,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
     final ImmutableListMultimap.Builder<K, V> ret = ImmutableListMultimap.builder();
-    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction);
+    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction,
+        IsCommentLine.INSTANCE);
     return ret.build();
   }
 
+  /**
+   * Reads an {@link ImmutableListMultimap} from a {@link File}, where each line is a key, a
+   * tab character ("\t"), and a value. Blank lines and lines beginning with "#" are ignored.
+   */
   public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final File file,
       final Function<String, K> keyFunction, final Function<String, V> valueFunction)
       throws IOException {
-    return loadMultimap(Files.asCharSource(file, Charsets.UTF_8), keyFunction, valueFunction);
+    return loadMultimap(Files.asCharSource(file, Charsets.UTF_8), keyFunction, valueFunction,
+        IsCommentLine.INSTANCE);
+  }
+
+  /**
+   * Reads an {@link ImmutableListMultimap} from a {@link CharSource}, where each line is a key, a
+   * tab character ("\t"), and a value. Lines for which {@code skipLinePredicate} is true are
+   * ignored.
+   */
+  public static <K, V> ImmutableListMultimap<K, V> loadMultimap(final CharSource source,
+      final Function<String, K> keyFunction, final Function<String, V> valueFunction,
+      final Predicate<String> skipLinePredicate) throws IOException {
+    final ImmutableListMultimap.Builder<K, V> ret = ImmutableListMultimap.builder();
+    loadMapToSink(source, MapUtils.asMapSink(ret), keyFunction, valueFunction, skipLinePredicate);
+    return ret.build();
   }
 
   private static <K, V> void loadMapToSink(final CharSource source,
       final KeyValueSink<K, V> mapSink, final Function<String, K> keyFunction,
-      final Function<String, V> valueFunction)
+      final Function<String, V> valueFunction, final Predicate<String> skipLinePredicate)
       throws IOException {
     // Using a LineProcessor saves memory by not loading the whole file into memory. This can matter
     // for multi-gigabyte Gigaword-scale maps.
     final MapLineProcessor<K, V> processor =
-        new MapLineProcessor<>(mapSink, keyFunction, valueFunction, Splitter.on("\t").trimResults());
+        new MapLineProcessor<>(mapSink, keyFunction, valueFunction, skipLinePredicate,
+            Splitter.on("\t").trimResults());
     source.readLines(processor);
   }
 
@@ -604,7 +663,7 @@ public final class FileUtils {
     int count = 0;
     for (final String line : multimapSource.readLines()) {
       ++count;
-      if (line.startsWith("#")) {
+      if (isCommentLine(line)) {
         continue;
       }
       final List<String> parts = multimapSplitter.splitToList(line);
@@ -693,7 +752,7 @@ public final class FileUtils {
     int count = 0;
     for (final String line : source.readLines()) {
       ++count;
-      if (line.startsWith("#")) {
+      if (isCommentLine(line)) {
         continue;
       }
       final List<String> parts = MAP_SPLITTER.splitToList(line);
@@ -863,7 +922,7 @@ public final class FileUtils {
    */
   public static ImmutableList<String> loadStringList(final CharSource source) throws IOException {
     return FluentIterable.from(source.readLines())
-        .filter(not(startsWith("#")))
+        .filter(not(IsCommentLine.INSTANCE))
         .toList();
   }
 
@@ -1035,21 +1094,23 @@ public final class FileUtils {
     private final KeyValueSink<K, V> mapSink;
     private final Function<String, K> keyFunction;
     private final Function<String, V> valueFunction;
+    private final Predicate<String> skipLinePredicate;
     private final Splitter splitter;
 
     private MapLineProcessor(final KeyValueSink<K, V> mapSink,
         final Function<String, K> keyFunction, final Function<String, V> valueFunction,
-        final Splitter splitter) {
+        final Predicate<String> skipLinePredicate, final Splitter splitter) {
       this.mapSink = checkNotNull(mapSink);
       this.keyFunction = checkNotNull(keyFunction);
       this.valueFunction = checkNotNull(valueFunction);
+      this.skipLinePredicate = checkNotNull(skipLinePredicate);
       this.splitter = checkNotNull(splitter);
     }
 
     @Override
     public boolean processLine(final String line) throws IOException {
       ++lineNo;
-      if (line.isEmpty()) {
+      if (line.isEmpty() || skipLinePredicate.apply(line)) {
         // Skip this line and go to the next one
         return true;
       }
@@ -1092,6 +1153,20 @@ public final class FileUtils {
     public Void getResult() {
       // We don't produce a result; we just write to mapSink as a side-effect
       return null;
+    }
+  }
+
+  private static boolean isCommentLine(final String line) {
+    return IsCommentLine.INSTANCE.apply(line);
+  }
+
+  private enum IsCommentLine implements Predicate<String> {
+    INSTANCE;
+
+    @Override
+    public boolean apply(final String input) {
+      checkNotNull(input);
+      return input.startsWith("#");
     }
   }
 }
