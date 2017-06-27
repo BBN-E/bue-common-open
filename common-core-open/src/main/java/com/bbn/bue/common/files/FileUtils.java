@@ -120,8 +120,8 @@ public final class FileUtils {
   }
 
   /**
-   * Takes a List of filenames and returns a list of files, ignoring any empty entries white space
-   * at the end of a name
+   * Takes a List of filenames and returns a list of files, ignoring any empty strings and any
+   * trailing whitespace.
    */
   public static ImmutableList<File> loadFileList(final Iterable<String> fileNames)
       throws IOException {
