@@ -47,7 +47,7 @@ public interface Multitable<R, C, V> {
 
   /**
    * Returns {@code true} if the table contains a mapping with the specified
-   * value.
+   * value. May run in O(n) or O(1) time depending on the implementation.
    *
    * @param value value to search for
    */

@@ -103,8 +103,9 @@ public final class ImmutableListMultitable<R, C, V> extends ImmutableMultitable<
   }
 
   /**
-   * Returns the set of values corresponding to the given row and column keys, or
-   * an empty set if no such mapping exists.
+   * Returns the list of values corresponding to the given row and column keys, or
+   * an empty set if no such mapping exists. This exists in addition to {@code get} as a type-safe
+   * way of returning a list of values at a specified cell.
    *
    * @param rowKey    key of row to search for
    * @param columnKey key of column to search for

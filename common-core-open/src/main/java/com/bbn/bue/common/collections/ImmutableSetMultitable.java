@@ -100,7 +100,8 @@ public final class ImmutableSetMultitable<R, C, V> extends ImmutableMultitable<R
 
   /**
    * Returns the set of values corresponding to the given row and column keys, or
-   * an empty set if no such mapping exists.
+   * an empty set if no such mapping exists. This exists in addition to {@code get} as a type-safe
+   * way of returning a set of values at a specified cell.
    *
    * @param rowKey    key of row to search for
    * @param columnKey key of column to search for
@@ -129,6 +130,16 @@ public final class ImmutableSetMultitable<R, C, V> extends ImmutableMultitable<R
   @Override
   public Set<Multicell<R, C, V>> cellSet() {
     return cellSet;
+  }
+
+  /**
+   * Returns {@code true} if the table contains a mapping with the specified
+   * value. Runs in O(1) time.
+   * @param value value to search for
+   */
+  @Override
+  public boolean containsValue(@Nullable final Object value) {
+    return allValues.contains(value);
   }
 
   @Override
