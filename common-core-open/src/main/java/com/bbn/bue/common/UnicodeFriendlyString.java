@@ -2,6 +2,7 @@ package com.bbn.bue.common;
 
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
+import com.bbn.bue.common.strings.offsets.UTF16Offset;
 
 import com.google.common.base.Optional;
 
@@ -129,6 +130,11 @@ public interface UnicodeFriendlyString {
    * you should replace things which would be for loops over the indices of a regular {@link String}.
    */
   <T> void processCodePoints(CodePointProcessor<T> codePointProcessor);
+
+  /**
+   * Gets the codepoint index of a code unit offset
+   */
+  CharOffset codepointIndex(UTF16Offset offset);
 
   /**
    * Something which can process the code points of a string and produce some result.  Note that

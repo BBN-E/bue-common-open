@@ -113,24 +113,31 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
     }
   }
 
-  private CharOffset charOffsetFor(UTF16Offset offset) {
+  @Override
+  public CharOffset codepointIndex(UTF16Offset offset) {
     // slow placeholder implementation
+    if (offset.asInt() < 0 || offset.asInt() >= utf16CodeUnits().length()) {
+      throw new IndexOutOfBoundsException("Valid UTF-16 code unit indices for string are 0 to "
+          + utf16CodeUnits().length() + " but got " + offset.asInt());
+    }
+
     int charOffset = 0;
-    int codePointsConsumed = 0;
+    int nextCodeUnit = 0;
 
-    while(charOffset < utf16CodeUnits().length() && codePointsConsumed < offset.asInt()) {
-      final int codePoint = utf16CodeUnits().codePointAt(codePointsConsumed);
-      charOffset++;
-      codePointsConsumed += Character.charCount(codePoint);
+    if (offset.asInt() == 0) {
+      return asCharOffset(0);
     }
 
-    if (codePointsConsumed == offset.asInt()) {
-      return asCharOffset(charOffset);
-    } else {
-      // this will happen if codePointOffset is negative or equal to or greater than the
-      // total number of codepoints in the string
-      throw new IndexOutOfBoundsException();
+    while (nextCodeUnit <= offset.asInt()) {
+      nextCodeUnit += Character.charCount(utf16CodeUnits().codePointAt(nextCodeUnit));
+      // catch when we "hop" over the code unit due to a multi-codeunit character
+      if (nextCodeUnit > offset.asInt()) {
+        return asCharOffset(charOffset);
+      }
+      ++charOffset;
     }
+
+    throw new IllegalStateException("Should be impossible");
   }
 
 
@@ -157,7 +164,7 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
       return Optional.absent();
     } else {
       final UTF16Offset utf16Offset = UTF16Offset.of(matchingOffset);
-      final CharOffset charOffset = charOffsetFor(utf16Offset);
+      final CharOffset charOffset = codepointIndex(utf16Offset);
       return Optional.of(charOffset);
     }
   }
