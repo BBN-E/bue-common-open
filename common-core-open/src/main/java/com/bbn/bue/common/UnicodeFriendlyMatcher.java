@@ -5,6 +5,8 @@ import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.strings.offsets.UTF16Offset;
 
+import com.google.common.base.Optional;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,16 +43,36 @@ public final class UnicodeFriendlyMatcher {
     return OffsetRange.fromInclusiveEndpoints(start(), endExclusive().shiftedCopy(-1));
   }
 
-  public OffsetRange<CharOffset> matchOffsetsInclusive(int group) {
-    return OffsetRange.fromInclusiveEndpoints(start(group), endExclusive(group).shiftedCopy(-1));
+  public Optional<OffsetRange<CharOffset>> matchOffsetsInclusive(int group) {
+    final boolean successfulMatchWithNoText =
+        wrappedMatcher.start(group) == wrappedMatcher.end(group);
+
+    if (successfulMatchWithNoText) {
+      return Optional.absent();
+    }
+
+    final Optional<CharOffset> startGroupCodepoint = start(group);
+    final Optional<CharOffset> endGroupCodepointExclusive = endExclusive(group);
+
+    if (startGroupCodepoint.isPresent() && endGroupCodepointExclusive.isPresent()) {
+      return Optional.of(OffsetRange.fromInclusiveEndpoints(startGroupCodepoint.get(),
+          endGroupCodepointExclusive.get().shiftedCopy(-1)));
+    } else {
+      return Optional.absent();
+    }
   }
 
   public CharOffset start() {
     return startMatchedCodepointForCodeUnit(wrappedMatcher.start());
   }
 
-  public CharOffset start(int group) {
-    return startMatchedCodepointForCodeUnit(wrappedMatcher.start(group));
+  public Optional<CharOffset> start(int group) {
+    final int startCodeUnit = wrappedMatcher.start(group);
+    if (startCodeUnit >= 0) {
+      return Optional.of(startMatchedCodepointForCodeUnit(startCodeUnit));
+    } else {
+      return Optional.absent();
+    }
   }
 
 
@@ -58,12 +80,30 @@ public final class UnicodeFriendlyMatcher {
     return endMatchedCodepointForCodeUnit(wrappedMatcher.end());
   }
 
-  public CharOffset endExclusive(int group) {
-    return endMatchedCodepointForCodeUnit(wrappedMatcher.end(group));
+  public Optional<CharOffset> endExclusive(int group) {
+    final int endCodeUnit = wrappedMatcher.end(group);
+
+    final boolean successfulMatchWithNoText = wrappedMatcher.start(group) == endCodeUnit;
+
+    if (successfulMatchWithNoText) {
+      // TODO: consider if this is the right thing to do here. Issue #70
+      return Optional.absent();
+    }
+
+    if (endCodeUnit >= 0) {
+      return Optional.of(endMatchedCodepointForCodeUnit(endCodeUnit));
+    } else {
+      return Optional.absent();
+    }
   }
 
-  public UnicodeFriendlyString group(int groupIndex) {
-    return matchedString.substringByCodePoints(matchOffsetsInclusive(groupIndex));
+  public Optional<UnicodeFriendlyString> group(int groupIndex) {
+    final Optional<OffsetRange<CharOffset>> offsets = matchOffsetsInclusive(groupIndex);
+    if (offsets.isPresent()) {
+      return Optional.of(matchedString.substringByCodePoints(offsets.get()));
+    } else {
+      return Optional.absent();
+    }
   }
 
   public int groupCount() {
