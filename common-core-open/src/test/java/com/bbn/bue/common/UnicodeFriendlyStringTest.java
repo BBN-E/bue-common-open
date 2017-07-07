@@ -2,6 +2,7 @@ package com.bbn.bue.common;
 
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
+import com.bbn.bue.common.strings.offsets.UTF16Offset;
 
 import com.google.common.base.Optional;
 
@@ -348,6 +349,23 @@ public class UnicodeFriendlyStringTest {
     assertEquals(CHEESE_WEDGE_INT, HELLO_CHEESE_WEDGE.codepointAtCodepointIndex(asCharOffset(6)));
     assertEquals(FACE_WITH_TEARS_OF_JOY_INT,
         HELLO_CHEESE_WEDGE_TEARS.codepointAtCodepointIndex(asCharOffset(7)));
+  }
+
+  @Test
+  public void testCodepointIndexOfCodeUnit() {
+    // check that looking up a code point using either code unit of a multiunit character works
+    assertEquals(0, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(0)).asInt());
+    assertEquals(1, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(1)).asInt());
+    assertEquals(2, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(2)).asInt());
+    assertEquals(3, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(3)).asInt());
+    assertEquals(4, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(4)).asInt());
+    assertEquals(5, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(5)).asInt());
+    assertEquals(6, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(6)).asInt());
+    assertEquals(6, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(7)).asInt());
+    assertEquals(7, HELLO_CHEESE_WEDGE.codepointIndex(UTF16Offset.of(8)).asInt());
+
+    // check codepoint lookup in strings without BMP characters works
+    assertEquals(4, HELLO_WORLD.codepointIndex(UTF16Offset.of(4)).asInt());
   }
 
   private static class SumOfCodePoints

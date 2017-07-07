@@ -2,6 +2,7 @@ package com.bbn.bue.common;
 
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
+import com.bbn.bue.common.strings.offsets.UTF16Offset;
 
 import com.google.common.base.Optional;
 
@@ -50,6 +51,12 @@ abstract class StringWithoutNonBmp extends AbstractUnicodeFriendlyString
   public int codepointAtCodepointIndex(final CharOffset codepointIdx) {
     // for this class codepoint indices are guaranteed to equal code unit indices
     return utf16CodeUnits().codePointAt(codepointIdx.asInt());
+  }
+
+  @Override
+  public CharOffset codepointIndex(UTF16Offset offset) {
+    // if all characters are in the BMP then there is a 1-1 code unit to code point mapping
+    return CharOffset.asCharOffset(offset.asInt());
   }
 
   @Override
