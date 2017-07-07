@@ -1,6 +1,5 @@
 package com.bbn.bue.common;
 
-import com.bbn.bue.common.annotations.MoveToBUECommon;
 import com.bbn.bue.common.strings.offsets.CharOffset;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.strings.offsets.UTF16Offset;
@@ -15,7 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Created by rgabbard on 7/7/17.
  */
-@MoveToBUECommon
 public final class UnicodeFriendlyMatcher {
 
   private final Matcher wrappedMatcher;
