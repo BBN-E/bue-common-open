@@ -5,6 +5,8 @@ import com.bbn.bue.common.annotations.MoveToBUECommon;
 import com.bbn.bue.common.collections.ImmutableListMultitable;
 import com.bbn.bue.common.collections.ImmutableMultitable;
 import com.bbn.bue.common.collections.ImmutableSetMultitable;
+import com.bbn.bue.common.symbols.Symbol;
+import com.bbn.bue.common.symbols.SymbolUtils;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -24,7 +26,7 @@ import java.util.List;
  * the column key, and the third the value.  Multiple values may appear in one value field
  * if the optional {@link #valueListSplitter()} is specified to split them with.
  *
- *
+ * Comment lines are currently not skipped, but this could be added as an option in the future.
  */
 @MoveToBUECommon
 @org.immutables.value.Value.Immutable
@@ -39,6 +41,10 @@ public abstract class MultitableLoader<R, C, V> {
   public abstract Function<String, ? extends C> columnInterpreter();
   public abstract Function<String, ? extends V> valueInterpreter();
 
+  /**
+   * Loads a {@link com.bbn.bue.common.collections.ListMultitable} from the specified source
+   * according to the configuration of this loader.
+   */
   public final ImmutableListMultitable<R, C, V> loadToListMultitable(CharSource source)
       throws IOException {
     final ImmutableListMultitable.Builder<R, C, V> ret =
@@ -49,6 +55,10 @@ public abstract class MultitableLoader<R, C, V> {
     return ret.build();
   }
 
+  /**
+   * Loads a {@link com.bbn.bue.common.collections.SetMultitable} from the specified source
+   * according to the configuration of this loader.
+   */
   public final ImmutableSetMultitable<R, C, V> loadToSetMultitable(CharSource source)
       throws IOException {
     final ImmutableSetMultitable.Builder<R, C, V> ret =
@@ -68,6 +78,13 @@ public abstract class MultitableLoader<R, C, V> {
         .rowInterpreter(Functions.<String>identity())
         .columnInterpreter(Functions.<String>identity())
         .valueInterpreter(Functions.<String>identity());
+  }
+
+  public static MultitableLoader.Builder<Symbol, Symbol, Symbol> builderForSymbols() {
+    return new MultitableLoader.Builder<Symbol, Symbol, Symbol>()
+        .rowInterpreter(SymbolUtils.symbolizeFunction())
+        .columnInterpreter(SymbolUtils.symbolizeFunction())
+        .valueInterpreter(SymbolUtils.symbolizeFunction());
   }
 
   private void loadToMultitable(final CharSource source,
@@ -111,5 +128,11 @@ public abstract class MultitableLoader<R, C, V> {
     }
   }
 
-  public static class Builder<R,C,V> extends ImmutableMultitableLoader.Builder<R,C,V> {}
+  public static class Builder<R, C, V> extends ImmutableMultitableLoader.Builder<R, C, V> {
+
+    public Builder<R, C, V> splitValuesOnCommas() {
+      valueListSplitter(Splitter.on(","));
+      return this;
+    }
+  }
 }
