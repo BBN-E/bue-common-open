@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  * into those rows and columns. Cell iteration order is row-major, first following the iteration
  * order of rows then of columns.
  */
-public abstract class ImmutableMultitable<R, C, V> implements Multitable<R, C, V> {
+public abstract class ImmutableMultitable<R, C, V> extends AbstractMultitable<R,C,V> implements Multitable<R, C, V> {
 
   @Override
   public boolean contains(@Nullable final Object rowKey, @Nullable final Object columnKey) {
@@ -57,18 +57,6 @@ public abstract class ImmutableMultitable<R, C, V> implements Multitable<R, C, V
       }
     }
     return false;
-  }
-
-  @Override
-  public boolean equals(@Nullable Object obj){
-    if (obj == this) {
-      return true;
-    } else if (obj instanceof Multitable) {
-      final Multitable<?, ?, ?> that = (Multitable<?, ?, ?>) obj;
-      return this.cellSet().equals(that.cellSet());
-    } else {
-      return false;
-    }
   }
 
   @Override
@@ -199,4 +187,11 @@ public abstract class ImmutableMultitable<R, C, V> implements Multitable<R, C, V
       return ImmutableRowKeyColumnKeyPair.<R, C>builder().row(row).column(col).build();
     }
   }
+
+  public interface Builder<R,C,V> {
+    ImmutableMultitable.Builder<R, C, V> put(R rowKey, C columnKey, V value);
+    ImmutableMultitable.Builder<R, C, V> putAll(final R rowKey, final C columnKey,
+        final Iterable<? extends V> values);
+  }
 }
+

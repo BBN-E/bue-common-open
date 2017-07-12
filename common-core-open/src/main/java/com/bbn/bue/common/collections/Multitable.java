@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
  * A multitable combines the indexing semantics of a {@link Table} with the value semantics of a
  * {@link com.google.common.collect.Multimap}.
  *
+ * Equality and hashcode for {@link Multitable}s is delegated to their {@link #cellSet()}s.
+ *
  * Adapted from {@link Table}.
  */
 public interface Multitable<R, C, V> {
