@@ -109,6 +109,18 @@ public final class MapUtils {
     private final List<V> rightOnly;
   }
 
+  /**
+   * Builds a map from sequence items to their zero-indexed positions in the sequence.
+   */
+  public static <T> ImmutableMap<T, Integer> indexMap(Iterable<? extends T> items) {
+    final ImmutableMap.Builder<T, Integer> ret = ImmutableMap.builder();
+    int idx = 0;
+    for (final T item : items) {
+      ret.put(item, idx++);
+    }
+    return ret.build();
+  }
+
   public static <K, V> ImmutableSet<K> allKeys(final Iterable<? extends Map<K, V>> maps) {
     final ImmutableSet.Builder<K> builder = ImmutableSet.builder();
 
