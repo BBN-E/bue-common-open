@@ -33,15 +33,15 @@ abstract class ExplicitOrderingNonExclusive<T> extends Ordering<T> {
       return leftRank - rightRank; // safe because both non-negative
     } else if (leftRank != null) {
       if (unrankedIsFirst()) {
-        return -1;
-      } else {
         return 1;
+      } else {
+        return -1;
       }
     } else if (rightRank != null) {
       if (unrankedIsFirst()) {
-        return 1;
-      } else {
         return -1;
+      } else {
+        return 1;
       }
     } else {
       // if an ordering is not specified between two items, they are considered equal
