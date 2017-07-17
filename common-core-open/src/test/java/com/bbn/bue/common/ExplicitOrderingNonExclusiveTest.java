@@ -8,9 +8,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by rgabbard on 7/13/17.
- */
 public class ExplicitOrderingNonExclusiveTest {
 
   private final List<String> explicitOrder = ImmutableList.of("b", "c", "d", "e");
