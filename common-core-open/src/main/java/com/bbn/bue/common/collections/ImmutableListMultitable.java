@@ -162,7 +162,7 @@ public final class ImmutableListMultitable<R, C, V> extends ImmutableMultitable<
   }
 
 
-  public static class Builder<R, C, V> {
+  public static class Builder<R, C, V> implements ImmutableMultitable.Builder<R,C,V> {
 
     // we use the two tables because we both need to maintain insertion order and
     // be able to do lookups during building. The values of both sets are
@@ -185,11 +185,13 @@ public final class ImmutableListMultitable<R, C, V> extends ImmutableMultitable<
       return values;
     }
 
+    @Override
     public Builder<R, C, V> put(R rowKey, C columnKey, V value) {
       setForKey(rowKey, columnKey).add(value);
       return this;
     }
 
+    @Override
     public Builder<R, C, V> putAll(final R rowKey, final C columnKey,
         final Iterable<? extends V> values) {
       setForKey(rowKey, columnKey).addAll(values);

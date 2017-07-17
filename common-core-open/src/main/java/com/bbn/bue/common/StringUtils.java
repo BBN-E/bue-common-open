@@ -345,6 +345,25 @@ public final class StringUtils {
       public String apply(final String s) {
         return s.toLowerCase(locale);
       }
+
+      @Override
+      public String toString() {
+        return "toLowercase(" + locale + ")";
+      }
+    };
+  }
+
+  public static Function<String, String> toUpperCaseFunction(final Locale locale) {
+    return new Function<String, String>() {
+      @Override
+      public String apply(final String s) {
+        return s.toUpperCase(locale);
+      }
+
+      @Override
+      public String toString() {
+        return "toUppercase(" + locale + ")";
+      }
     };
   }
 
