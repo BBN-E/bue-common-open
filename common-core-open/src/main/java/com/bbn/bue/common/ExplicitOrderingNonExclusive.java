@@ -10,7 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * For documentation, see {@link OrderingUtils#explicitOrderingNonExclusiveUnrankedSmaller(List)}
+ * For documentation, see {@link OrderingUtils#explicitOrderingUnrankedLast(List)}
  * and friends.
  */
 @TextGroupImmutable
@@ -20,7 +20,7 @@ abstract class ExplicitOrderingNonExclusive<T> extends Ordering<T> {
   abstract ImmutableMap<T, Integer> rankMap();
 
   @Value.Default
-  boolean unrankedIsLarger() {
+  boolean unrankedIsFirst() {
     return true;
   }
 
@@ -32,13 +32,13 @@ abstract class ExplicitOrderingNonExclusive<T> extends Ordering<T> {
     if (leftRank != null && rightRank != null) {
       return leftRank - rightRank; // safe because both non-negative
     } else if (leftRank != null) {
-      if (unrankedIsLarger()) {
+      if (unrankedIsFirst()) {
         return -1;
       } else {
         return 1;
       }
     } else if (rightRank != null) {
-      if (unrankedIsLarger()) {
+      if (unrankedIsFirst()) {
         return 1;
       } else {
         return -1;
@@ -51,6 +51,7 @@ abstract class ExplicitOrderingNonExclusive<T> extends Ordering<T> {
 
   @Override
   public final String toString() {
-    return "explicitOrderingNonExclusive(" + rankMap().keySet() + ")";
+    final String unrankedString = unrankedIsFirst() ? "first" : "last";
+    return "explicitOrdering(" + rankMap().keySet() + ", unranked=" + unrankedString + ")";
   }
 }

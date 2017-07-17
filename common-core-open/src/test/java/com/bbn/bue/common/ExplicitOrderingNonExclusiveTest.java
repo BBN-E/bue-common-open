@@ -14,22 +14,22 @@ public class ExplicitOrderingNonExclusiveTest {
   private final List<String> sampleData = ImmutableList.of("z", "d", "f", "b", "c", "g");
 
   @Test
-  public void testUnrankedLarger() {
+  public void testUnrankedLast() {
     assertEquals(ImmutableList.of("b", "c", "d", "z", "f", "g"),
-        OrderingUtils.explicitOrderingNonExclusiveUnrankedLarger(explicitOrder)
+        OrderingUtils.explicitOrderingUnrankedLast(explicitOrder)
             .immutableSortedCopy(sampleData));
     assertEquals(ImmutableList.of("b", "c", "d", "z", "f", "g"),
-        OrderingUtils.explicitOrderingNonExclusiveUnrankedLarger("b", "c", "d", "e")
+        OrderingUtils.explicitOrderingUnrankedLast("b", "c", "d", "e")
             .immutableSortedCopy(sampleData));
   }
 
   @Test
-  public void testUnrankedSmaller() {
+  public void testUnrankedFirst() {
     assertEquals(ImmutableList.of("z", "f", "g", "b", "c", "d"),
-        OrderingUtils.explicitOrderingNonExclusiveUnrankedSmaller(explicitOrder)
+        OrderingUtils.explicitOrderingUnrankedFirst(explicitOrder)
             .immutableSortedCopy(sampleData));
     assertEquals(ImmutableList.of("z", "f", "g", "b", "c", "d"),
-        OrderingUtils.explicitOrderingNonExclusiveUnrankedSmaller("b", "c", "d", "e")
+        OrderingUtils.explicitOrderingUnrankedFirst("b", "c", "d", "e")
             .immutableSortedCopy(sampleData));
   }
 }

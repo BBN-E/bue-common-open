@@ -45,50 +45,53 @@ public final class OrderingUtils {
   /**
    * Like {@link Ordering#explicit(Object, Object[])} but does not throw an exception when comparing
    * items not explicitly ranked.  Instead, two items not explicitly ranked are considered
-   * equal.  Any explicitly ranked item is considered smaller than any non-explicitly ranked item.
+   * equal.  Any explicitly ranked item comes before than any non-explicitly ranked item
+   * in the ordering.
    */
   @SafeVarargs
-  public static <T> Ordering<T> explicitOrderingNonExclusiveUnrankedSmaller(T leastRankedValue,
+  public static <T> Ordering<T> explicitOrderingUnrankedLast(T leastRankedValue,
       T... remainingValuesInOrder) {
-    return explicitOrderingNonExclusiveUnrankedSmaller(
+    return explicitOrderingUnrankedLast(
         Lists.asList(leastRankedValue, remainingValuesInOrder));
   }
 
   /**
    * Like {@link Ordering#explicit(List)} but does not throw an exception when comparing
    * items not explicitly ranked.  Instead, two items not explicitly ranked are considered
-   * equal.  Any explicitly ranked item is considered smaller than any non-explicitly ranked item.
+   * equal.  Any explicitly ranked item comes before any non-explicitly ranked item in the ordering.
    */
-  public static <T> Ordering<T> explicitOrderingNonExclusiveUnrankedSmaller(
+  public static <T> Ordering<T> explicitOrderingUnrankedLast(
       final List<T> valuesInOrder) {
     return ImmutableExplicitOrderingNonExclusive.<T>builder()
         .rankMap(MapUtils.indexMap(valuesInOrder))
-        .unrankedIsLarger(false)
+        .unrankedIsFirst(false)
         .build();
   }
 
   /**
    * Like {@link Ordering#explicit(Object, Object[])} (List)} but does not throw an exception when
    * comparing items not explicitly ranked.  Instead, two items not explicitly ranked are considered
-   * equal.  Any explicitly ranked item is considered larger than any non-explicitly ranked item.
+   * equal.  Any explicitly ranked item is comes after any non-explicitly ranked item
+   * in the ordering.
    */
   @SafeVarargs
-  public static <T> Ordering<T> explicitOrderingNonExclusiveUnrankedLarger(T leastRankedValue,
+  public static <T> Ordering<T> explicitOrderingUnrankedFirst(T leastRankedValue,
       T... remainingValuesInOrder) {
-    return explicitOrderingNonExclusiveUnrankedLarger(
+    return explicitOrderingUnrankedFirst(
         Lists.asList(leastRankedValue, remainingValuesInOrder));
   }
 
   /**
    * Like {@link Ordering#explicit(List)} but does not throw an exception when comparing
    * items not explicitly ranked.  Instead, two items not explicitly ranked are considered
-   * equal.  Any explicitly ranked item is considered larger than any non-explicitly ranked item.
+   * equal.  Any explicitly ranked item comes after than any non-explicitly ranked item
+   * in the ordering.
    */
-  public static <T> Ordering<T> explicitOrderingNonExclusiveUnrankedLarger(
+  public static <T> Ordering<T> explicitOrderingUnrankedFirst(
       final List<T> valuesInOrder) {
     return ImmutableExplicitOrderingNonExclusive.<T>builder()
         .rankMap(MapUtils.indexMap(valuesInOrder))
-        .unrankedIsLarger(true)
+        .unrankedIsFirst(true)
         .build();
   }
 }
