@@ -1,26 +1,21 @@
 package com.bbn.nlp.edl;
 
-import com.bbn.bue.common.StringUtils;
 import com.bbn.bue.common.strings.offsets.OffsetRange;
 import com.bbn.bue.common.symbols.Symbol;
 import com.bbn.bue.common.symbols.SymbolUtils;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.io.CharSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Loads files in the submission format for the TAC KBP Entity Detection and Linking eval. This is
- * focused on Lorelei NER, so it ignores the KB IDs.
+ * Loads files in the submission format for the TAC KBP Entity Detection and Linking eval.
  */
 public final class EDLLoader {
-  private static final Logger log = LoggerFactory.getLogger(EDLLoader.class);
 
   private EDLLoader() {
   }
@@ -61,18 +56,20 @@ public final class EDLLoader {
     return byDocs.build();
   }
 
+  // We don't use StringUtils.onTabs because it sets omitEmptyStrings, which would lead to a
+  // misleading crash if there are empty fields in the input.
+  private static final Splitter TAB_SPLITTER = Splitter.on('\t').trimResults();
   private static final int RUN_ID = 0;
   private static final int MENTION_ID = 1;
   private static final int HEAD_STRING = 2;
   private static final int DOC_ID_AND_OFFSETS = 3;
-  // this field is deliberately ignored
   private static final int KB_ID = 4;
   private static final int ENTITY_TYPE = 5;
   private static final int MENTION_TYPE = 6;
   private static final int CONFIDENCE = 7;
 
   private EDLMention parseMention(final String line) throws IOException {
-    final List<String> parts = StringUtils.onTabs().splitToList(line);
+    final List<String> parts = TAB_SPLITTER.splitToList(line);
     if (parts.size() != 8 && parts.size() != 11) {
       throw new IOException(
           "Expected 8 fields (or 11 for assessment file) but got " + parts.size());
@@ -105,10 +102,16 @@ public final class EDLLoader {
       throw new IOException("Illegal doc ID and offsets element " + docIdAndOffsets);
     }
 
-    return EDLMention.create(Symbol.from(parts.get(RUN_ID)), parts.get(MENTION_ID),
-        Symbol.from(documentId), parts.get(HEAD_STRING),
-        OffsetRange.charOffsetRange(startOffset, endOffset),
-        Symbol.from(parts.get(MENTION_TYPE)), Symbol.from(parts.get(ENTITY_TYPE)),
-        confidence);
+    return new EDLMention.Builder()
+        .runId(Symbol.from(parts.get(RUN_ID)))
+        .mentionId(parts.get(MENTION_ID))
+        .documentID(Symbol.from(documentId))
+        .headString(parts.get(HEAD_STRING))
+        .headOffsets(OffsetRange.charOffsetRange(startOffset, endOffset))
+        .mentionType(Symbol.from(parts.get(MENTION_TYPE)))
+        .entityType(Symbol.from(parts.get(ENTITY_TYPE)))
+        .kbId(parts.get(KB_ID))
+        .confidence(confidence)
+        .build();
   }
 }
