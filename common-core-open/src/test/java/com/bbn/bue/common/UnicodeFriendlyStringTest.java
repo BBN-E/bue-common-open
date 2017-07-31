@@ -399,5 +399,28 @@ public class UnicodeFriendlyStringTest {
         new SumOfCodePoints();
     withNonBMP.processCodePoints(sumOfCodePoints2);
     assertEquals(97 + 98 + 99 + 128514, sumOfCodePoints2.getResult().intValue());
+
+    // this tests a crash which was observed in the transliterator
+    // there was a bug where for this string three codepoints were processed rather than the
+    // correct two
+    final UnicodeFriendlyString oldTurkic = unicodeFriendly("\uD803\uDC34\uD803\uDC23");
+    final UnicodeFriendlyString.CodePointProcessor<Integer> processor =
+        new UnicodeFriendlyString.CodePointProcessor<Integer>() {
+          int codepointCount = 0;
+
+          @Override
+          public void processCodepoint(final UnicodeFriendlyString s,
+              final CharOffset codePointOffset,
+              final int codePoint) {
+            ++codepointCount;
+          }
+
+          @Override
+          public Integer getResult() {
+            return codepointCount;
+          }
+        };
+    oldTurkic.processCodePoints(processor);
+    assertEquals(2, processor.getResult().intValue());
   }
 }

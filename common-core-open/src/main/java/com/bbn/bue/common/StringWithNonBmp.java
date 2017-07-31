@@ -173,7 +173,7 @@ abstract class StringWithNonBmp extends AbstractUnicodeFriendlyString
   public final <T> void processCodePoints(CodePointProcessor<T> codePointProcessor) {
     for (int codeUnitOffset = 0, codePointOffset = 0; codeUnitOffset < utf16CodeUnits().length();
          ++codePointOffset) {
-      final int codePoint = utf16CodeUnits().codePointAt(codePointOffset);
+      final int codePoint = utf16CodeUnits().codePointAt(codeUnitOffset);
       codePointProcessor.processCodepoint(this, asCharOffset(codePointOffset), codePoint);
       codeUnitOffset += Character.charCount(codePoint);
     }
