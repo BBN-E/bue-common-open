@@ -12,7 +12,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A collection whose iteration order is randomized on every attempt to iterate over it.
- * @param <T>
+ *
+ * @author Ryan Gabbard
  */
 public final class ShufflingCollection<T> extends AbstractCollection<T> implements Collection<T> {
 

@@ -1,6 +1,5 @@
 package com.bbn.bue.common.collections;
 
-import com.google.common.annotations.Beta;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
@@ -10,7 +9,6 @@ import java.util.Random;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Beta
 /**
  * An unbounded {@link java.util.Iterator} which provides a stream of bootstrap samples
  * from a provided collection of items.  If the "base" collection is of size N, this
@@ -18,6 +16,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * from the base collection.
  *
  * See https://en.wikipedia.org/wiki/Bootstrapping_%28statistics%29
+ *
+ * {@author Ryan Gabbard}
  */
 public final class BootstrapIterator<ItemType> extends AbstractIterator<Collection<ItemType>> {
 

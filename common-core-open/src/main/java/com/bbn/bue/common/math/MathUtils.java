@@ -4,30 +4,25 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
+/**
+ * General mathematical utilities.
+ *
+ * @author Ryan Gabbard, Jay DeYoung
+ */
 public final class MathUtils {
 
   private MathUtils() {
     throw new UnsupportedOperationException();
   }
 
-  public static int max(int[] arr) {
-    checkArgument(arr.length > 0);
-    int mx = Integer.MIN_VALUE;
-
-    for (final int x : arr) {
-      if (x > mx) {
-        mx = x;
-      }
-    }
-    return mx;
-  }
-
-  public static int sum(int[] permutation) {
+  /**
+   * Returns the sum of all elements in the given non-null array {@code arr}.
+   */
+  public static int sum(int[] arr) {
     int ret = 0;
-    for (final int x : permutation) {
+    for (final int x : arr) {
       ret += x;
     }
     return ret;
@@ -67,11 +62,24 @@ public final class MathUtils {
   }
 
 
+  /**
+   * {@code x * log(x)} when x is non-zero, zero otherwise.
+   */
   public static double xLogX(double d) {
     if (d == 0.0) {
       return 0.0;
     } else {
       return d * Math.log(d);
     }
+  }
+
+  // deprecated methods
+
+  /**
+   * @deprecated This is now in Guava as {@link com.google.common.primitives.Ints#max()}
+   */
+  @Deprecated
+  public static int max(int[] arr) {
+    return Ints.max(arr);
   }
 }

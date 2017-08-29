@@ -620,6 +620,11 @@ public final class StringUtils {
     return ret.build();
   }
 
+  @SuppressWarnings("deprecation")
+  public static Function<String, Integer> lengthFunction() {
+    return ToLength;
+  }
+
   /**
    * Guava {@link Function} which runs {@link String#trim()} on all inputs.
    */

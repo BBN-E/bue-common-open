@@ -13,6 +13,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utilities for working with {@link java.util.List}s.
+ *
+ * @author Ryan Gabbard, Constantine Lignos
  */
 public final class ListUtils {
   private ListUtils() {
@@ -23,6 +25,12 @@ public final class ListUtils {
    * Returns an unmodifiable view of the concatenation of two lists.
    * This view will act like a {@link List} which has all of the items of
    * {@code first} followed by all of the items in {@code second}.
+   *
+   * This has been requested as a Guava feature but never implemented:
+   * https://github.com/google/guava/issues/1029
+   *
+   * If you don't need {@link List#size()} or the equality/hashcode guarantees, just use
+   * {@link com.google.common.collect.Iterables#concat(Iterable[])}
    */
   public static <E> List<E> concat(List<? extends E> first, List<? extends E> second) {
     return new ConcatenatedListView<E>(first, second);
@@ -67,5 +75,7 @@ public final class ListUtils {
     public int size() {
       return list1.size() + list2.size();
     }
+
+
   }
 }

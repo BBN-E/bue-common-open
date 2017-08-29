@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 
 /**
  * A {@link Multitable} which cannot hold duplicate row key, column key, value triples.
+ *
+ * @author Chester Palen-Michel, Constantine Lignos, Ryan Gabbard
  */
 public interface SetMultitable<R, C, V> extends Multitable<R, C, V> {
 

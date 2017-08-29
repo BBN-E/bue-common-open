@@ -159,9 +159,39 @@
           <optional>true</optional>
       </dependency>
       <dependency>
+          <groupId>com.google.inject.extensions</groupId>
+          <artifactId>guice-grapher</artifactId>
+          <version>4.0</version>
+          <optional>true</optional>
+      </dependency>
+      <dependency>
           <groupId>javax.inject</groupId>
           <artifactId>javax.inject</artifactId>
           <version>1</version>
+          <optional>true</optional>
+      </dependency>
+
+      <!-- The dependency on PalDb is optional so we don't impose it on all users of
+      this library. If a user wishes to use the PalDb-backed key-value store implementation,
+      they need to specify this library non-optionally. -->
+      <dependency>
+          <groupId>com.linkedin.paldb</groupId>
+          <artifactId>paldb</artifactId>
+          <version>1.1.0</version>
+          <optional>true</optional>
+      </dependency>
+
+      <!-- for Unicode StringNormalizers -->
+      <dependency>
+          <groupId>com.ibm.icu</groupId>
+          <artifactId>icu4j</artifactId>
+          <version>57.1</version>
+      </dependency>
+
+      <dependency>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+          <version>2.3</version>
           <optional>true</optional>
       </dependency>
 

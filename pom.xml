@@ -21,6 +21,9 @@
       <module>common-core-open</module>
       <module>nlp-core-open</module>
       <module>scoring-open</module>
+      <module>gnuplot-util</module>
+      <module>hppc-util</module>
+      <module>indri-utils</module>
   </modules>
 
   <developers>
@@ -47,13 +50,10 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
     <maven.javadoc.plugin.version>2.10.3</maven.javadoc.plugin.version>
     <maven.site.plugin.version>3.1</maven.site.plugin.version>
     <maven.project.info.reports.plugin.version>2.4</maven.project.info.reports.plugin.version>
     <maven.dependency.plugin.version>2.4</maven.dependency.plugin.version>
-      <maven.compiler.source>1.7</maven.compiler.source>
-      <maven.compiler.target>1.7</maven.compiler.target>
       <appassembler.maven.plugin.version>1.10</appassembler.maven.plugin.version>
     <maven.surefire.plugin.version>2.12.2</maven.surefire.plugin.version>
     <maven.surefire.report.plugin.version>2.12.2</maven.surefire.report.plugin.version>
@@ -68,6 +68,14 @@
 
   <dependencyManagement>
       <dependencies>
+          <!-- intra-project dependnecies -->
+          <dependency>
+              <groupId>com.bbn.bue</groupId>
+              <artifactId>common-core-open</artifactId>
+              <version>7.6.3-SNAPSHOT</version>
+          </dependency>
+
+          <!-- external dependencies -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -83,6 +91,11 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
         </dependency>
+          <dependency>
+              <groupId>com.carrotsearch</groupId>
+              <artifactId>hppc</artifactId>
+              <version>0.7.1</version>
+          </dependency>
 
           <dependency>
               <groupId>org.apache.commons</groupId>
@@ -146,6 +159,25 @@
               <scope>provided</scope>
           </dependency>
 
+          <dependency>
+              <groupId>javax.inject</groupId>
+              <artifactId>javax.inject</artifactId>
+              <version>1</version>
+          </dependency>
+
+          <dependency>
+              <groupId>com.google.inject</groupId>
+              <artifactId>guice</artifactId>
+              <version>4.0</version>
+              <optional>true</optional>
+          </dependency>
+
+          <dependency>
+              <groupId>com.google.inject.extensions</groupId>
+              <artifactId>guice-multibindings</artifactId>
+              <version>4.0</version>
+              <optional>true</optional>
+          </dependency>
       </dependencies>
   </dependencyManagement>
 
@@ -195,15 +227,33 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven.compiler.plugin.version}</version>
+          <version>3.3</version>
         <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
+            <compilerId>javac-with-errorprone</compilerId>
+            <forceJavacCompilerUse>true</forceJavacCompilerUse>
+            <!-- maven-compiler-plugin defaults to targeting Java 5, but our javac
+                 only supports >=6 -->
+            <source>7</source>
+            <target>7</target>
           <!-- Prevents an endPosTable exception during compilation
           when using code generation - this is a bug in Java, see
           https://bugs.openjdk.java.net/browse/JDK-8062800 -->
           <useIncrementalCompilation>false</useIncrementalCompilation>
         </configuration>
+          <dependencies>
+              <dependency>
+                  <groupId>org.codehaus.plexus</groupId>
+                  <artifactId>plexus-compiler-javac-errorprone</artifactId>
+                  <version>2.8</version>
+              </dependency>
+              <!-- override plexus-compiler-javac-errorprone's dependency on
+                   Error Prone with the latest version -->
+              <dependency>
+                  <groupId>com.google.errorprone</groupId>
+                  <artifactId>error_prone_core</artifactId>
+                  <version>2.0.19</version>
+              </dependency>
+          </dependencies>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -253,33 +303,6 @@
 <goals>deploy</goals>
         </configuration>
       </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.3</version>
-            <configuration>
-                <compilerId>javac-with-errorprone</compilerId>
-                <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                <!-- maven-compiler-plugin defaults to targeting Java 5, but our javac
-                     only supports >=6 -->
-                <source>7</source>
-                <target>7</target>
-            </configuration>
-            <dependencies>
-                <dependency>
-                    <groupId>org.codehaus.plexus</groupId>
-                    <artifactId>plexus-compiler-javac-errorprone</artifactId>
-                    <version>2.8</version>
-                </dependency>
-                <!-- override plexus-compiler-javac-errorprone's dependency on
-                     Error Prone with the latest version -->
-                <dependency>
-                    <groupId>com.google.errorprone</groupId>
-                    <artifactId>error_prone_core</artifactId>
-                    <version>2.0.19</version>
-                </dependency>
-            </dependencies>
-        </plugin>
     </plugins>
   </build>
 

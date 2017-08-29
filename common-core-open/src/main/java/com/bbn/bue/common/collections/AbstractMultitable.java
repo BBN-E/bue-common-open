@@ -5,6 +5,8 @@ import javax.annotation.Nullable;
 /**
  * Abstract class for implementing {@link Multitable}s which satisfy the {@link #equals(Object)}
  * and {@link #hashCode()} contract.
+ *
+ * @author Chester Palen-Michel, Constantine Lignos, Ryan Gabbard
  */
 public abstract class AbstractMultitable<R,C,V> implements Multitable<R,C,V> {
   @Override

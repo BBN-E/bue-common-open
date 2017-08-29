@@ -26,6 +26,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @see Multitable
  * @see ImmutableMultitable
+ *
+ * @author Chester Palen-Michel, Constantine Lignos, Ryan Gabbard
  */
 public final class ImmutableSetMultitable<R, C, V> extends ImmutableMultitable<R, C, V>
     implements SetMultitable<R, C, V> {

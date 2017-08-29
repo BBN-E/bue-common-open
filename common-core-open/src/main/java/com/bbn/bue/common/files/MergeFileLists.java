@@ -13,6 +13,8 @@ import java.io.IOException;
 
 /**
  * Merges file lists together.
+ *
+ * @author Ryan Gabbard
  */
 public final class MergeFileLists {
 

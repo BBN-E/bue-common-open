@@ -32,7 +32,6 @@ import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
 import com.google.common.io.CharSink;
 import com.google.common.io.CharSource;
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 import com.google.common.primitives.Ints;
@@ -42,18 +41,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
@@ -74,8 +70,14 @@ import static com.google.common.collect.Iterables.skip;
 import static com.google.common.collect.Iterables.transform;
 import static java.nio.file.Files.walkFileTree;
 
+/**
+ * Utilities for working with files.
+ *
+ * @author Ryan Gabbard, Jay DeYoung, Constantine Lignos, Nicolas Ward
+ */
 @Value.Enclosing
 public final class FileUtils {
+
   private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
   private FileUtils() {
@@ -88,9 +90,7 @@ public final class FileUtils {
   public static void ensureParentDirectoryExists(File f) throws IOException {
     final File parent = f.getParentFile();
     if (parent != null) {
-      if (!parent.isDirectory() && !parent.mkdirs()) {
-        throw new IOException("Could not create parent directories for " + f.getAbsolutePath());
-      }
+      java.nio.file.Files.createDirectories(parent.toPath());
     }
   }
 
@@ -219,27 +219,7 @@ public final class FileUtils {
     return new File(absolutePath + "." + extension);
   }
 
-  /**
-   * @deprecated Prefer {@link CharSink#writeLines(Iterable, String)} or {@link
-   * FileUtils#writeUnixLines(Iterable, CharSink)}.
-   */
-  @Deprecated
-  public static void writeLines(final File f, final Iterable<String> data, final Charset charSet)
-      throws IOException {
-    final FileOutputStream fin = new FileOutputStream(f);
-    final BufferedOutputStream bout = new BufferedOutputStream(fin);
-    final PrintStream out = new PrintStream(bout);
 
-    boolean threw = true;
-    try {
-      for (final String s : data) {
-        out.println(s);
-      }
-      threw = false;
-    } finally {
-      Closeables.close(out, threw);
-    }
-  }
 
   public static ImmutableMap<Symbol, File> loadSymbolToFileMap(
       final File f) throws IOException {
@@ -423,17 +403,14 @@ public final class FileUtils {
         throw e;
       }
     }
-    final DataInputStream dis = new DataInputStream(in);
 
-    try {
+    try (DataInputStream dis = new DataInputStream(in)) {
       final int size = dis.readInt();
       final int[] ret = new int[size];
       for (int i = 0; i < size; ++i) {
         ret[i] = dis.readInt();
       }
       return ret;
-    } finally {
-      dis.close();
     }
   }
 
@@ -449,16 +426,13 @@ public final class FileUtils {
 
   public static void writeBinaryIntArray(final int[] arr,
       final ByteSink outSup) throws IOException {
-    final OutputStream out = outSup.openBufferedStream();
-    final DataOutputStream dos = new DataOutputStream(out);
-
-    try {
-      dos.writeInt(arr.length);
-      for (final int x : arr) {
-        dos.writeInt(x);
+    try (OutputStream out = outSup.openBufferedStream()) {
+      try (DataOutputStream dos = new DataOutputStream(out)) {
+        dos.writeInt(arr.length);
+        for (final int x : arr) {
+          dos.writeInt(x);
+        }
       }
-    } finally {
-      dos.close();
     }
   }
 
@@ -472,7 +446,7 @@ public final class FileUtils {
     new BackupRequest.Builder()
         .fileToBackup(f)
         .extension(extension)
-        .build().doBackup();;
+        .build().doBackup();
   }
 
   /**
@@ -481,6 +455,7 @@ public final class FileUtils {
   @TextGroupImmutable
   @Value.Immutable
   public static abstract class BackupRequest {
+
     public abstract File fileToBackup();
 
     /**
@@ -529,7 +504,7 @@ public final class FileUtils {
         if (deleteOriginal()) {
           operationMessage = "Moved";
           java.nio.file.Files.move(fileToBackup().toPath(),
-                  backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+              backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } else {
           operationMessage = "Copied";
           java.nio.file.Files.copy(fileToBackup().toPath(),
@@ -593,11 +568,7 @@ public final class FileUtils {
     return SymbolUtils.listFrom(loadStringList(source));
   }
 
-  /**
-   * @deprecated Prefer {@link #toNameFunction()}
-   */
-  @Deprecated
-  public static final Function<File, String> ToName = ToNameEnum.INSTANCE;
+
 
   public static Function<File, String> toNameFunction() {
     return ToNameEnum.INSTANCE;
@@ -613,7 +584,7 @@ public final class FileUtils {
   }
 
 
-  public static final Function<File, String> toAbsolutePathFunction() {
+  public static Function<File, String> toAbsolutePathFunction() {
     return ToAbsolutePathFunction.INSTANCE;
   }
 
@@ -627,27 +598,22 @@ public final class FileUtils {
   }
 
   public static boolean isEmptyDirectory(final File directory) {
-    if (directory.exists() && directory.isDirectory()) {
-      return directory.listFiles().length == 0;
-    }
-    return false;
+    return directory.exists() && directory.isDirectory()
+        && directory.listFiles().length == 0;
   }
 
+
   /**
-   * Make a predicate to test files for ending with the specified suffix.
+   * Make a predicate to test files for their name ending with the specified suffix.
    *
    * @param suffix May not be null or empty.
    */
-  public static Predicate<File> EndsWith(final String suffix) {
+  public static Predicate<File> endsWithPredicate(final String suffix) {
     checkArgument(!suffix.isEmpty());
 
-    return new Predicate<File>() {
-      @Override
-      public boolean apply(final File f) {
-        return f.getName().endsWith(suffix);
-      }
-    };
+    return new EndsWithPredicate(suffix);
   }
+
 
   /**
    * Loads a file in the format {@code key value1 value2 value3} (tab-separated) into a {@link
@@ -676,28 +642,6 @@ public final class FileUtils {
     return ret.build();
   }
 
-  /**
-   * Deprecated in favor of version with {@link com.google.common.io.CharSource} argument.
-   *
-   * @deprecated
-   */
-  @Deprecated
-  public static ImmutableMultimap<String, String> loadStringMultimap(File multimapFile)
-      throws IOException {
-    return loadStringMultimap(Files.asCharSource(multimapFile, Charsets.UTF_8));
-  }
-
-  /**
-   * Deprecated in favor of the CharSource version to force the user to define their encoding. If
-   * you call this, it will use UTF_8 encoding.
-   *
-   * @deprecated
-   */
-  @Deprecated
-  public static ImmutableMultimap<Symbol, Symbol> loadSymbolMultimap(File multimapFile)
-      throws IOException {
-    return loadSymbolMultimap(Files.asCharSource(multimapFile, Charsets.UTF_8));
-  }
 
   /**
    * Loads a file in the format {@code key value1 value2 value3} (tab-separated) into a {@link
@@ -1003,7 +947,7 @@ public final class FileUtils {
     checkNotNull(sourceDir);
     checkNotNull(destDir);
     checkArgument(sourceDir.isDirectory(), "Source directory does not exist");
-    destDir.mkdirs();
+    java.nio.file.Files.createDirectories(destDir.toPath());
     walkFileTree(sourceDir.toPath(), new CopyFileVisitor(sourceDir.toPath(), destDir.toPath(),
         copyOption));
   }
@@ -1051,16 +995,6 @@ public final class FileUtils {
     }
   }
 
-  /**
-   * @deprecated See {@link #toAbsolutePathFunction()}.
-   */
-  @Deprecated
-  public static final Function<File, String> ToAbsolutePath = new Function<File, String>() {
-    @Override
-    public String apply(final File f) {
-      return f.getAbsolutePath();
-    }
-  };
 
   /**
    * Generally we want to avoid {@link CharSink#writeLines(Iterable)} because it uses the OS default
@@ -1169,4 +1103,73 @@ public final class FileUtils {
       return input.startsWith("#");
     }
   }
+
+  private static class EndsWithPredicate implements Predicate<File> {
+
+    private final String suffix;
+
+    public EndsWithPredicate(final String suffix) {
+      this.suffix = suffix;
+    }
+
+    @Override
+    public boolean apply(final File f) {
+      return f.getName().endsWith(suffix);
+    }
+  }
+
+  // Deprecated code
+
+  /**
+   * @deprecated Prefer {@link #toNameFunction()}
+   */
+  @Deprecated
+  public static final Function<File, String> ToName = ToNameEnum.INSTANCE;
+
+  /**
+   * @deprecated See {@link #toAbsolutePathFunction()}.
+   */
+  @Deprecated
+  public static final Function<File, String> ToAbsolutePath = new Function<File, String>() {
+    @Override
+    public String apply(final File f) {
+      return f.getAbsolutePath();
+    }
+  };
+
+  /**
+   * Make a predicate to test files for ending with the specified suffix.
+   *
+   * @param suffix May not be null or empty.
+   * @deprecated Prefer {@link #endsWithPredicate(String)}.
+   */
+  @Deprecated
+  public static Predicate<File> EndsWith(final String suffix) {
+    return endsWithPredicate(suffix);
+  }
+
+
+  /**
+   * Deprecated in favor of version with {@link com.google.common.io.CharSource} argument.
+   *
+   * @deprecated
+   */
+  @Deprecated
+  public static ImmutableMultimap<String, String> loadStringMultimap(File multimapFile)
+      throws IOException {
+    return loadStringMultimap(Files.asCharSource(multimapFile, Charsets.UTF_8));
+  }
+
+  /**
+   * Deprecated in favor of the CharSource version to force the user to define their encoding. If
+   * you call this, it will use UTF_8 encoding.
+   *
+   * @deprecated
+   */
+  @Deprecated
+  public static ImmutableMultimap<Symbol, Symbol> loadSymbolMultimap(File multimapFile)
+      throws IOException {
+    return loadSymbolMultimap(Files.asCharSource(multimapFile, Charsets.UTF_8));
+  }
+
 }

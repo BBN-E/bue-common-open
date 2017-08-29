@@ -1,7 +1,5 @@
 package com.bbn.bue.common.collections;
 
-import com.bbn.bue.common.annotations.MoveToBUECommon;
-
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
@@ -35,7 +33,7 @@ import static com.google.common.base.Preconditions.checkState;
 /**
  * Utilities for collections.
  *
- * @author rgabbard
+ * @author Ryan Gabbard, Constantine Lignos
  */
 public final class CollectionUtils {
 
@@ -176,7 +174,7 @@ public final class CollectionUtils {
   /**
    * Guava function to map a collection to its size.
    */
-  public static final Function<Collection<?>, Integer> sizeFunction() {
+  public static Function<Collection<?>, Integer> sizeFunction() {
     return Size;
   }
 
@@ -323,12 +321,17 @@ public final class CollectionUtils {
    * is the sum of the sizes of {@code left} and {@code right}.
    *
    * Equality and hashCode on a concatted view are undefined.
+   *
+   * @deprecated For almost all purposes you should jsut prefer {@link com.google.common.collect.FluentIterable#append(Iterable)}
+   * or {@link com.google.common.collect.Iterables#concat(Iterable[])}.
    */
+  @Deprecated
   public static <T> Collection<T> concat(Collection<? extends T> left,
       Collection<? extends T> right) {
     return new ConcattedCollectionView<T>(left, right);
   }
 
+  @Deprecated
   private static final class ConcattedCollectionView<T> extends AbstractCollection<T> {
 
     private final Collection<? extends T> left;
@@ -422,7 +425,6 @@ public final class CollectionUtils {
    * in which case it simply prints the number of excess items. This is useful for making toStrings
    * for objects which may contain large collections.
    */
-  @MoveToBUECommon
   public static String toStringLimited(ImmutableSet<?> items, int limit) {
     if (items.size() <= limit) {
       return items.toString();

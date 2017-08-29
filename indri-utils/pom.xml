@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>common-all-open</artifactId>
+        <groupId>com.bbn.bue</groupId>
+        <version>7.6.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>indri-utils</artifactId>
+    <groupId>com.bbn.nlp</groupId>
+    <packaging>jar</packaging>
+
+    <name>Utilities for Indri</name>
+    <url>http://www.bbn.com/</url>
+
+    <properties>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bbn.bue</groupId>
+            <artifactId>common-core-open</artifactId>
+            <version>7.6.3-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bbn.bue</groupId>
+            <artifactId>common-core-open</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bbn.indri</groupId>
+            <artifactId>indri-api</artifactId>
+            <version>5.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <configuration>
+                    <programs>
+                        <program>
+                            <mainClass>com.bbn.nlp.indri.bin.IndexBuilder</mainClass>
+                            <name>IndexBuilder</name>
+                        </program>
+                        <program>
+                            <mainClass>com.bbn.nlp.indri.bin.QueryResultCounter</mainClass>
+                            <name>QueryResultCounter</name>
+                        </program>
+                    </programs>
+
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>

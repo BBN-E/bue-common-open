@@ -17,6 +17,11 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Utilities for working with {@link Multimap}s.
+ *
+ * @author Jay DeYoung, Ryan Gabbard
+ */
 public final class MultimapUtils {
 
   private MultimapUtils() {

@@ -18,6 +18,11 @@ import java.util.List;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Utilities for working with {@link Iterable}s.
+ *
+ * @author Ryan Gabbard, Michael Shafir
+ */
 public final class IterableUtils {
 
   private IterableUtils() {
@@ -285,7 +290,7 @@ public final class IterableUtils {
 
   /**
    * Transforms an Iterable<T> to a Map<T, Integer> where each item is mapped to its zero-indexed
-   * position in the Iterable's sequence.  If an item occurs twice, an IllegalArgumentException will
+   * position in the Iterable's sequence.  If an item occurs twice, an {@link IllegalArgumentException} will
    * be thrown.
    */
   public static <T> ImmutableMap<T, Integer> itemToIndexMap(final Iterable<T> sequence) {

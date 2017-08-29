@@ -10,11 +10,11 @@ import java.util.Set;
 
 /**
  * Maps keys to offset ranges.  This is useful when, for example, many documents are concatenated
- * together and you wish to pull on eout of the middle.
+ * together and you wish to pull one out of the middle.
  */
 public interface OffsetIndex {
 
-  public Optional<OffsetRange<ByteOffset>> byteOffsetsOf(Symbol key);
+  Optional<OffsetRange<ByteOffset>> byteOffsetsOf(Symbol key);
 
-  public Set<Symbol> keySet();
+  Set<Symbol> keySet();
 }

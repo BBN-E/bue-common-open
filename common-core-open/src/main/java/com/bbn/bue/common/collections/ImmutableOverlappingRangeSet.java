@@ -13,6 +13,8 @@ import java.util.Set;
 /**
  * A Naive implementation of an OverlappingRangeSet - uses O(nlog(n)) operation to construct the
  * object, then uses O(n) operations to find an offending ranges)
+ *
+ * @author Jay DeYoung
  */
 public final class ImmutableOverlappingRangeSet<T extends Comparable<T>>
     implements OverlappingRangeSet<T> {

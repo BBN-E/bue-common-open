@@ -17,7 +17,7 @@ public final class SetUtils {
    * iterables are not deterministic, this will reflect a single pass through each.  This is not a
    * view.
    */
-  public static <T> Sets.SetView<T> differenceAsSets(Iterable<T> left, Iterable<T> right) {
-    return Sets.difference(ImmutableSet.copyOf(left), ImmutableSet.copyOf(right));
+  public static <T> ImmutableSet<T> differenceAsSets(Iterable<T> left, Iterable<T> right) {
+    return Sets.difference(ImmutableSet.copyOf(left), ImmutableSet.copyOf(right)).immutableCopy();
   }
 }

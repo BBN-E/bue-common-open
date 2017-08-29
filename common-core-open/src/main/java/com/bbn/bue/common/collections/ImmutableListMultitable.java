@@ -29,6 +29,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Row and column iteration order is based on the order of the first insertion of row or column
  * keys. Cell iteration order is row-major, first following the iteration order of rows then
  * columns.
+ *
+ * @author Chester Palen-Michel, Constantine Lignos, Ryan Gabbard
  */
 public final class ImmutableListMultitable<R, C, V> extends ImmutableMultitable<R, C, V>
     implements ListMultitable<R, C, V> {
