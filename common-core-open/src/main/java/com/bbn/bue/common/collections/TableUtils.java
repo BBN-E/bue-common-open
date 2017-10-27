@@ -1,6 +1,5 @@
 package com.bbn.bue.common.collections;
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
@@ -8,11 +7,15 @@ import com.google.common.collect.Table;
 import java.util.Map;
 
 /**
- * Created by jdeyoung on 5/27/15.
+ * Utilities for {@link Table}s.
+ *
+ * @author Jay DeYoung, Ryan Gabbard
  */
-@Beta
-public class TableUtils {
+public final class TableUtils {
 
+  private TableUtils() {
+    throw new UnsupportedOperationException();
+  }
 
   public static <R, C, V> ImmutableTable<R, C, V> tableFromIndexFunctions(final Iterable<V> values,
       final Function<V, R> rowIndexFunction, final Function<V, C> columnIndexFunction) {

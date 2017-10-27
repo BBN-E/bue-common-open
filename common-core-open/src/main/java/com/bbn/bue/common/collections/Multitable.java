@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
  * Equality and hashcode for {@link Multitable}s is delegated to their {@link #cellSet()}s.
  *
  * Adapted from {@link Table}.
+ *
+ * @author Chester Palen-Michel, Constantine Lignos, Ryan Gabbard
  */
 public interface Multitable<R, C, V> {
   // Accessors

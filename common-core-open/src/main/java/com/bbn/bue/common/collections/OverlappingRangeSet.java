@@ -9,7 +9,7 @@ import java.util.Collection;
  * containment queries. All operations support the closedness notion of the inserted {@link
  * Range}s.
  *
- * Guava supports collections disjoint and nested ranges, see {@link
+ * Guava supports collections of disjoint and nested ranges, see {@link
  * com.google.common.collect.RangeSet} and {@link com.google.common.collect.TreeRangeSet}, however
  * there is no current implementation for a structured set of {@link Range}s which may overlap. This
  * class aims to fill that gap.

@@ -1,7 +1,6 @@
 package com.bbn.bue.common.files;
 
 import com.bbn.bue.common.TextGroupImmutable;
-import com.bbn.bue.common.annotations.MoveToBUECommon;
 import com.bbn.bue.common.collections.ImmutableListMultitable;
 import com.bbn.bue.common.collections.ImmutableMultitable;
 import com.bbn.bue.common.collections.ImmutableSetMultitable;
@@ -27,8 +26,9 @@ import java.util.List;
  * if the optional {@link #valueListSplitter()} is specified to split them with.
  *
  * Comment lines are currently not skipped, but this could be added as an option in the future.
+ *
+ * @author Ryan Gabbard
  */
-@MoveToBUECommon
 @org.immutables.value.Value.Immutable
 @TextGroupImmutable
 public abstract class MultitableLoader<R, C, V> {

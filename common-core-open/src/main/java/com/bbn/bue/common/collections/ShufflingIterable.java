@@ -14,6 +14,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * This is an {@link Iterable} which provides its data in a random order
  * every time an iterator is requested. Note this must load its entire underlying
  * {@link Iterable} into memory.
+ *
+ * @author Ryan Gabbard, Constantine Lignos
  */
 public final class ShufflingIterable<T> implements Iterable<T> {
   private final ImmutableList<T> data;

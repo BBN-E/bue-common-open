@@ -15,6 +15,8 @@ import java.util.Set;
 /**
  * Utility to check that a doc ID-to-file-map contains all documents
  * on a given list.
+ *
+ * @author Ryan Gabbard
  */
 public final class DocIDToFileMapContains {
   private DocIDToFileMapContains() {

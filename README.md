@@ -26,9 +26,10 @@ references.
 
 <sub>**Legal notes**</sub>
 
-<sub>Distribution C: Distribution authorized to U.S. Government Agencies and their contractors (Administrative or Operational Use; November 4, 2014).  Other requests for this document shall be referred to DARPA Public Release Center (PRC) via email at PRC@darpa.mil. </sub>
+This work was funded by DARPA/AFRL Contract FA8750-13-C-0008.
 
-<sub>WARNING - This document contains technology whose export or disclosure to
-Non-U.S. persons, wherever located, is subject to the Export Administrations
-Regulations (EAR) (15 C.F.R. Sections 730-774). Violations are subject to
-severe criminal penalties.</sub>
+The views, opinions, and/or findings expressed are those of the author(s) and should not
+be interpreted as representing the official views of policies of the Department of
+Defense or the U.S. Government.  
+
+Released as DARPA DISTRIBUTION A.  Approved for public release: distribution unlimited.

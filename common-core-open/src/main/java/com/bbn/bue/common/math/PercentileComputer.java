@@ -16,6 +16,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Computes percentiles.  There are multiple ways of computing them, so you will need to choose a
  * {@link #nistPercentileComputer()} or {@link #excelPercentileComputer()}.
+ *
+ * This may be at least partially superseded by Guava's {@code Quantiles} when we update to
+ * Guava 21.
  */
 @Beta
 public final class PercentileComputer {
@@ -50,10 +53,16 @@ public final class PercentileComputer {
     return new PercentileComputer(Algorithm.EXCEL);
   }
 
+  /**
+   * Computes percentiles for {@code data}, assuming it will not be externally modified.
+   */
   public Percentiles calculatePercentilesAdoptingData(double[] data) {
     return new Percentiles(algorithm, data);
   }
 
+  /**
+   * Computes percentiles for {@code data}, making a copy in case it is modified externally.
+   */
   public Percentiles calculatePercentilesCopyingData(double[] data) {
     return new Percentiles(algorithm, data.clone());
   }

@@ -6,6 +6,9 @@ import com.google.common.primitives.Doubles;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Utilities for working with primitive {@code doubles}.
+ */
 public final class DoubleUtils {
 
   private DoubleUtils() {
@@ -21,28 +24,6 @@ public final class DoubleUtils {
     return ret;
   }
 
-  public static final Predicate<Double> IsFinite = new Predicate<Double>() {
-    @Override
-    public boolean apply(final Double x) {
-      return Doubles.isFinite(x);
-    }
-  };
-
-  public static final Predicate<Double> IsNonNegative = new Predicate<Double>() {
-    @Override
-    public boolean apply(final Double x) {
-      return x >= 0.0;
-    }
-  };
-
-
-  public static final Function<String, Double> ParseDouble = new Function<String, Double>() {
-    @Override
-    public Double apply(final String x) {
-      return Double.parseDouble(x);
-    }
-  };
-
 
   /**
    * Sum an array of doubles
@@ -55,6 +36,9 @@ public final class DoubleUtils {
     return ret;
   }
 
+  /**
+   * Sum over the doubles at the given indices of {@code data}
+   */
   public static double sum(final double[] data, final int startInclusive, final int endExclusive) {
     checkArgument(startInclusive >= 0);
     checkArgument(endExclusive <= data.length);
@@ -69,7 +53,7 @@ public final class DoubleUtils {
 
 
   /**
-   * Avoid division by zero.
+   * Computes {@code x / y}, returning zero if {@code y} is zero.
    */
   public static double XOverYOrZero(final double x, final double y) {
     if (y != 0.0) {
@@ -203,6 +187,9 @@ public final class DoubleUtils {
   }
 
 
+  /**
+   * Is {@code value} within {@code tolerance} of being an integer?
+   */
   public static boolean isCloseToIntegral(final double value, final double tolerance) {
     return Math.abs(value - Math.round(value)) <= tolerance;
   }
@@ -319,4 +306,31 @@ public final class DoubleUtils {
       return val;
     }
   }
+
+  // deprecated methods
+  @Deprecated
+  public static final Predicate<Double> IsFinite = new Predicate<Double>() {
+    @Override
+    public boolean apply(final Double x) {
+      return Doubles.isFinite(x);
+    }
+  };
+
+  @Deprecated
+  public static final Predicate<Double> IsNonNegative = new Predicate<Double>() {
+    @Override
+    public boolean apply(final Double x) {
+      return x >= 0.0;
+    }
+  };
+
+
+  @Deprecated
+  public static final Function<String, Double> ParseDouble = new Function<String, Double>() {
+    @Override
+    public Double apply(final String x) {
+      return Double.parseDouble(x);
+    }
+  };
+
 }

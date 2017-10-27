@@ -19,6 +19,8 @@ import java.util.Map;
 
 /**
  * Merges DocIDToFileMaps together.
+ *
+ * @author Ryan Gabbard
  */
 public class MergeDocIDToFileMaps {
 

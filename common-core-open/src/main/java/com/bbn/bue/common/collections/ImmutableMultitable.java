@@ -23,6 +23,8 @@ import javax.annotation.Nullable;
  * order, iteration over rows and columns reflects the order in which values were first inserted
  * into those rows and columns. Cell iteration order is row-major, first following the iteration
  * order of rows then of columns.
+ *
+ * @author Chester Palen-Michel, Constantine Lignos, Ryan Gabbard
  */
 public abstract class ImmutableMultitable<R, C, V> extends AbstractMultitable<R,C,V> implements Multitable<R, C, V> {
 

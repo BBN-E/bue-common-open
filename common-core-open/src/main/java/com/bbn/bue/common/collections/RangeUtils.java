@@ -9,6 +9,8 @@ import java.util.Iterator;
 
 /**
  * Utility methods for dealing with Guava {@link Range}s.
+ *
+ * @author Jay DeYoung, Ryan Gabbard
  */
 public final class RangeUtils {
   private RangeUtils() {
