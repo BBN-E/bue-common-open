@@ -9,7 +9,7 @@ portion of this library.
 
 While anyone is welcome to use this code, in general no support is provided.
 
-Contact: rgabbard@bbn.com
+Contact: jay.deyoung@raytheon.com
 
 ## Requirements
 * Maven
